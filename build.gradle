@@ -18,6 +18,7 @@ dependencies {
 	compile 'commons-collections:commons-collections:3.2.2'
     compile 'commons-dbcp:commons-dbcp:1.4'
     compile 'commons-net:commons-net:3.6'
+    compile 'jaxen:jaxen:1.1.6'
     compile 'log4j:log4j:1.2.17'
     compile 'org.apache.httpcomponents:httpclient:4.5.6'
     compile 'org.springframework:spring-beans:5.0.9.RELEASE'
