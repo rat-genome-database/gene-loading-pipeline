@@ -1,0 +1,282 @@
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
+        <property name="version" value="EntrezGene pipeline v.3.7.7 - Sep 28, 2018" />
+		<property name="qualityCheck" ref="qualityCheck"/>
+	    <property name="decisionMaker" ref="decisionMaker"/>
+	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
+	    <property name="rgdLogger" ref="rgdLogger"/>
+        <property name="geneReactivator" ref="geneReactivator"/>
+        <property name="eUtils" ref="ncbiEutils"/>
+        <property name="scaffoldOnlyAssemblies">
+            <map>
+                <entry key="Chinchilla" value="ChiLan"/>
+                <entry key="Squirrel" value="SpeTri"/>
+            </map>
+        </property>
+        <property name="genomicAssemblies">
+            <map>
+                <entry key="Human" value-ref="humanGenomicAssemblies"/>
+                <entry key="Mouse" value-ref="mouseGenomicAssemblies"/>
+                <entry key="Rat" value-ref="ratGenomicAssemblies"/>
+                <entry key="Chinchilla" value-ref="chinchillaGenomicAssemblies"/>
+                <entry key="Bonobo" value-ref="bonoboGenomicAssemblies"/>
+                <entry key="Dog" value-ref="dogGenomicAssemblies"/>
+                <entry key="Squirrel" value-ref="squirrelGenomicAssemblies"/>
+            </map>
+        </property>
+        <!--gene location history: gene location info provided by RefSeq for non-current (previous) assemblies -->
+        <property name="geneLocationHistory">
+            <map>
+                <entry key="Rn_Celera" value="15"/>
+                <entry key="Rnor_5.0" value="70"/>
+                <entry key="Rnor_6.0" value="360"/>
+
+                <entry key="Hs_Celera" value="16"/>
+                <entry key="CHM1_1.0" value="36"/>
+                <entry key="CHM1_1.1" value="36"/>
+                <entry key="HuRef" value="19"/>
+                <entry key="NCBI36" value="13"/>
+                <entry key="GRCh37" value="17"/>
+                <entry key="GRCh37.p2" value="17"/>
+                <entry key="GRCh37.p5" value="17"/>
+                <entry key="GRCh37.p9" value="17"/>
+                <entry key="GRCh37.p10" value="17"/>
+                <entry key="GRCh37.p13" value="17"/>
+                <entry key="GRCh38" value="38"/>
+                <entry key="GRCh38.p2" value="38"/>
+                <entry key="GRCh38.p7" value="38"/>
+                <entry key="GRCh38.p12" value="38"/>
+
+                <entry key="Mm_Celera" value="20"/>
+                <entry key="MGSCv36" value="14"/>
+                <entry key="MGSCv37" value="18"/>
+                <entry key="GRCm38" value="35"/>
+                <entry key="GRCm38.p1" value="35"/>
+                <entry key="GRCm38.p2" value="35"/>
+                <entry key="GRCm38.p3" value="35"/>
+                <entry key="GRCm38.p4" value="35"/>
+
+                <entry key="panpan1.1" value="511"/>
+                <entry key="CanFam3.1" value="631"/>
+                <entry key="SpeTri2.0" value="720"/>
+            </map>
+        </property>
+        <property name="firstRecNo" value="0" /><!--number of record from which the processing starts-->
+        <property name="qualityCheckingThreadCount" value="1" /><!--number of threads to run quality checking in parallel; 7 is fine-->
+	</bean>
+
+    <bean id="humanGenomicAssemblies" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="NCBI36" value="13"/>
+                <entry key="Reference assembly" value="17"/>
+                <entry key="Alternate assembly (based on CRA_TCAGchr7v2)" value="21"/>
+                <entry key="Alternate CRA_TCAGchr7v2" value="21"/>
+                <entry key="Alternate assembly CRA_TCAGchr7v2" value="21"/>
+                <entry key="Alternate assembly (CRA_TCAGchr7v2)" value="21"/>
+                <entry key="Alternate HuRef" value="19"/>
+                <entry key="Alternate assembly (HuRef)" value="19"/>
+                <entry key="Alternate assembly HuRef" value="19"/>
+                <entry key="Alternate assembly (based on HuRef)" value="19"/>
+                <entry key="Reference GRCh37.p9 Primary Assembly" value="17"/>
+                <entry key="Reference GRCh37.p5 Primary Assembly" value="17"/>
+                <entry key="GRCh37.p2 Reference primary assembly" value="17"/>
+                <entry key="Genome Reference Consortium Human Build 37 (GRCh37), Primary_Assembly" value="17"/>
+                <entry key="Reference GRCh37.p10 Primary Assembly" value="17"/>
+                <entry key="Reference GRCh37.p13 Primary Assembly" value="17"/>
+                <entry key="Reference GRCh38 Primary Assembly" value="38"/>
+                <entry key="Reference GRCh38.p2 Primary Assembly" value="38"/>
+                <entry key="Reference GRCh38.p7 Primary Assembly" value="38"/>
+                <entry key="Reference GRCh38.p12 Primary Assembly" value="38"/>
+                <entry key="Alternate CHM1_1.1" value="36"/>
+
+                <entry key="Cytomap" value="11"/>
+                <entry key="Celera" value="16"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="mouseGenomicAssemblies" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="Cytomap" value="12"/>
+                <entry key="Reference GRCm38 C57BL/6J" value="35"/>
+                <entry key="Reference GRCm38.p1 C57BL/6J" value="35"/>
+                <entry key="Reference GRCm38.p2 C57BL/6J" value="35"/>
+                <entry key="Reference GRCm38.p3 C57BL/6J" value="35"/>
+                <entry key="Reference GRCm38.p4 C57BL/6J" value="35"/>
+                <entry key="Reference assembly (C57BL/6J)" value="18"/>
+                <entry key="Reference MGSCv37 C57BL/6J" value="18"/>
+                <entry key="Reference assembly" value="18"/>
+                <entry key="Alternate assembly (based on Celera)" value="20"/>
+                <entry key="Alternate Mm_Celera" value="20"/>
+                <entry key="Alternate assembly (Celera)" value="20"/>
+                <entry key="cM" value="31"/>
+                <entry key="MGSCv36" value="14"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="ratGenomicAssemblies" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="Alternate assembly (based on Celera assembly)" value="15"/>
+                <entry key="Alternate assembly (Rn_Celera)" value="15"/>
+                <entry key="Alternate Rn_Celera" value="15"/>
+                <entry key="Reference assembly" value="60"/>
+                <entry key="Reference assembly (based on RGSC_v3.4)" value="60"/>
+                <entry key="Reference Rnor_5.0 Primary Assembly" value="70" />
+                <entry key="Reference Rnor_6.0 Primary Assembly" value="360" />
+                <entry key="Cytomap" value="99"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="chinchillaGenomicAssemblies" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="Reference ChiLan1.0 Primary Assembly" value="44"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="bonoboGenomicAssemblies" class="java.util.HashMap">
+        <constructor-arg>
+        <map>
+            <entry key="Reference panpan1.1 Primary Assembly" value="511" />
+            <entry key="Cytomap" value="500"/>
+        </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="dogGenomicAssemblies" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="Reference CanFam3.1 Primary Assembly" value="631" />
+                <entry key="Cytomap" value="600"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="squirrelGenomicAssemblies" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="Reference SpeTri2.0" value="720"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+
+    <bean id="geneRelationships" class="edu.mcw.rgd.dataload.GeneRelationships">
+        <property name="version" value="GeneRelationships module v. 1.2.7 as of Jun 29, 2016" />
+        <property name="geneGroupFile" value="ftp://ftp.ncbi.nih.gov/gene/DATA/gene_group.gz" />
+    </bean>
+
+	<bean id="rgdLogger" class="edu.mcw.rgd.log.RGDSpringLogger">
+	</bean>
+	
+	<!-- Set the properties for downloading data: data output directory, species, database name, search url and fetch url-->
+	<bean id="entrezGeneExtractor" class="edu.mcw.rgd.dataload.EntrezGeneExtractor">
+        <property name="version" value="EntrezGeneExtractor module ver 2.3.5, as of Sep 22, 2017"/>
+		<property name="outDir" value="data" />
+        <property name="maxRecCountInSingleFetch" value="550"/><!--value of 500 is recommended on NCBI eUtils page-->
+        <property name="downloadMaxRetries" value="10" /><!--if download of eFetch fails, how many times pipeline should retry to download-->
+	    <property name="delayBetweenFetches" value="3" /><!--delay in seconds between two consecutive fetch requests-->
+        <property name="useHistory" value="false" /> <!-- if true eUtils history feature will be used to conserve resources at NCBI;
+           however, recently this feature works poorly; so we will pass lists of gene ids instead, what works flawlessly -->
+    </bean>
+	
+    <!-- Set the properties for downloading data: data output directory, species, database name, search url and fetch url-->
+    <bean id="ncbiEutils" class="edu.mcw.rgd.process.NcbiEutils">
+        <property name="version" value="NcbiEUtils ver 1.2.1, as of Aug 18, 2016"/>
+        <property name="eUtils_db" value="gene"/>
+        <property name="eUtils_tool" value="rgd_eg_pipeline"/>
+        <property name="eUtils_email" value="mtutaj@mcw.edu"/>
+        <property name="ncbiSearchUrl" value="https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"/>
+        <property name="ncbiFetchUrl" value="https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"/>
+    </bean>
+
+	<bean id="decisionMaker" class="edu.mcw.rgd.dataload.DecisionMaker">
+		<property name="bulkGeneLoader" ref="bulkGeneLoader"/>
+        <property name="version" value="DecisionMaker module ver 2.0.6, as of Sep 22, 2017"/>
+	</bean>
+	
+	<bean id="bulkGeneLoader" class="edu.mcw.rgd.dataload.BulkGeneLoaderImpl">
+        <property name="enableMapPosDeletions" value="false" /><!-- if true map positions present in RGD but not found in incoming data will be deleted from db - use with care! -->
+	</bean>
+	
+	<!-- set the properties for quality check: the excluded Entrezgene types, species, xdbName and xdbKey used for quality check -->
+	<bean id="qualityCheck" class="edu.mcw.rgd.dataload.QualityCheckBulkGene">
+        <property name="version" value="QualityCheck module v.2.2.1 - Jul 27, 2017" />
+	    <property name="excludeEgType">
+			<list>
+				<value>unknown</value>
+				<value>other</value>				
+			</list>
+		</property>
+		<property name="egType">
+			<list>
+				<value>protein-coding</value>
+				<value>pseudo</value>
+				<value>miscRNA</value>
+				<value>rRNA</value>
+				<value>tRNA</value>
+				<value>snRNA</value>
+				<value>snoRNA</value>
+				<value>scRNA</value>
+			</list>
+		</property>
+	</bean>
+
+    <bean id="refSeqValidator" class="edu.mcw.rgd.dataload.RefSeqValidator">
+        <property name="removedRecordsDir" value="ftp://ftp.ncbi.nih.gov/refseq/removed" />
+        <property name="ncbiFiles">
+            <list>
+                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/R_norvegicus/mRNA_Prot/rat.rna.gbff.gz</value>
+                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/R_norvegicus/mRNA_Prot/rat.protein.gpff.gz</value>
+                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/M_musculus/mRNA_Prot/mouse.protein.gpff.gz</value>
+                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/M_musculus/mRNA_Prot/mouse.rna.gbff.gz</value>
+                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.protein.gpff.gz</value>
+                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.rna.gbff.gz</value>
+                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/RefSeqGene/refseqgene1.genomic.gbff.gz</value>
+                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/RefSeqGene/refseqgene2.genomic.gbff.gz</value>
+                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/RefSeqGene/refseqgene3.genomic.gbff.gz</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="refSeqLoader" class="edu.mcw.rgd.dataload.RefSeqLoader">
+        <property name="ncbiFiles">
+            <list>
+<!--                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/R_norvegicus/mRNA_Prot/rat.protein.gpff.gz</value>-->
+                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/R_norvegicus/mRNA_Prot/rat.1.rna.fna.gz</value>
+                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/R_norvegicus/mRNA_Prot/rat.1.protein.faa.gz</value>
+                <!--
+                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/M_musculus/mRNA_Prot/mouse.rna.fna.gz</value>
+                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/M_musculus/mRNA_Prot/mouse.protein.faa.gz</value>
+                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.rna.fna.gz</value>
+                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.protein.faa.gz</value>
+                -->
+            </list>
+        </property>
+    </bean>
+
+    <bean id="refSeqRemoved" class="edu.mcw.rgd.dataload.RefSeqRemoved">
+        <property name="version" value="RefSeq Analyzer for removed accession ids  v.1.0 - Oct 3, 2014" />
+        <property name="dataDir" value="ftp://ftp.ncbi.nlm.nih.gov/refseq/removed"/>
+        <property name="dataDirAr" value="ftp://ftp.ncbi.nlm.nih.gov/refseq/removed/archive"/>
+        <property name="fileMask" value="removed-records.*"/>
+        <property name="reportFile" value="data/refseq_removed.txt"/>
+    </bean>
+
+    <bean id="geneReactivator" class="edu.mcw.rgd.dataload.GeneReactivator">
+        <property name="file" value="logs/inactive.log" />
+        <property name="refKey" value="25644" />
+        <property name="nomenEventType" value="REACTIVATED" />
+        <property name="nomenEventDesc" value="Gene reactivated at release of RGSC5.0 assembly" />
+
+    </bean>
+</beans>
+
+
