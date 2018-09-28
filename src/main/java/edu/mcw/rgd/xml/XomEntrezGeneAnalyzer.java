@@ -21,10 +21,10 @@ import java.util.Map;
 /**
  * @author mtutaj
  * @since Feb 24, 2010
- * analyze EntrezGene XML file (as downloaded through NCBI eSearch &  eFetch utils)
- * using XOM streaming model: parses one record at a time - detect record boundaries (<Entrezgene> elements)
+ * analyze EntrezGene XML file (as downloaded through NCBI eSearch, eFetch utils)
+ * using XOM streaming model: parses one record at a time - detect record boundaries ('Entrezgene' elements)
  * then we use XOMXPath objects to extract data useful to us using XPath;
- * to speed-up XPath queries we parse every direct child of <Entrezgene> element separately
+ * to speed-up XPath queries we parse every direct child of 'Entrezgene' element separately
  *
  * to use this class, call method run() passing the File object as parameter;
  * when entire XML record has been parsed

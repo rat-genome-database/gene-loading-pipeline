@@ -479,10 +479,10 @@ public class EGDAO {
     /**
      * given Entrez Gene Id, try to get corresponding Rgd id  (logic used by ortholog relation loading pipeline)
      * @param egId Entrez Gene Id
-     * @return matching rgd id, <br/>
-     * or -1 unmatched ----- entrezgene id doesn't match any genes in RGD (including active and non active genes) <br/>
-     * or -2 multiple ---- entrezgene id matches multiple genes( not including splice and allele genes) or matches multiple genes that are all splice or allele genes <br/>
-     * or -3 withdrawn ---- the entrezgene id matches non active gene which is not replaced by any active gene
+     * @return matching rgd id, <br>
+     * or -1 unmatched ----- entrezgene id doesn't match any genes in RGD (including active and non active genes) <br>
+     * or -2 multiple ---- entrezgene id matches multiple genes(excluding splices and alleles) or matches multiple genes that are all splice or allele genes <br>
+     * or -3 withdrawn ---- entrezgene id matches non active gene which is not replaced by any active gene
      * @throws Exception
      */
     public int matchRgdIdByEgId(int egId) throws Exception {

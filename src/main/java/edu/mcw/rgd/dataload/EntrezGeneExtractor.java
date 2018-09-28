@@ -12,7 +12,7 @@ import java.util.zip.GZIPOutputStream;
 /**
  * @author dli, mt
  *
- * Created on Sep 13, 2006 <br/>
+ * @since Sep 13, 2006
  * download gene data in xml format and store it in local file
  * <p>
  * Sep 12, 2012 - changed uTils query to use [Modification+Date] instead of [MODDATE]

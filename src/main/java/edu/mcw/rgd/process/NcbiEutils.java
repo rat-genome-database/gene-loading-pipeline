@@ -12,11 +12,8 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Created by IntelliJ IDEA. <br>
- * User: mtutaj <br>
- * Date: 10/18/11 <br>
- * Time: 1:04 PM <br>
- * <p>
+ * @author mtutaj
+ * @since 10/18/11
  * A wrapper to automate calls to NCBI eUtils
  */
 public class NcbiEutils {
@@ -41,7 +38,7 @@ public class NcbiEutils {
      * run eSearch query
      * <p>Note: eSearch result is an xml file; as of Feb 21, 2014, dtd file referenced in result file
      * is no longer available from NCBI eUtils website, therefore to make the parsing work
-     * we remove <!DOCTYPE ...> line from result xml file before proceeding
+     * we remove &lt;!DOCTYPE ...&gt; line from result xml file before proceeding
      * @param term term for eSearch query
      * @return ESearchResult object
      * @throws Exception
@@ -87,7 +84,6 @@ public class NcbiEutils {
      * <p>
      * sometimes batch size (value of retMax) is to big for eUtils; if this is the case, we reduce
      * retMax by factor of 5, and try again; eSearch.fetchedCount shows the actual value of fetched records
-     * </p>
      * @param eSearch eSearch result
      * @param retMode return mode; if null 'xml' will be used
      * @param retMax maximum nr of records to be returned
