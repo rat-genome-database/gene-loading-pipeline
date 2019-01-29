@@ -11,7 +11,7 @@ echo  "starting EntrezGene pipeline"
 cd $HOMEDIR
 java -Dspring.config=../properties/default_db.xml \
     -Dlog4j.configuration=file://$HOMEDIR/properties/log4j.properties \
-    -jar EntrezGeneLoading.jar \
+    -jar lib/EntrezGeneLoading.jar \
     -delete_redundant_aliases > deleted_redundant_aliases.log
 mailx -s "[$SERVER] EntrezGene pipeline finished running" $ELIST < deleted_redundant_aliases.log
 

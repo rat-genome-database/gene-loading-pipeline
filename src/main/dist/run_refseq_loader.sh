@@ -2,11 +2,7 @@
 #
 HOMEDIR=/home/rgddata/pipelines/EntrezGeneLoading
 SERVER=`hostname -s | tr '[a-z]' '[A-Z]'`
-ELIST=rgd.developers@mcw.edu
-if [ "$SERVER" == "REED" ]
-then
-    ELIST="$ELIST,rgd.pipelines@mcw.edu"
-fi
+ELIST=mtutaj@mcw.edu
 
 echo  "starting EntrezGene pipeline in RefSeqLoad mode"
 cd $HOMEDIR

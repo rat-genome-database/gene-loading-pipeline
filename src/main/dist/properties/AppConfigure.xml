@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="EntrezGene pipeline v.3.7.7 - Sep 28, 2018" />
+        <property name="version" value="EntrezGene pipeline v.3.7.8 - Jan 29, 2019" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -23,6 +23,7 @@
                 <entry key="Bonobo" value-ref="bonoboGenomicAssemblies"/>
                 <entry key="Dog" value-ref="dogGenomicAssemblies"/>
                 <entry key="Squirrel" value-ref="squirrelGenomicAssemblies"/>
+                <entry key="Pig" value-ref="pigGenomicAssemblies"/>
             </map>
         </property>
         <!--gene location history: gene location info provided by RefSeq for non-current (previous) assemblies -->
@@ -60,6 +61,7 @@
                 <entry key="panpan1.1" value="511"/>
                 <entry key="CanFam3.1" value="631"/>
                 <entry key="SpeTri2.0" value="720"/>
+                <entry key="Sscrofa10.2" value="910"/>
             </map>
         </property>
         <property name="firstRecNo" value="0" /><!--number of record from which the processing starts-->
@@ -163,6 +165,16 @@
         <constructor-arg>
             <map>
                 <entry key="Reference SpeTri2.0" value="720"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="pigGenomicAssemblies" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="Reference Sscrofa11.1 Primary Assembly" value="911" />
+                <entry key="Reference Sscrofa10.2 Primary Assembly" value="910" />
+                <entry key="Cytomap" value="900"/>
             </map>
         </constructor-arg>
     </bean>

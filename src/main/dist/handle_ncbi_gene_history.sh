@@ -16,7 +16,7 @@ cd $HOMEDIR
 echo "handle ncbi gene history"
 java -Dspring.config=../properties/default_db.xml \
     -Dlog4j.configuration=file://$HOMEDIR/properties/log4j.properties \
-    -jar EntrezGeneLoading.jar \
+    -jar lib/EntrezGeneLoading.jar \
     -ncbi_gene_history 2>&1 > $LOGFILE
 
 echo "ncbi gene history file processed"

@@ -19,7 +19,7 @@ for SPECIES in "${SPECIES_LIST[@]}"; do
     echo  "load gene-to-gene associations for $SPECIES"
     java -Dspring.config=../properties/default_db.xml \
         -Dlog4j.configuration=file://$HOMEDIR/properties/log4j.properties \
-        -jar EntrezGeneLoading.jar \
+        -jar lib/EntrezGeneLoading.jar \
         -load_gene_associations \
         -species "$SPECIES" >> $LOGFILE
 done
