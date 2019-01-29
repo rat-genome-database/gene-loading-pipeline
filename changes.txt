@@ -1,3 +1,6 @@
+Jan 29, 2019 - v.3.7.8
+  -added handling of PIG
+
 Sep 28, 2018 - v.3.7.7
   -moved from subversion to github
 
