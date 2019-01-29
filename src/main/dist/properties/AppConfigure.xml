@@ -258,22 +258,6 @@
         </property>
     </bean>
 
-    <bean id="refSeqLoader" class="edu.mcw.rgd.dataload.RefSeqLoader">
-        <property name="ncbiFiles">
-            <list>
-<!--                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/R_norvegicus/mRNA_Prot/rat.protein.gpff.gz</value>-->
-                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/R_norvegicus/mRNA_Prot/rat.1.rna.fna.gz</value>
-                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/R_norvegicus/mRNA_Prot/rat.1.protein.faa.gz</value>
-                <!--
-                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/M_musculus/mRNA_Prot/mouse.rna.fna.gz</value>
-                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/M_musculus/mRNA_Prot/mouse.protein.faa.gz</value>
-                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.rna.fna.gz</value>
-                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.protein.faa.gz</value>
-                -->
-            </list>
-        </property>
-    </bean>
-
     <bean id="refSeqRemoved" class="edu.mcw.rgd.dataload.RefSeqRemoved">
         <property name="version" value="RefSeq Analyzer for removed accession ids  v.1.0 - Oct 3, 2014" />
         <property name="dataDir" value="ftp://ftp.ncbi.nlm.nih.gov/refseq/removed"/>

@@ -51,6 +51,8 @@ public class RefSeqQcProtein {
                     if( result.tripletError ) {
                         transcriptsTripletError++;
                     } else {
+                        /** TODO: fix the code in the comment
+                         *
                         // get transcript protein as it is in NCBI database (RefSeq protein)
                         Sequence seq = null;
                         for( Sequence pseq: sequenceDAO.getObjectSequences(transcript.getRgdId()) ) {
@@ -78,6 +80,7 @@ public class RefSeqQcProtein {
                         } else {
                             proteinsNotMatchingRefDiffLen++;
                         }
+                         */
                     }
                 }
             }

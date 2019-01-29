@@ -44,7 +44,7 @@ public class BulkRenamerForTRnaGenes {
                 if( r!=0 )
                     return r;
                 // REF genes go before CELERA genes
-                r = Utils.stringsCompareTo(o2.getGene().getFunction(), o1.getGene().getFunction());
+                r = Utils.stringsCompareTo(o2.getGene().getNotes(), o1.getGene().getNotes());
                 if( r!=0 )
                     return r;
                 r = Chromosome.getOrdinalNumber(o1.getChromosome()) - Chromosome.getOrdinalNumber(o2.getChromosome());
@@ -90,7 +90,7 @@ public class BulkRenamerForTRnaGenes {
             // change gene symbol to the source gene symbol
             String newGeneSymbol = gene.getSymbol()+(++geneGroup);
             String newGeneName = mgene.getGene().getName()+" "+geneGroup;
-            System.out.println("  SYMBOL: "+mgene.getGene().getSymbol()+" ==> "+newGeneSymbol+" "+mgene.getGene().getFunction());
+            System.out.println("  SYMBOL: "+mgene.getGene().getSymbol()+" ==> "+newGeneSymbol+" "+mgene.getGene().getNotes());
             System.out.println("    NAME: "+mgene.getGene().getName()+" ==> "+newGeneName);
 
             // do the update
@@ -102,7 +102,7 @@ public class BulkRenamerForTRnaGenes {
 
     static void combineGenes(List<MappedGene> genesRef, List<MappedGene> genesCelera) {
         for( MappedGene rg: genesRef ) {
-            rg.getGene().setFunction("REF");
+            rg.getGene().setNotes("REF");
         }
 
         // add to ref genes, celera only genes
@@ -116,7 +116,7 @@ public class BulkRenamerForTRnaGenes {
             }
             if( !match ) {
                 // celera gene does not match ref gene
-                cg.getGene().setFunction("CELERA");
+                cg.getGene().setNotes("CELERA");
                 genesRef.add(cg);
             }
         }

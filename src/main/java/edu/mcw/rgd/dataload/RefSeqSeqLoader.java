@@ -69,6 +69,8 @@ public class RefSeqSeqLoader {
 
                 codingCount++;
 
+                /** TODO: fix the code in the comments
+                 *
                 // get transcript protein as it is in NCBI database (RefSeq protein)
                 Sequence seq = null;
                 for (Sequence pseq : sequenceDAO.getObjectSequences(transcript.getRgdId())) {
@@ -90,6 +92,7 @@ public class RefSeqSeqLoader {
                                 transcript.getRgdId(), transcript.getProteinAccId(), proteinSeq);
                     }
                 }
+                 */
             }
         }
 

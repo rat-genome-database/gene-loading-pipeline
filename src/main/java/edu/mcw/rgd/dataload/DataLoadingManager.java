@@ -169,13 +169,6 @@ public class DataLoadingManager {
                 manager.transform(args[1], args[2]);
                 runSec = (System.currentTimeMillis()-startMilisec)/1000;
             }
-            // load rna and protein sequences from NCBI refseq files
-            else if (args[0].contains("refseq_load")) {
-
-                RefSeqLoader loader = (RefSeqLoader) (bf.getBean("refSeqLoader"));
-                loader.run();
-                runSec = (System.currentTimeMillis()-startMilisec)/1000;
-            }
             // compare list of removed RefSeq acc ids against RGD
             else if (args[0].contains("refseq_removed")) {
 
@@ -592,8 +585,6 @@ public class DataLoadingManager {
             "     transform EntrezGene XML file to BulkGene\n" +
             "-refseq\n" +
             "     generate reports about RefSeq coverage\n" +
-            "-refseq_load\n" +
-            "     load rna and protein sequences from NCBI RefSeq files\n" +
             "-refseq_removed\n" +
             "     compare list of removed RefSeq acc ids against RGD and generate a report\n" +
             "-refseq_qc_protein -mapKey=<map-key>\n" +

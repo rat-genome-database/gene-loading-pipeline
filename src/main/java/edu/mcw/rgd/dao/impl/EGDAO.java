@@ -603,46 +603,6 @@ public class EGDAO {
     }
 
     /**
-     * update sequence data for a sequence
-     * @param seqData new data for sequence
-     * @param seqKey sequence key
-     * @return count of rows affected
-     * @throws Exception if something goes wrong
-     */
-    public int updateSeqData(int seqKey, String seqData) throws Exception {
-       return sequenceDAO.updateSeqCloneByKey(seqKey, seqData);
-   }
-
-    /**
-     * create a new sequence object for transcript
-     * @param speciesTypeKey species type key
-     * @param seqTypeKey sequence type key: 7 - mRna, 12 - protein, etc
-     * @param desc sequence description
-     * @param transcriptRgdId transcript rgd id
-     * @param seqName sequence name
-     * @param seqData sequence data
-     * @return sequence key
-     * @throws Exception when unexpected error in spring framework occurs
-     */
-    public int createSequenceForTranscript(int speciesTypeKey, int seqTypeKey, String desc, int transcriptRgdId, String seqName, String seqData) throws Exception {
-
-        //
-        // create new sequence rgd id for sequence
-        RgdId rgdId = createRgdId(RgdId.OBJECT_KEY_SEQUENCES, "ACTIVE", "created by RefSeq loading pipeline", speciesTypeKey);
-
-        // create sequence object itself
-        int seqKey = sequenceDAO.createSequence(rgdId.getRgdId(), seqTypeKey, desc, "created by RefSeq loading pipeline");
-
-        // bind the sequence to transcript rgd id
-        sequenceDAO.bindSequence(seqKey, 10, transcriptRgdId);
-
-        // save sequence data
-        sequenceDAO.insertSeqClone(seqKey, seqName, seqData);
-
-        return seqKey;
-    }
-
-    /**
      * get list of transcripts by transcript accession id
      * @param accId transcript accession id like NM_030992
      * @return list of transcripts; could be empty list, never null
