@@ -3,9 +3,6 @@ package edu.mcw.rgd.dao.impl;
 import edu.mcw.rgd.dao.spring.IntListQuery;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.datamodel.Map;
-import edu.mcw.rgd.process.BulkGeneMerge;
-import edu.mcw.rgd.process.Counters;
-import edu.mcw.rgd.process.FileDownloader;
 import edu.mcw.rgd.process.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,7 +25,6 @@ public class EGDAO {
     private MapDAO mapDAO = new MapDAO();
     private NomenclatureDAO nomenclatureDAO = new NomenclatureDAO();
     private RGDManagementDAO rgdDAO = new RGDManagementDAO();
-    private SequenceDAO sequenceDAO = new SequenceDAO();
     private TranscriptDAO transcriptDAO = new TranscriptDAO();
     private XdbIdDAO xdbidDAO = new XdbIdDAO();
 
@@ -117,24 +113,6 @@ public class EGDAO {
             count += mapDAO.getMapData(rgdId, mapKey).size();
         }
         return count;
-    }
-
-    /**
-     * update multiple MapData object
-     * @param mdList list of MapData objects
-     * @return number of rows affected
-     * @throws Exception when unexpected error in spring framework occurs
-     */
-    public int updateMapData(List<MapData> mdList) throws Exception{
-        // always set src pipeline to 'NCBI'
-        for( MapData md: mdList ) {
-            md.setSrcPipeline("NCBI");
-            // throw exception if map_key or rgd_id is not set
-            if( md.getMapKey()==null || md.getMapKey()==0 || md.getRgdId()<=0 )
-                throw new Exception("update map data: no map key or no rgd id");
-        }
-
-        return mapDAO.updateMapData(mdList);
     }
 
     /**
@@ -587,41 +565,6 @@ public class EGDAO {
         nomenclatureDAO.createNomenEvent(event);
     }
 
-    public List<NomenclatureEvent> getNomenclatureEvents(int rgdId) throws Exception {
-        return nomenclatureDAO.getNomenclatureEvents(rgdId);
-    }
-
-    /**
-     * return list of all primer-pair sequences and seq clones for given rgd object
-     * @param rgdId object rgd id, like SSLP rgd id
-     * @return List of Sequence objects
-     * @throws Exception if something goes wrong
-     */
-    public List<Sequence> getObjectSequences(int rgdId) throws Exception {
-
-        return sequenceDAO.getObjectSequences(rgdId);
-    }
-
-    /**
-     * get list of transcripts by transcript accession id
-     * @param accId transcript accession id like NM_030992
-     * @return list of transcripts; could be empty list, never null
-     * @throws Exception on error in framework
-     */
-    public List<Transcript> getTranscriptsByAccId(String accId) throws Exception {
-        return transcriptDAO.getTranscriptsByAccId(accId);
-    }
-
-    /**
-     * get list of transcripts by refseq protein accession id
-     * @param proteinAccId protein accession id like NP_030992
-     * @return list of transcripts; could be empty list, never null
-     * @throws Exception on error in framework
-     */
-    public List<Transcript> getTranscriptsByProteinAccId(String proteinAccId) throws Exception {
-        return transcriptDAO.getTranscriptsByProteinAccId(proteinAccId);
-    }
-
     public Collection<Integer> getEgIdsForAllActiveGenes(int speciesTypeKey) throws Exception {
         // get all EntrezGene ids for current species
         XdbId filter = new XdbId();
@@ -700,113 +643,6 @@ public class EGDAO {
         }
         reader.close();
         return egIds;
-    }
-
-    public void handleNcbiGeneHistory() throws Exception {
-
-        // download gene history file from NCBI
-        String url = "ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/gene_history.gz";
-        FileDownloader fd = new FileDownloader();
-        fd.setExternalFile(url);
-        fd.setPrependDateStamp(true);
-        fd.setLocalFile("data/ncbi_gene_history.gz");
-        String localFile = fd.downloadNew();
-        System.out.println("Downloaded "+url);
-
-        Counters counters = new Counters();
-
-        Set<String> taxons = new HashSet<>();
-        for( int skey: SpeciesType.getSpeciesTypeKeys() ) {
-            if( skey!=SpeciesType.RAT ) {
-                taxons.add(Integer.toString(SpeciesType.getTaxonomicId(skey)));
-            }
-        }
-
-        List<String> lines = new ArrayList<>();
-        // read the header:
-        // #tax_id	GeneID	Discontinued_GeneID	Discontinued_Symbol	Discontinue_Date
-        BufferedReader in = Utils.openReader(localFile);
-        String line;
-        while( (line=in.readLine())!=null ) {
-            // skip comment lines
-            if (line.startsWith("#")) {
-                continue;
-            }
-
-            int tabPos = line.indexOf('\t');
-            if( tabPos<0 ) {
-                continue;
-            }
-            String taxon = line.substring(0, tabPos);
-            if( !taxons.contains(taxon) ) {
-                counters.increment("Lines skipped - unsupported taxon");
-                continue;
-            }
-            lines.add(line);
-        }
-        in.close();
-        Collections.shuffle(lines);
-        System.out.println("Lines to be processed "+lines.size());
-
-        // process lines
-        for( String l: lines ) {
-            line = l;
-            // there must be at least 5 columns available
-            String[] cols = line.split("[\\t]", -1);
-            if( cols.length<5 ) {
-                continue;
-            }
-
-            String oldGeneId = cols[2]; // id of discontinued gene
-
-            String newGeneId = cols[1]; // only set if discontinued gene was replaced by another gene
-
-            List<Gene> oldGenes = getActiveGenesByXdbId(XdbId.XDB_KEY_NCBI_GENE, oldGeneId);
-            if( oldGenes.isEmpty() ) {
-                counters.increment("Lines skipped -- already inactive in RGD");
-                continue;
-            }
-            Gene oldGene = oldGenes.get(0);
-
-            // skip rat genes
-            if( oldGene.getSpeciesTypeKey()==SpeciesType.RAT ) {
-                counters.increment("Lines skipped -- rat genes");
-                continue;
-            }
-
-            Gene newGene = null;
-            if( !newGeneId.equals("-") ) {
-                List<Gene> newGenes = getActiveGenesByXdbId(XdbId.XDB_KEY_NCBI_GENE, newGeneId);
-                if( newGenes.size()>0 ) {
-                    newGene = newGenes.get(0);
-                }
-            }
-
-            // handle simple withdrawals
-            String species = SpeciesType.getCommonName(oldGene.getSpeciesTypeKey());
-            if( newGene==null ) {
-                counters.increment("GENES PROCESSED");
-                int cnt = counters.get("GENES PROCESSED");
-                if( newGeneId.equals("-") ) {
-                    rgdDAO.withdraw(oldGene);
-                    System.out.println(cnt+". WITHDRAW: " + line);
-                    counters.increment("GENES WITHDRAWN FOR " + species);
-                    continue;
-                } else {
-                    System.out.println(cnt+". CONFLICT: " + line);
-                    counters.increment("GENES WITH CONFLICT FOR " + species);
-                    continue;
-                }
-            }
-
-            // retire genes
-            BulkGeneMerge.simpleMerge(oldGene, newGene, null, counters);
-            System.out.println("  RETIRE: "+line);
-            counters.increment("GENES RETIRED FOR "+species);
-        }
-
-        System.out.println("===");
-        counters.dump();
     }
 
     /**

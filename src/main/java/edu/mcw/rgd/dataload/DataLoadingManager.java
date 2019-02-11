@@ -243,11 +243,6 @@ public class DataLoadingManager {
                 System.out.println("deleted "+deletedAliases+" redundant gene aliases (aliases that were the same as gene name or symbol)");
                 return;
             }
-            // handle NCBI file with withdrawn and retired genes
-            else if (args[0].contains("ncbi_gene_history") ) {
-                EGDAO.getInstance().handleNcbiGeneHistory();
-                return;
-            }
             else {
                 manager.printHelp();
                 return;
