@@ -13,6 +13,4 @@ done
 # download gene_groups.gz file with gene-to-gene associations and load it into RGD_ASSOCIATIONS table
 $HOMEDIR/load_gene_assoc.sh
 
-# download gene_history.gz file and withdraw or merge genes for all species except rat
-$HOMEDIR/handle_ncbi_gene_history.sh
 
