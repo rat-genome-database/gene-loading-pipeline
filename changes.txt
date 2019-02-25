@@ -1,3 +1,6 @@
+Feb 25, 2019 - v.3.8.0
+  -updated to dbcp2
+
 Feb 11, 2019 - v.3.7.9
   -moved BulkGeneMerger and NcbiGeneHistoryLoader into ncbi-gene-pipeline project
 

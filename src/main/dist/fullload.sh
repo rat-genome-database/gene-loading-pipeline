@@ -11,7 +11,7 @@ fi
 
 echo  "starting full-load Gene pipeline for %1"
 cd $HOMEDIR
-java -Dspring.config=../properties/default_db.xml \
+java -Dspring.config=../properties/default_db2.xml \
     -Dlog4j.configuration=file://$HOMEDIR/properties/log4j.properties \
     -jar lib/EntrezGeneLoading.jar \
     -download+process 2000/01/01 auto \

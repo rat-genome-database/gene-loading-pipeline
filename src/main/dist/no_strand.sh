@@ -10,7 +10,7 @@ ELIST=mtutaj@mcw.edu
 
 echo  "starting $1 EntrezGene pipeline in no_strand mode"
 cd $HOMEDIR
-java -Dspring.config=../properties/default_db.xml \
+java -Dspring.config=../properties/default_db2.xml \
     -Dlog4j.configuration=file://$HOMEDIR/properties/log4j.properties \
     -jar lib/EntrezGeneLoading.jar \
     -no_strand $2 \

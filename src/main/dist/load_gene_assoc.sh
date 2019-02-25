@@ -17,7 +17,7 @@ SPECIES_LIST=( "human" "mouse" "rat" "dog" "bonobo" "squirrel" "chinchilla" "pig
 for SPECIES in "${SPECIES_LIST[@]}"; do
 
     echo  "load gene-to-gene associations for $SPECIES"
-    java -Dspring.config=../properties/default_db.xml \
+    java -Dspring.config=../properties/default_db2.xml \
         -Dlog4j.configuration=file://$HOMEDIR/properties/log4j.properties \
         -jar lib/EntrezGeneLoading.jar \
         -load_gene_associations \
