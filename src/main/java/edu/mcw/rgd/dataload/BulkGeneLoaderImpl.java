@@ -1,13 +1,11 @@
 package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.dao.impl.EGDAO;
-import edu.mcw.rgd.dao.impl.TranscriptDAO;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.process.PipelineLogFlagManager;
 import edu.mcw.rgd.process.Utils;
 import org.apache.commons.logging.*;
 
-import java.sql.Timestamp;
 import java.util.*;
 
 /**
@@ -79,11 +77,10 @@ public class BulkGeneLoaderImpl {
 
         // handle nomenclature changes
         // update gene symbol and generate nomen event, excluding rat
-        String prevSymbol = null;
+        String prevSymbol = rgdGene.getSymbol();
         Flags flags = bg.getCustomFlags();
         if (bg.isFlagSet("ORTHO_NOMEN_SYMBOL")) {
             if( bg.getGene().getSpeciesTypeKey()!= SpeciesType.RAT ) {
-                prevSymbol = rgdGene.getSymbol();
                 rgdGene.setSymbol(bg.getGene().getSymbol());
                 updateGene = true;
                 nomenEvent = true;
@@ -94,10 +91,9 @@ public class BulkGeneLoaderImpl {
         }
 
         // update gene name and generate nomen event, excluding rat
-        String prevName = null;
+        String prevName = rgdGene.getName();
         if (bg.isFlagSet("ORTHO_NOMEN_NAME")) {
             if( bg.getGene().getSpeciesTypeKey()!=SpeciesType.RAT ) {
-                prevName = rgdGene.getName();
                 rgdGene.setName(bg.getGene().getName());
                 updateGene = true;
                 nomenEvent = true;
@@ -136,11 +132,11 @@ public class BulkGeneLoaderImpl {
             dao.updateGene(rgdGene);
 
         if( nomenEvent && bg.getGene().getSpeciesTypeKey()!=SpeciesType.RAT ) {
-            // generate nomenclature  event for change of gene symbol/ gene name -- mouse/human genes only
+            // generate nomenclature  event for change of gene symbol/ gene name -- non-rat genes only
             NomenclatureEvent event = new NomenclatureEvent();
             event.setRgdId(rgdGene.getRgdId());
             event.setRefKey("39860");
-            event.setEventDate(new Timestamp(System.currentTimeMillis()));
+            event.setEventDate(new Date());
             event.setSymbol(rgdGene.getSymbol());
             event.setName(rgdGene.getName());
             event.setNomenStatusType("APPROVED");
@@ -217,7 +213,7 @@ public class BulkGeneLoaderImpl {
         NomenclatureEvent event = new NomenclatureEvent();
         event.setRgdId(rgdId);
         event.setRefKey("1724");
-        event.setEventDate(new Timestamp(System.currentTimeMillis()));
+        event.setEventDate(new Date());
         event.setSymbol(newGene.getSymbol());
         event.setName(newGene.getName());
         event.setNomenStatusType("PROVISIONAL");
@@ -253,7 +249,7 @@ public class BulkGeneLoaderImpl {
         NomenclatureEvent event = new NomenclatureEvent();
         event.setRgdId(gene.getRgdId());
         event.setRefKey("17119");
-        event.setEventDate(new Timestamp(System.currentTimeMillis()));
+        event.setEventDate(new Date());
         event.setSymbol(gene.getSymbol());
         event.setPreviousSymbol(prevSymbol);
         event.setName(gene.getName());

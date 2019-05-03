@@ -1,3 +1,6 @@
+May 3, 2019 - v.3.8.1
+  -in nomenclature events PREVIOUS_SYMBOL and PREVIOUS_NAME are now always set
+  
 Feb 25, 2019 - v.3.8.0
   -updated to dbcp2
 
