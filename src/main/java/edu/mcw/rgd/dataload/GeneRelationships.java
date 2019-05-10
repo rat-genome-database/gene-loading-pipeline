@@ -59,6 +59,8 @@ public class GeneRelationships {
 
     public void loadAssociations(final int speciesTypeKey) throws Exception {
 
+        long time0 = System.currentTimeMillis();
+
         System.out.println(getVersion());
 
         final EGDAO dao = EGDAO.getInstance();
@@ -102,6 +104,9 @@ public class GeneRelationships {
         Collections.shuffle(incomingAssocs);
 
         CounterPool counters = new CounterPool();
+        String speciesName = SpeciesType.getCommonName(speciesTypeKey).toUpperCase();
+        counters.add("INCOMING_DATA_FOR_"+speciesName, incomingAssocs.size());
+
         incomingAssocs.parallelStream().forEach( rec -> {
 
             // matches eg ids against rgd
@@ -218,11 +223,12 @@ public class GeneRelationships {
         for( Association assoc: assocKeys.values() ) {
             deletedAssocCount += dao.deleteAssociation(assoc);
         }
-        counters.add("LOAD_DELETE", deletedAssocCount);
-
+        if( deletedAssocCount!=0 ) {
+            counters.add("LOAD_DELETE", deletedAssocCount);
+        }
         System.out.println(counters.dumpAlphabetically());
 
-        System.out.println("OK!");
+        System.out.println(speciesName+" OK!  -- elapsed "+Utils.formatElapsedTime(time0, System.currentTimeMillis()));
     }
 
     // download file with associations; return name of local copy of this file
