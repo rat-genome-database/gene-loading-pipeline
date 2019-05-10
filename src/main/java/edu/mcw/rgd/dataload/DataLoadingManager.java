@@ -198,7 +198,6 @@ public class DataLoadingManager {
             else if (args[0].contains("load_gene_associations")) {
 
                 int speciesTypeKey = manager.getSpecies(args, 1);
-                manager.initDbLog(speciesTypeKey, "load_gene_associations", args[1]);
 
                 GeneRelationships relManager = (GeneRelationships) bf.getBean("geneRelationships");
                 relManager.loadAssociations(speciesTypeKey);

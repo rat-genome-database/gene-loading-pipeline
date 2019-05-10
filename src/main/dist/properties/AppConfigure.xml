@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="EntrezGene pipeline v.3.8.1 - May 3, 2019" />
+        <property name="version" value="EntrezGene pipeline v.3.8.2 - May 10, 2019" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -181,7 +181,7 @@
 
 
     <bean id="geneRelationships" class="edu.mcw.rgd.dataload.GeneRelationships">
-        <property name="version" value="GeneRelationships module v. 1.2.7 as of Jun 29, 2016" />
+        <property name="version" value="GeneRelationships module v. 2.0.0 as of May 10, 2019" />
         <property name="geneGroupFile" value="ftp://ftp.ncbi.nih.gov/gene/DATA/gene_group.gz" />
     </bean>
 
