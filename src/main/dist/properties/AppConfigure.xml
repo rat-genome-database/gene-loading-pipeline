@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="EntrezGene pipeline v.3.8.2 - May 10, 2019" />
+        <property name="version" value="Ncbi Gene Pipeline   build Sep 12, 2019" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -48,6 +48,7 @@
                 <entry key="GRCh38.p2" value="38"/>
                 <entry key="GRCh38.p7" value="38"/>
                 <entry key="GRCh38.p12" value="38"/>
+                <entry key="GRCh38.p13" value="38"/>
 
                 <entry key="Mm_Celera" value="20"/>
                 <entry key="MGSCv36" value="14"/>
@@ -57,6 +58,7 @@
                 <entry key="GRCm38.p2" value="35"/>
                 <entry key="GRCm38.p3" value="35"/>
                 <entry key="GRCm38.p4" value="35"/>
+                <entry key="GRCm38.p6" value="35"/>
 
                 <entry key="panpan1.1" value="511"/>
                 <entry key="CanFam3.1" value="631"/>
@@ -91,6 +93,7 @@
                 <entry key="Reference GRCh38.p2 Primary Assembly" value="38"/>
                 <entry key="Reference GRCh38.p7 Primary Assembly" value="38"/>
                 <entry key="Reference GRCh38.p12 Primary Assembly" value="38"/>
+                <entry key="Reference GRCh38.p13 Primary Assembly" value="38"/>
                 <entry key="Alternate CHM1_1.1" value="36"/>
 
                 <entry key="Cytomap" value="11"/>
@@ -108,6 +111,7 @@
                 <entry key="Reference GRCm38.p2 C57BL/6J" value="35"/>
                 <entry key="Reference GRCm38.p3 C57BL/6J" value="35"/>
                 <entry key="Reference GRCm38.p4 C57BL/6J" value="35"/>
+                <entry key="Reference GRCm38.p6 C57BL/6J" value="35"/>
                 <entry key="Reference assembly (C57BL/6J)" value="18"/>
                 <entry key="Reference MGSCv37 C57BL/6J" value="18"/>
                 <entry key="Reference assembly" value="18"/>

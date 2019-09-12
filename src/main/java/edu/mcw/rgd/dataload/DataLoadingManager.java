@@ -470,6 +470,7 @@ public class DataLoadingManager {
         ignoredAssemblies.removeAll(parser.getGenomicAssemblyNameCountMap().keySet());
         for( String ignoredAssembly: ignoredAssemblies ) {
             dbLogger.log("[IGNORED] Assembly Count: "+ignoredAssembly, parser.getAnyAssemblyNameCountMap().get(ignoredAssembly).toString(), PipelineLogger.TOTAL);
+            System.out.println("WARNING! Positions found for assembly ["+ignoredAssembly+"] : "+ parser.getAnyAssemblyNameCountMap().get(ignoredAssembly).toString());
         }
 
         // dump counter statistics
