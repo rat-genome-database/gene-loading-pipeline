@@ -1,16 +1,12 @@
 package edu.mcw.rgd.dataload;
 
-import edu.mcw.rgd.pipelines.PipelineRecord;
-import edu.mcw.rgd.pipelines.RecordProcessor;
 import edu.mcw.rgd.process.PipelineLogger;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mtutaj
- * Date: May 4, 2010
- * Time: 9:55:09 AM
+ * @author mtutaj
+ * @since May 4, 2010
  */
-public class QualityCheckingThread extends RecordProcessor {
+public class QualityCheckingThread {
 
     private PipelineLogger dbLogger = PipelineLogger.getInstance();
     private QualityCheckBulkGene qualityCheck;
@@ -19,13 +15,9 @@ public class QualityCheckingThread extends RecordProcessor {
         this.qualityCheck = qc;
     }
 
-    public void process(PipelineRecord pipelineRecord) throws Exception {
-
-        BulkGene bulkGene = (BulkGene) pipelineRecord;
+    public void process(BulkGene bulkGene) throws Exception {
 
         //System.out.println(Thread.currentThread().getName()+" quality checking thread started!");
-
-        bulkGene.setSession(getSession());
 
         //System.out.println(Thread.currentThread().getName()+" "+bulkGene.getRecNo()+", qsize:"+inputQueue.size());
         // try to perform quality check

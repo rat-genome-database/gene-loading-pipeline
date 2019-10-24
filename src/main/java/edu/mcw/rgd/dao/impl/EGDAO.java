@@ -4,8 +4,7 @@ import edu.mcw.rgd.dao.spring.IntListQuery;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.datamodel.Map;
 import edu.mcw.rgd.process.Utils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -28,9 +27,9 @@ public class EGDAO {
     private TranscriptDAO transcriptDAO = new TranscriptDAO();
     private XdbIdDAO xdbidDAO = new XdbIdDAO();
 
-    protected final Log logXdbIds = LogFactory.getLog("xdb_ids");
-    protected final Log logAliases = LogFactory.getLog("aliases");
-    protected final Log logAssoc = LogFactory.getLog("assoc");
+    protected final Logger logXdbIds = Logger.getLogger("xdb_ids");
+    protected final Logger logAliases = Logger.getLogger("aliases");
+    protected final Logger logAssoc = Logger.getLogger("assoc");
 
     static EGDAO _instance;
 

@@ -2,9 +2,10 @@ package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.dao.impl.EGDAO;
 import edu.mcw.rgd.datamodel.*;
+import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.PipelineLogFlagManager;
 import edu.mcw.rgd.process.Utils;
-import org.apache.commons.logging.*;
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
@@ -16,9 +17,9 @@ import java.util.*;
  */
 public class BulkGeneLoaderImpl {
 
-    protected final Log logger = LogFactory.getLog("info");
-    protected final Log logtr = LogFactory.getLog("transcripts");
-    protected final Log logtf = LogFactory.getLog("transcript_features");
+    protected final Logger logger = Logger.getLogger("info");
+    protected final Logger logtr = Logger.getLogger("transcripts");
+    protected final Logger logtf = Logger.getLogger("transcript_features");
 
     // settings from AppConfigure.xml
     boolean enableMapPosDeletions; // by default false; if true map positions present in RGD but not found in incoming data will be deleted from db - use with care!
@@ -28,6 +29,8 @@ public class BulkGeneLoaderImpl {
     // map of all gene types found in rgd
     Set<String> rgdGeneTypes = new HashSet<>();
 
+    private CounterPool counters;
+
     public void update (BulkGene bg) throws Exception {
 
         updateGeneOnly(bg);
@@ -36,7 +39,7 @@ public class BulkGeneLoaderImpl {
         updateXdbIds(bg);
 
         // add new aliases to database
-        bg.getSession().incrementCounter("ALIASES_INSERTED", bg.dao.insertAliases(bg.aliases.forInsert));
+        counters.add("ALIASES_INSERTED", bg.dao.insertAliases(bg.aliases.forInsert));
 
         if( DataLoadingManager.getInstance().getSpeciesTypeKey()!=8 ) {
             // update fish band map, if the fish map is in RGD, update them, otherwise insert them
@@ -86,7 +89,7 @@ public class BulkGeneLoaderImpl {
                 nomenEvent = true;
             }
 
-            bg.getSession().incrementCounter("ORTHO_NOMEN_SYMBOL", 1);
+            counters.increment("ORTHO_NOMEN_SYMBOL");
             dbFlagManager.setFlag("ORTHO_NOMEN_SYMBOL", bg.getRecNo());
         }
 
@@ -98,7 +101,7 @@ public class BulkGeneLoaderImpl {
                 updateGene = true;
                 nomenEvent = true;
             }
-            bg.getSession().incrementCounter("ORTHO_NOMEN_NAME", 1);
+            counters.increment("ORTHO_NOMEN_NAME");
             dbFlagManager.setFlag("ORTHO_NOMEN_NAME", bg.getRecNo());
         }
 
@@ -108,7 +111,7 @@ public class BulkGeneLoaderImpl {
                 rgdGene.setDescription(bg.getGene().getDescription());
                 updateGene = true;
             }
-            bg.getSession().incrementCounter("ORTHO_NOMEN_DESC", 1);
+            counters.increment("ORTHO_NOMEN_DESC");
             dbFlagManager.setFlag("ORTHO_NOMEN_DESC", bg.getRecNo());
         }
 
@@ -117,7 +120,7 @@ public class BulkGeneLoaderImpl {
             rgdGene.setRefSeqStatus(bg.getGene().getRefSeqStatus());
             updateGene = true;
             logger.debug("gene with rgdid="+rgdGene.getRgdId()+" updated refseq status to " + rgdGene.getRefSeqStatus());
-            bg.getSession().incrementCounter("GENE_REFSEQ_STATUS_UPDATED", 1);
+            counters.increment("GENE_REFSEQ_STATUS_UPDATED");
         }
 
         // update gene ncbi annot status
@@ -125,7 +128,7 @@ public class BulkGeneLoaderImpl {
             rgdGene.setNcbiAnnotStatus(bg.getGene().getNcbiAnnotStatus());
             updateGene = true;
             logger.debug("gene with rgdid="+rgdGene.getRgdId()+" updated NCBI annot status to " + rgdGene.getNcbiAnnotStatus());
-            bg.getSession().incrementCounter("NCBI_ANNOT_STATUS_UPDATED", 1);
+            counters.increment("NCBI_ANNOT_STATUS_UPDATED");
         }
 
         if( updateGene )
@@ -145,7 +148,7 @@ public class BulkGeneLoaderImpl {
             event.setPreviousSymbol(prevSymbol);
             event.setPreviousName(prevName);
             dao.createNomenEvent(event);
-            bg.getSession().incrementCounter("ORTHO_NOMEN_EVENT", 1);
+            counters.increment("ORTHO_NOMEN_EVENT");
         }
 
         //update RGD_IDs table, change last_modified_date
@@ -299,7 +302,7 @@ public class BulkGeneLoaderImpl {
 
     void updateMaps(BulkGene bg) throws Exception {
         logger.debug("Updating map data");
-        bg.genePositions.syncMapData(bg, null, getDbFlagManager(), "GENE", true);
+        bg.genePositions.syncMapData(bg, null, getDbFlagManager(), "GENE", true, counters);
     }
 
     // for orthologs
@@ -351,9 +354,9 @@ public class BulkGeneLoaderImpl {
 
     void updateXdbIds(BulkGene bg) throws Exception {
 
-        bg.getSession().incrementCounter("XDBIDS_DELETED", bg.dao.deleteXdbIds(bg.toBeRemovedXdbIds, "GENE"));
-        bg.getSession().incrementCounter("XDBIDS_INSERTED", bg.dao.insertXdbs(bg.toBeInsertedXdbIds, "GENE"));
-        bg.getSession().incrementCounter("XDBIDS_UPDATED", bg.dao.updateXdbIds(bg.toBeUpdatedXdbIds));
+        counters.add("XDBIDS_DELETED", bg.dao.deleteXdbIds(bg.toBeRemovedXdbIds, "GENE"));
+        counters.add("XDBIDS_INSERTED", bg.dao.insertXdbs(bg.toBeInsertedXdbIds, "GENE"));
+        counters.add("XDBIDS_UPDATED", bg.dao.updateXdbIds(bg.toBeUpdatedXdbIds));
         bg.dao.updateModificationDate(bg.matchingXdbIds);
     }
 
@@ -365,7 +368,7 @@ public class BulkGeneLoaderImpl {
         }
 
         // add new aliases to database
-        bg.getSession().incrementCounter("ALIASES_INSERTED", bg.dao.insertAliases(bg.aliases.forInsert));
+        counters.add("ALIASES_INSERTED", bg.dao.insertAliases(bg.aliases.forInsert));
     }
 
 
@@ -411,30 +414,30 @@ public class BulkGeneLoaderImpl {
 
                         if( !Utils.stringsAreEqual(tr.getRefSeqStatus(), ti.getRefSeqStatus()) ) {
                             getDbFlagManager().setFlag("TRANSCRIPT_REFSEQ_STATUS_CHANGED", bg.getRecNo());
-                            bg.getSession().incrementCounter("TRANSCRIPT_REFSEQ_STATUS_CHANGED", 1);
+                            counters.increment("TRANSCRIPT_REFSEQ_STATUS_CHANGED");
                             tr.setRefSeqStatus(ti.getRefSeqStatus());
                         }
 
                         if( tr.isNonCoding()!=ti.isNonCoding() ) {
                             getDbFlagManager().setFlag("TRANSCRIPT_CODING_STATUS_CHANGED", bg.getRecNo());
-                            bg.getSession().incrementCounter("TRANSCRIPT_CODING_STATUS_CHANGED", 1);
+                            counters.increment("TRANSCRIPT_CODING_STATUS_CHANGED");
                             tr.setNonCoding(ti.isNonCoding());
                         }
 
                         if( !Utils.stringsAreEqual(tr.getPeptideLabel(), ti.getPeptideLabel()) ) {
                             getDbFlagManager().setFlag("TRANSCRIPT_PEPTIDE_LABEL_CHANGED", bg.getRecNo());
-                            bg.getSession().incrementCounter("TRANSCRIPT_PEPTIDE_LABEL_CHANGED", 1);
+                            counters.increment("TRANSCRIPT_PEPTIDE_LABEL_CHANGED");
                             tr.setPeptideLabel(ti.getPeptideLabel());
                         }
 
                         if( !Utils.stringsAreEqual(tr.getProteinAccId(), ti.getProteinAccId()) ) {
                             getDbFlagManager().setFlag("TRANSCRIPT_PROTEIN_ACC_ID_CHANGED", bg.getRecNo());
-                            bg.getSession().incrementCounter("TRANSCRIPT_PROTEIN_ACC_ID_CHANGED", 1);
+                            counters.increment("TRANSCRIPT_PROTEIN_ACC_ID_CHANGED");
                             tr.setProteinAccId(ti.getProteinAccId());
                         }
 
                         if( bg.dao.updateTranscript(tr)!=0 ) {
-                            bg.getSession().incrementCounter("TRANSCRIPT_UPDATED", 1);
+                            counters.increment("TRANSCRIPT_UPDATED");
                         }
 
                         logtr.info("NEW_TRANSCRIPT_PROPERTIES: "+tr.dump("|"));
@@ -460,10 +463,10 @@ public class BulkGeneLoaderImpl {
                 logtr.info("TRANSCRIPT_INSERTED: "+newTr.dump("|"));
 
                 // increment counter of transcripts added
-                bg.getSession().incrementCounter("TRANSCRIPTS_INSERTED", 1);
+                counters.increment("TRANSCRIPTS_INSERTED");
             }
             else {
-                bg.getSession().incrementCounter("TRANSCRIPTS_MATCHED", 1);
+                counters.increment("TRANSCRIPTS_MATCHED");
             }
         }
 
@@ -474,7 +477,7 @@ public class BulkGeneLoaderImpl {
             // we want to avoid detaching all transcript for given gene when
             // f.e. the gene is no longer on the current assembly
             if( bg.transcripts.isEmpty() ) {
-                bg.getSession().incrementCounter("TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED", 1);
+                counters.increment("TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED");
                 getDbFlagManager().setFlag("TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED", bg.getRecNo());
             } else {
                 for( Transcript tr: obsoleteInRgdTranscripts ) {
@@ -482,7 +485,7 @@ public class BulkGeneLoaderImpl {
                     logtr.info("TRANSCRIPT_DETACHED_FROM_GENE: "+tr.dump("|"));
 
                     // increment counter of transcripts detached
-                    bg.getSession().incrementCounter("TRANSCRIPTS_DETACHED", 1);
+                    counters.increment("TRANSCRIPTS_DETACHED");
                 }
                 getDbFlagManager().setFlag("TRANSCRIPT_DETACHED_FROM_GENE", bg.getRecNo());
             }
@@ -491,7 +494,7 @@ public class BulkGeneLoaderImpl {
 
     void updateTranscriptPositions(BulkGene bg) throws Exception {
 
-        final Log logger = LogFactory.getLog("transcript_positions");
+        final Logger logger = Logger.getLogger("transcript_positions");
 
         GenePositions positions = new GenePositions(bg.dao);
 
@@ -514,9 +517,9 @@ public class BulkGeneLoaderImpl {
 
         // now synchronize transcript positions between incoming data and RGD
         positions.qcMapData(bg, logger);
-        positions.syncMapData(bg, logger, getDbFlagManager(), "TRANSCRIPT", true);
+        positions.syncMapData(bg, logger, getDbFlagManager(), "TRANSCRIPT", true, counters);
 
-        positions.deleteOverlappingPositionsMarkedForDelete(bg, getDbFlagManager());
+        positions.deleteOverlappingPositionsMarkedForDelete(bg, getDbFlagManager(), counters);
     }
 
     void updateTranscriptFeatures(BulkGene bg) throws Exception {
@@ -556,11 +559,11 @@ public class BulkGeneLoaderImpl {
                     }
                     matchingRgdFeatures.add(matchedFeature);
                     if( matchedFeature.getFeatureType()== TranscriptFeature.FeatureType.EXON ) {
-                        bg.getSession().incrementCounter("EXONS_MATCHED", 1);
+                        counters.increment("EXONS_MATCHED");
                     } else if( matchedFeature.getFeatureType()== TranscriptFeature.FeatureType.UTR3 ) {
-                        bg.getSession().incrementCounter("UTRS_MATCHED", 1);
+                        counters.increment("UTRS_MATCHED");
                     } else if( matchedFeature.getFeatureType()== TranscriptFeature.FeatureType.UTR5 ) {
-                        bg.getSession().incrementCounter("UTRS_MATCHED", 1);
+                        counters.increment("UTRS_MATCHED");
                     }
 
                     // remove the matching feature from in-rgd features
@@ -603,10 +606,10 @@ public class BulkGeneLoaderImpl {
         for( TranscriptFeature tf: rgdFeaturesToUnlink ) {
             rowsAffected += bg.dao.unlinkFeature(tf.getRgdId());
 
-            bg.getSession().incrementCounter(
+            counters.increment(
                     tf.getFeatureType()== TranscriptFeature.FeatureType.EXON
                             ? "EXONS_UNLINKED"
-                            : "UTRS_UNLINKED", 1);
+                            : "UTRS_UNLINKED");
         }
         if( rowsAffected>0 ) {
             logger.debug("===== UNLINK FEATURES: rows affected " + rowsAffected);
@@ -676,10 +679,10 @@ public class BulkGeneLoaderImpl {
         // unmatching feature -- create a new transcript feature object
         bg.dao.createFeature(tfIncoming, bg.getGene().getSpeciesTypeKey());
         rgdTFList.add(tfIncoming); // we new transcript now in rgd!
-        bg.getSession().incrementCounter(
+        counters.increment(
                 tfIncoming.getFeatureType()== TranscriptFeature.FeatureType.EXON
                     ? "EXONS_INSERTED"
-                    : "UTRS_INSERTED", 1);
+                    : "UTRS_INSERTED");
         logtf.info("FEATURE INSERT "+tfIncoming.toString());
         return tfIncoming;
     }
@@ -688,7 +691,7 @@ public class BulkGeneLoaderImpl {
 
         for( Transcript tr: bg.rgdTranscripts ) {
             bg.transcriptXdbIds.qc(tr, bg);
-            bg.transcriptXdbIds.load(bg);
+            bg.transcriptXdbIds.load(bg, counters);
         }
     }
 
@@ -706,5 +709,13 @@ public class BulkGeneLoaderImpl {
 
     public void setDbFlagManager(PipelineLogFlagManager dbFlagManager) {
         this.dbFlagManager = dbFlagManager;
+    }
+
+    public CounterPool getCounters() {
+        return counters;
+    }
+
+    public void setCounters(CounterPool counters) {
+        this.counters = counters;
     }
 }

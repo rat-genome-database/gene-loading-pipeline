@@ -2,6 +2,7 @@ package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.datamodel.Transcript;
 import edu.mcw.rgd.datamodel.XdbId;
+import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.Utils;
 import org.apache.commons.collections.CollectionUtils;
 
@@ -66,21 +67,21 @@ public class TranscriptXdbIds {
         xdbIdsForDelete = CollectionUtils.subtract(xdbIdsInRgd, xdbIdsIncoming);
     }
 
-    public void load(BulkGene bg) throws Exception {
+    public void load(BulkGene bg, CounterPool counters) throws Exception {
 
         if( !xdbIdsMatching.isEmpty() ) {
             bg.dao.updateModificationDate(xdbIdsMatching);
-            bg.getSession().incrementCounter("TRANSCRIPT_UNIPROT_IDS_MATCHING", xdbIdsMatching.size());
+            counters.add("TRANSCRIPT_UNIPROT_IDS_MATCHING", xdbIdsMatching.size());
         }
 
         if( !xdbIdsForInsert.isEmpty() ) {
             bg.dao.insertXdbs(xdbIdsForInsert, "TRANSCRIPT");
-            bg.getSession().incrementCounter("TRANSCRIPT_UNIPROT_IDS_INSERTED", xdbIdsForInsert.size());
+            counters.add("TRANSCRIPT_UNIPROT_IDS_INSERTED", xdbIdsForInsert.size());
         }
 
         if( !xdbIdsForDelete.isEmpty() ) {
             bg.dao.deleteXdbIds(xdbIdsForDelete, "TRANSCRIPT");
-            bg.getSession().incrementCounter("TRANSCRIPT_UNIPROT_IDS_DELETED", xdbIdsForDelete.size());
+            counters.add("TRANSCRIPT_UNIPROT_IDS_DELETED", xdbIdsForDelete.size());
         }
     }
 

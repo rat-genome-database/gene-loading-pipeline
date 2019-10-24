@@ -3,7 +3,7 @@ package edu.mcw.rgd.dataload;
 import edu.mcw.rgd.datamodel.SpeciesType;
 import edu.mcw.rgd.process.*;
 import edu.mcw.rgd.xml.XomAnalyzer;
-import org.apache.commons.logging.*;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.util.*;
@@ -35,7 +35,7 @@ public class EntrezGeneExtractor {
 
     NcbiEutils.ESearchResult eSearchOverride;
 
-    protected final Log logger = LogFactory.getLog("process");
+    protected final Logger logger = Logger.getLogger("process");
     PipelineLogger dbLogger = PipelineLogger.getInstance();
     private String version;
 

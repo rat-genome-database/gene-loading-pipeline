@@ -4,7 +4,6 @@ import edu.mcw.rgd.dataload.BulkGene;
 import edu.mcw.rgd.dataload.TranscriptInfo;
 import edu.mcw.rgd.dataload.TranscriptLocus;
 import edu.mcw.rgd.datamodel.*;
-import edu.mcw.rgd.pipelines.PipelineSession;
 import edu.mcw.rgd.process.*;
 import nu.xom.Element;
 import org.apache.commons.collections.map.MultiValueMap;
@@ -61,8 +60,9 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
     // name of file to be processed
     String fileName;
 
-    // contains queue to put the data for further processing
-    PipelineSession pipelineSession;
+    public List<BulkGene> bulkGenes = new ArrayList<>();
+
+    private CounterPool counters;
 
     // precompiled XPath expressions
     static XPath xpGeneSymbol, xpGeneSymbolAlt, xpGeneName, xpNomenSymbol, xpNomenName;
@@ -388,7 +388,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
 
                             String label = xpProductLabel.stringValueOf(elmRnaProducts);
                             if( !label.isEmpty() ) {
-                                this.pipelineSession.incrementCounter("PEPTIDE_LABELS", 1);
+                                counters.increment("PEPTIDE_LABELS");
                                 if( transcript.getPeptideLabel()!=null && !transcript.getPeptideLabel().isEmpty() ) {
                                     if( !label.equals(transcript.getPeptideLabel()) )
                                         System.out.println("peptide label override "+locus.getTranscriptAccId()+" "+locus.getTranscriptCoords());
@@ -479,7 +479,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
 
             Integer mapKey = this.geneLocationHistory.get(histAssembly);
             if( mapKey==null ) {
-                this.pipelineSession.incrementCounter("SKIPPED_LOCATIONS_FOR_HISTORIC_ASSEMBLY_"+histAssembly, 1);
+                counters.increment("SKIPPED_LOCATIONS_FOR_HISTORIC_ASSEMBLY_"+histAssembly);
             } else if( mapKey!=0 ) {
                 // there could be positions for multiple patches of historical assemblies,
                 // f.e. "GRCm38", "GRCm38.1", "GRCm38.2"
@@ -800,7 +800,6 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
         // just start new bulk gene
         bulkGene = new BulkGene();
         bulkGene.setRecNo(++recno); // set unique record number
-        bulkGene.setSession(this.pipelineSession);
     }
 
     // entire <EntrezGene> record had been parsed; prepare data for core analysis
@@ -913,14 +912,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
         }
 
         // add BulkGene to queue for further processing
-        try {
-            pipelineSession.putRecordToFirstQueue(bulkGene);
-        }
-        catch(InterruptedException ie) {
-            ie.printStackTrace(System.out);
-        }
-
-        //try { Thread.sleep(10000); }catch(Exception e){}
+        bulkGenes.add(bulkGene);
 
         return null; // discard the element from resulting document
     }
@@ -1117,14 +1109,6 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
         this.fileName = fileName;
     }
 
-    public PipelineSession getPipelineSession() {
-        return pipelineSession;
-    }
-
-    public void setPipelineSession(PipelineSession session) {
-        this.pipelineSession = session;
-    }
-
     public Map<String, Integer> getAnyAssemblyNameCountMap() {
         return anyAssemblyNameCountMap;
     }
@@ -1170,5 +1154,13 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
 
     public void setGeneLocationHistory(Map<String, Integer> geneLocationHistory) {
         this.geneLocationHistory = geneLocationHistory;
+    }
+
+    public CounterPool getCounters() {
+        return counters;
+    }
+
+    public void setCounters(CounterPool counters) {
+        this.counters = counters;
     }
 }

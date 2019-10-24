@@ -3,24 +3,20 @@ package edu.mcw.rgd.dataload;
 import edu.mcw.rgd.dao.impl.EGDAO;
 import edu.mcw.rgd.datamodel.Alias;
 import edu.mcw.rgd.datamodel.Gene;
-import edu.mcw.rgd.pipelines.PipelineSession;
+import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.Utils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mtutaj
- * Date: 3/25/14
- * Time: 9:42 AM
- * <p>
+ * @author mtutaj
+ * @since 3/25/14
  * all code related to handling aliases
  */
 public class AliasLoader {
 
-    protected final Log logAliases = LogFactory.getLog("aliases");
+    protected final Logger logAliases = Logger.getLogger("aliases");
 
     private List<Alias> incoming = new ArrayList<>(); // aliases retrieved from eg gene record
     public List<Alias> forInsert; // new aliases to be added to rgd db (subset of 'aliases')
@@ -104,7 +100,7 @@ public class AliasLoader {
     }
 
     // qc aliases if gene is to be updated
-    public void qcIncomingAliases(Gene geneInRgd, int rgdId, PipelineSession session) throws Exception {
+    public void qcIncomingAliases(Gene geneInRgd, int rgdId, CounterPool counters) throws Exception {
 
         // incoming aliases: removed protein-redundant aliases
         if( geneInRgd!=null ) {
@@ -119,7 +115,7 @@ public class AliasLoader {
         for (Alias alias: incoming) {
             if( isAliasOnList(rgdAliases, alias)) {
                 //logger.debug("gene alias "+ alias.getValue() +" is already in RGD");
-                session.incrementCounter("ALIASES_MATCHED", 1);
+                counters.increment("ALIASES_MATCHED");
             }
             else {
                 alias.setRgdId(rgdId);
@@ -130,7 +126,7 @@ public class AliasLoader {
     }
 
     // remove those aliases from the to be-inserted aliases that happen to be the same as gene name or symbol
-    public void qcAliases(BulkGene bg) {
+    public void qcAliases(BulkGene bg, CounterPool counters) {
 
         if( forInsert==null || forInsert.isEmpty() )
             return;
@@ -164,7 +160,7 @@ public class AliasLoader {
                 // skip this alias if nomenclature event is not in place
                 // (else we will skip alias that is tracking gene name/symbol change!)
                 if( !bg.isFlagSet("ORTHO_NOMEN_NAME") && !bg.isFlagSet("ORTHO_NOMEN_SYMBOL") ){
-                    bg.getSession().incrementCounter("SKIPPED_ALIASES_SAME_AS_GENE_NAME_SYMBOL", 1);
+                    counters.increment("SKIPPED_ALIASES_SAME_AS_GENE_NAME_SYMBOL");
                     it.remove();
                     logAliases.debug("*** RGDID:" + rgdId + " skipped alias, same as gene symbol/name[" + aliasValue + "]");
                 }

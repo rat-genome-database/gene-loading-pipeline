@@ -1,10 +1,8 @@
 package edu.mcw.rgd.dataload;
 
-import edu.mcw.rgd.pipelines.PipelineRecord;
-import edu.mcw.rgd.pipelines.RecordProcessor;
+import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.PipelineLogger;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -13,17 +11,15 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mtutaj
- * Date: May 5, 2010
- * Time: 8:50:15 AM
+ * @author mtutaj
+ * @since May 5, 2010
  * all database modification code is operated from here
  */
-public class DataLoadingThread extends RecordProcessor {
+public class DataLoadingThread {
     private PipelineLogger dbLogger = PipelineLogger.getInstance();
     private String bgFileName;
     private DecisionMaker decisionMaker;
-    private final Log logger = LogFactory.getLog("process");
+    private final Logger logger = Logger.getLogger("process");
     private BufferedWriter out;
 
     public DataLoadingThread(String bgFileName, DecisionMaker dm) {
@@ -63,16 +59,14 @@ public class DataLoadingThread extends RecordProcessor {
 
     /**
      * process a single BulkGene record
-     * @param pipelineRecord PipelineRecord object (BulkGene)
      * @throws Exception
      */
-    public void process(PipelineRecord pipelineRecord) throws Exception {
+    public void process(BulkGene bulkGene, CounterPool counters) throws Exception {
 
-        BulkGene bulkGene = (BulkGene) pipelineRecord;
         //System.out.println("LOAD "+bulkGene.getRecNo()+", qsize:"+threadResult.bgDataLoadingQueue.size());
 
         // decision making
-        decisionMaker.decide(bulkGene);
+        decisionMaker.decide(bulkGene, counters);
 
         // additional logging of matching rgd_id that could be known after decision making is finished
         if( bulkGene.getCustomFlags().getRgdId()>0 ) {
