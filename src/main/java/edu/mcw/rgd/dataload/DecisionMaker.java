@@ -2,10 +2,10 @@ package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.dao.impl.PipelineLogDAO;
 import edu.mcw.rgd.datamodel.*;
+import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.PipelineLogFlagManager;
 import edu.mcw.rgd.process.PipelineLogger;
 import edu.mcw.rgd.process.Utils;
-import org.apache.commons.logging.*;
 import org.apache.log4j.Logger;
 
 import java.util.Date;
@@ -28,10 +28,11 @@ public class DecisionMaker {
     PipelineLogFlagManager dbFlagManager;
 
     protected final Logger logger = Logger.getLogger("process");
-    private String version;
 
     // look at the flags and decide if the record need update or insert
-    public void decide(BulkGene bg ) throws Exception {
+    public void decide(BulkGene bg, CounterPool counters) throws Exception {
+
+        bulkGeneLoader.setCounters(counters);
 
         dbLog = PipelineLogger.getInstance();
 
@@ -48,7 +49,7 @@ public class DecisionMaker {
         dbFlagManager.writeFlags(bg.getRecNo());
     }
 
-    public void decide(BulkGene bg, Flags flag ) throws Exception {
+    public void decide(BulkGene bg, Flags flag) throws Exception {
 
         // write XML representation of the record to log file
         String xml = bg.getXmlString();
@@ -143,7 +144,7 @@ public class DecisionMaker {
 
             // UNKNOWN gene track status in the past years was associated entirely with mitochondrial genes
             // so we don't want to report this as problematic
-            Log log = LogFactory.getLog("geneTrackStatus");
+            Logger log = Logger.getLogger("geneTrackStatus");
             if( bg.getGeneTrackStatus().equals("UNKNOWN") ) {
                 log.debug(msg);
             } else {
@@ -203,13 +204,5 @@ public class DecisionMaker {
         this.dbFlagManager = dbFlagManager;
         if( this.bulkGeneLoader!=null )
             this.bulkGeneLoader.setDbFlagManager(dbFlagManager);
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getVersion() {
-        return version;
     }
 }

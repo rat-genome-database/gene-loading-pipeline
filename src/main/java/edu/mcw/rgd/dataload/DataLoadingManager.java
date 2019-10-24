@@ -3,11 +3,10 @@ package edu.mcw.rgd.dataload;
 import edu.mcw.rgd.dao.impl.EGDAO;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.log.*;
-import edu.mcw.rgd.pipelines.PipelineManager;
 import edu.mcw.rgd.process.*;
 import edu.mcw.rgd.process.mapping.MapManager;
 import edu.mcw.rgd.xml.*;
-import org.apache.commons.logging.*;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
@@ -50,7 +49,7 @@ public class DataLoadingManager {
     static long startMilisec=System.currentTimeMillis();
     static long runSec=0;
     
-    protected final Log logger = LogFactory.getLog("process");
+    protected final Logger logger = Logger.getLogger("process");
     private String version;
     private Map<String,String> scaffoldOnlyAssemblies;
 
@@ -396,14 +395,17 @@ public class DataLoadingManager {
      */
     public void parseEntrezGeneFile(String fileName, String bulkGeneFileName) throws Exception {
 
+        CounterPool counters = new CounterPool();
+
         String speciesName = SpeciesType.getCommonName(speciesTypeKey);
         logger.info("Processing entrezgene file:" + fileName);
         dbLogger.log("Starting XML processing of entrezgene file", fileName, PipelineLogger.INFO);
         System.out.println("setting up threads");
-        PipelineManager manager = new PipelineManager();
 
         qualityCheck.setGenomicAssemblies(getGenomicAssembliesForCurrentSpecies());
         qualityCheck.setDbFlagManager(dbFlagManager);
+        qualityCheck.setCounters(counters);
+
         decisionMaker.setDbFlagManager(dbFlagManager);
 
         // setup thread for concurrent xml parsing
@@ -412,7 +414,9 @@ public class DataLoadingManager {
         parser.setGenomicAssemblies(getGenomicAssembliesForCurrentSpecies(), getScaffoldOnlyAssemblies().get(speciesName));
         parser.setGeneLocationHistory(getGeneLocationHistoryForCurrentSpecies());
         parser.setFileName(fileName);
-        manager.addPipelineWorkgroup(new XmlProcessingThread(parser), "XML", 1, 0);
+
+        XmlProcessingThread xmlProcessor = new XmlProcessingThread(parser);
+        List<BulkGene> bulkGenes = xmlProcessor.process(counters);
 
         // generate file name for storing bulkgenes
         String format = "data/BulkGenes_%s_%s_%s.xml";
@@ -437,22 +441,20 @@ public class DataLoadingManager {
         }
 
         // create a pool of quality checking threads
-        manager.addPipelineWorkgroup(new QualityCheckingThread(qualityCheck), "QC", this.qualityCheckingThreadCount, 0);
-
+        QualityCheckingThread qc = new QualityCheckingThread(qualityCheck);
         // create one data loading thread
         DataLoadingThread dl = new DataLoadingThread(bgFileName, decisionMaker);
-        manager.addPipelineWorkgroup(dl, "DL", 1, 0);
-        dl.open(); // initialize data loading thread
+        dl.open();
 
-        // run the pipeline threads
-        manager.run();
-
-        // close data loading threads
+        for( BulkGene bg: bulkGenes ) {
+            qc.process(bg);
+            dl.process(bg, counters);
+        }
         dl.close();
 
         // store count of records processed
-        bgTotal = manager.getSession().getRecordsProcessed(0);
-        genesWithWrongType = manager.getSession().getCounterValue("WRONG_GENE_TYPE");
+        bgTotal = bulkGenes.size();
+        genesWithWrongType = counters.get("WRONG_GENE_TYPE");
 
         System.out.println("threads stopped!");
 
@@ -474,8 +476,14 @@ public class DataLoadingManager {
         }
 
         // dump counter statistics
-        for( String counter: new TreeSet<String>(manager.getSession().getCounters()) ) {
-            int count = manager.getSession().getCounterValue(counter);
+        Enumeration<String> counterNames = counters.getCounterNames();
+        Set<String> sortedCounterNames = new TreeSet<>();
+        while( counterNames.hasMoreElements() ) {
+            String counter = counterNames.nextElement();
+            sortedCounterNames.add(counter);
+        }
+        for( String counter: sortedCounterNames ) {
+            int count = counters.get(counter);
             if( count!=0 ) {
                 count = Math.abs(count);
                 dbLogger.log(counter, Integer.toString(count), PipelineLogger.TOTAL);
@@ -663,7 +671,7 @@ public class DataLoadingManager {
     public void setRgdLogger(RGDSpringLogger rgdLogger) {
         this.rgdLogger = rgdLogger;
     }
-    public Log getLogger() {
+    public Logger getLogger() {
         return this.logger;
     }    
     

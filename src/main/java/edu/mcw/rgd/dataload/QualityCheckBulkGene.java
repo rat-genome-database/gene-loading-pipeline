@@ -25,7 +25,7 @@ public class QualityCheckBulkGene  {
     // autoloaded from AppConfig.xml
     List egType;
     List excludeEgType;
-    private String version;
+    private CounterPool counters;
 
     // genomic assemblies to be handled by the pipeline, specific to the species
     // (key: assembly name; value: map key)
@@ -667,7 +667,7 @@ public class QualityCheckBulkGene  {
         }
 
         // not allowed gene type: flag the record and change gene type to 'gene'
-        bg.getSession().incrementCounter("WRONG_GENE_TYPE", 1);
+        counters.increment("WRONG_GENE_TYPE");
         getDbFlagManager().setFlag("WRONG_GENE_TYPE", bg.getRecNo());
         bg.setEgType("gene");
     }
@@ -723,7 +723,7 @@ public class QualityCheckBulkGene  {
 
             int rgdId = flag.getRgdId();
 
-            bg.aliases.qcIncomingAliases(bg.rgdGene, rgdId, bg.getSession());
+            bg.aliases.qcIncomingAliases(bg.rgdGene, rgdId, counters);
 
             qcXdbIds(bg, rgdId);
 
@@ -738,11 +738,11 @@ public class QualityCheckBulkGene  {
         else
         if(flag.getLoadStatus().equals(Flags.INSERT)) {
             // all aliases need to be added
-            bg.aliases.qcIncomingAliases(null, 0, bg.getSession());
+            bg.aliases.qcIncomingAliases(null, 0, counters);
         }
 
         // none of the aliases can have a value identical to gene name or symbol
-        bg.aliases.qcAliases(bg);
+        bg.aliases.qcAliases(bg, counters);
 
         // initialize transcript data, if not done yet
         if( bg.rgdTranscripts==null )
@@ -775,7 +775,7 @@ public class QualityCheckBulkGene  {
         xdbsIncoming.removeAll(rgdXdbIds);
         // remove from rgdids the duplicates (present on incoming xdbid list)
         rgdXdbIds.removeAll(matchingXdbs);
-        bg.getSession().incrementCounter("XDBIDS_MATCHED", matchingXdbs.size());
+        counters.add("XDBIDS_MATCHED", matchingXdbs.size());
         // update bg
         bg.toBeInsertedXdbIds = xdbsIncoming;
         bg.toBeRemovedXdbIds = rgdXdbIds;
@@ -950,19 +950,19 @@ public class QualityCheckBulkGene  {
         }
     }
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
     public PipelineLogFlagManager getDbFlagManager() {
         return dbFlagManager;
     }
 
     public void setDbFlagManager(PipelineLogFlagManager dbFlagManager) {
         this.dbFlagManager = dbFlagManager;
+    }
+
+    public CounterPool getCounters() {
+        return counters;
+    }
+
+    public void setCounters(CounterPool counters) {
+        this.counters = counters;
     }
 }

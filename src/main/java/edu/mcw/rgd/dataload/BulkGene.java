@@ -2,8 +2,6 @@ package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.dao.impl.EGDAO;
 import edu.mcw.rgd.datamodel.*;
-import edu.mcw.rgd.pipelines.PipelineRecord;
-import edu.mcw.rgd.pipelines.PipelineSession;
 import edu.mcw.rgd.process.*;
 import edu.mcw.rgd.xml.BulkGeneXmlCreator;
 
@@ -13,7 +11,8 @@ import java.util.Map;
 /**
  * contains all information extracted by analysis of a single EntrezGene record
  */
-public class BulkGene extends PipelineRecord {
+public class BulkGene {
+    int recNo;
 	Gene gene = new Gene();
     String egType;
     String chromosome, fishband;
@@ -21,8 +20,8 @@ public class BulkGene extends PipelineRecord {
     private String egId; // EntrezGene ID
 	Flags flags = new Flags();
     String xmlString;
-    PipelineSession session;
     EGDAO dao;
+    Set<String> _flags = new HashSet<>();
 
     // gene track status - as of September 2010, a gene can be "live", "replaced", "discontinued" or "unknown"
     // LIVE - The record is current and primary, i.e., not secondary or discontinued.
@@ -218,14 +217,6 @@ public class BulkGene extends PipelineRecord {
         this.cM = cM;
     }
 
-    public PipelineSession getSession() {
-        return session;
-    }
-
-    public void setSession(PipelineSession session) {
-        this.session = session;
-    }
-
     /**
      * represents a transcript and a set of genomic features, like exons, utrs, introns, and so on
      */
@@ -289,6 +280,22 @@ public class BulkGene extends PipelineRecord {
 
     public void setGeneTrackCurrentId(String geneTrackCurrentId) {
         this.geneTrackCurrentId = geneTrackCurrentId;
+    }
+
+    public int getRecNo() {
+        return recNo;
+    }
+
+    public void setRecNo(int recNo) {
+        this.recNo = recNo;
+    }
+
+    public void setFlag(String flag) {
+        _flags.add(flag);
+    }
+
+    public boolean isFlagSet(String flag) {
+        return _flags.contains(flag);
     }
 }
 

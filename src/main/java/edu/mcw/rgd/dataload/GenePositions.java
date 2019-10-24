@@ -2,11 +2,10 @@ package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.dao.impl.EGDAO;
 import edu.mcw.rgd.datamodel.MapData;
+import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.PipelineLogFlagManager;
-import edu.mcw.rgd.process.PipelineLogger;
 import edu.mcw.rgd.process.Utils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
@@ -20,7 +19,7 @@ import java.util.*;
  * to avoid deleting historical data. Also all database operations regarding gene positions are logged into gene_positions file
  */
 public class GenePositions {
-    private final Log logger = LogFactory.getLog("gene_positions");
+    private final Logger logger = Logger.getLogger("gene_positions");
 
     private List<MapData> mapData = new ArrayList<MapData>();
     private List<MapData> rgdMapData;
@@ -180,7 +179,7 @@ public class GenePositions {
     /**
      * qc map data between rgd and incoming data; only maps that are present in incoming data are qc-ed
      */
-    public void qcMapData(BulkGene bg, Log logger) throws Exception {
+    public void qcMapData(BulkGene bg, Logger logger) throws Exception {
 
         // logger override
         if( logger==null )
@@ -228,8 +227,8 @@ public class GenePositions {
     /**
      * synchronize map data between rgd and incoming data; only maps that are present in incoming data are synced
      */
-    public void syncMapData(BulkGene bg, Log logger, PipelineLogFlagManager dbFlagManager, String counterPrefix,
-                            boolean keepOnePos) throws Exception {
+    public void syncMapData(BulkGene bg, Logger logger, PipelineLogFlagManager dbFlagManager, String counterPrefix,
+                            boolean keepOnePos, CounterPool counters) throws Exception {
 
         // logger override
         if( logger==null )
@@ -237,7 +236,7 @@ public class GenePositions {
 
         // handle matching positions
         if( !mdMatching.isEmpty() ) {
-            bg.getSession().incrementCounter(counterPrefix+"_MAPPOS_MATCHED", mdMatching.size());
+            counters.add(counterPrefix+"_MAPPOS_MATCHED", mdMatching.size());
         }
 
         // handle position updates
@@ -250,7 +249,7 @@ public class GenePositions {
             }
 
             dbFlagManager.setFlag(counterPrefix+"_MAPPOS_INSERTED", bg.getRecNo());
-            bg.getSession().incrementCounter(counterPrefix+"_MAPPOS_INSERTED", mdForInsert.size());
+            counters.add(counterPrefix+"_MAPPOS_INSERTED", mdForInsert.size());
         }
 
         // handle position deletes
@@ -260,7 +259,7 @@ public class GenePositions {
                 int deletionsSuppressed = suppressPositionsForDelete();
                 if( deletionsSuppressed>0 ) {
                     dbFlagManager.setFlag(counterPrefix + "_MAPPOS_DELETE_SUPPRESSED", bg.getRecNo());
-                    bg.getSession().incrementCounter(counterPrefix + "_MAPPOS_DELETE_SUPPRESSED", deletionsSuppressed);
+                    counters.add(counterPrefix + "_MAPPOS_DELETE_SUPPRESSED", deletionsSuppressed);
                 }
             }
 
@@ -271,7 +270,7 @@ public class GenePositions {
             }
 
             dbFlagManager.setFlag(counterPrefix+"_MAPPOS_DELETED", bg.getRecNo());
-            bg.getSession().incrementCounter(counterPrefix+"_MAPPOS_DELETED", mdForDelete.size());
+            counters.add(counterPrefix+"_MAPPOS_DELETED", mdForDelete.size());
         }
     }
 
@@ -340,7 +339,7 @@ public class GenePositions {
         return results;
     }
 
-    public void deleteOverlappingPositionsMarkedForDelete(BulkGene bg, PipelineLogFlagManager dbFlagManager) throws Exception {
+    public void deleteOverlappingPositionsMarkedForDelete(BulkGene bg, PipelineLogFlagManager dbFlagManager, CounterPool counters) throws Exception {
 
         List<MapData> mdsOverlapping = new ArrayList<MapData>();
 
@@ -369,7 +368,7 @@ public class GenePositions {
             }
 
             dbFlagManager.setFlag("TRANSCRIPT_OVERLAPPING_MAPPOS_DELETED", bg.getRecNo());
-            bg.getSession().incrementCounter("TRANSCRIPT_OVERLAPPING_MAPPOS_DELETED", mdsOverlapping.size());
+            counters.add("TRANSCRIPT_OVERLAPPING_MAPPOS_DELETED", mdsOverlapping.size());
         }
     }
 

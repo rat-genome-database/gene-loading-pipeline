@@ -2,21 +2,18 @@ package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.process.Utils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mtutaj
- * Date: Jun 18, 2010
- * Time: 10:19:12 AM
+ * @author mtutaj
+ * @since Jun 18, 2010
  * represents the information extracted from a gene record about transcript and its features
  */
 public class TranscriptInfo extends Transcript {
 
-    final Log logger = LogFactory.getLog("transcript_positions");
+    final Logger logger = Logger.getLogger("transcript_positions");
 
     private List<TranscriptLocus> loci = new ArrayList<TranscriptLocus>();
 

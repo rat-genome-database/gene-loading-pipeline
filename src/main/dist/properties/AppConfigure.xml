@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   build Sep 12, 2019" />
+        <property name="version" value="Ncbi Gene Pipeline   -- build Oct 24, 2019" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -194,7 +194,6 @@
 	
 	<!-- Set the properties for downloading data: data output directory, species, database name, search url and fetch url-->
 	<bean id="entrezGeneExtractor" class="edu.mcw.rgd.dataload.EntrezGeneExtractor">
-        <property name="version" value="EntrezGeneExtractor module ver 2.3.5, as of Sep 22, 2017"/>
 		<property name="outDir" value="data" />
         <property name="maxRecCountInSingleFetch" value="550"/><!--value of 500 is recommended on NCBI eUtils page-->
         <property name="downloadMaxRetries" value="10" /><!--if download of eFetch fails, how many times pipeline should retry to download-->
@@ -215,7 +214,6 @@
 
 	<bean id="decisionMaker" class="edu.mcw.rgd.dataload.DecisionMaker">
 		<property name="bulkGeneLoader" ref="bulkGeneLoader"/>
-        <property name="version" value="DecisionMaker module ver 2.0.6, as of Sep 22, 2017"/>
 	</bean>
 	
 	<bean id="bulkGeneLoader" class="edu.mcw.rgd.dataload.BulkGeneLoaderImpl">
@@ -224,7 +222,6 @@
 	
 	<!-- set the properties for quality check: the excluded Entrezgene types, species, xdbName and xdbKey used for quality check -->
 	<bean id="qualityCheck" class="edu.mcw.rgd.dataload.QualityCheckBulkGene">
-        <property name="version" value="QualityCheck module v.2.2.1 - Jul 27, 2017" />
 	    <property name="excludeEgType">
 			<list>
 				<value>unknown</value>

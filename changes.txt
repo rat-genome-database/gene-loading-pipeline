@@ -1,3 +1,7 @@
+Oct 24, 2019
+  -discontinued use of rgd-pipelines library
+  -replaced commons logging with log4j
+
 Sep 12, 2019
   -added support for mouse assembly GRCm38.p6 and human assembly GRCh38.p13
 
