@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- build Oct 24, 2019" />
+        <property name="version" value="Ncbi Gene Pipeline   -- build Nov 12, 2019" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -204,7 +204,6 @@
 	
     <!-- Set the properties for downloading data: data output directory, species, database name, search url and fetch url-->
     <bean id="ncbiEutils" class="edu.mcw.rgd.process.NcbiEutils">
-        <property name="version" value="NcbiEUtils ver 1.2.1, as of Aug 18, 2016"/>
         <property name="eUtils_db" value="gene"/>
         <property name="eUtils_tool" value="rgd_eg_pipeline"/>
         <property name="eUtils_email" value="mtutaj@mcw.edu"/>

@@ -37,12 +37,6 @@ public class EntrezGeneExtractor {
 
     protected final Logger logger = Logger.getLogger("process");
     PipelineLogger dbLogger = PipelineLogger.getInstance();
-    private String version;
-
-    public EntrezGeneExtractor() {
-        logger.info(getVersion());
-        System.out.println(getVersion());
-    }
 
     // download the data into a local disk file; return nr of records to be found in the file
     public int run(Map<Integer,Integer> egIds) throws Exception {
@@ -569,14 +563,6 @@ public class EntrezGeneExtractor {
 
     public void setMitochondrialGenesLoad(boolean mitochondrialGenesLoad) {
         this.mitochondrialGenesLoad = mitochondrialGenesLoad;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getVersion() {
-        return version;
     }
 }
 

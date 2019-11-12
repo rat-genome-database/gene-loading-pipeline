@@ -23,11 +23,6 @@ public class NcbiEutils {
     private String eUtils_email; // email contact used to resolve issue between rgd and eUtils
     private String ncbiSearchUrl;
     private String ncbiFetchUrl;
-    private String version;
-
-    public NcbiEutils() {
-        System.out.println(getVersion());
-    }
 
     public ESearchResult createESearchResult() {
 
@@ -334,14 +329,6 @@ public class NcbiEutils {
     }
     public void setNcbiSearchUrl(String ncbiSearchUrl) {
         this.ncbiSearchUrl = ncbiSearchUrl;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getVersion() {
-        return version;
     }
 
 
