@@ -437,7 +437,6 @@ public class QualityCheckBulkGene  {
         EGDAO dao = EGDAO.getInstance();
         List<XdbId> nMHXdb = fileGene.getXdbIdsByXdbKey(xdbId.getXdbKey()); // the file MGD ID or HGNC ID
         List<Gene> genesByEgId = dao.getGenesByEGID(fileGene.getEgId()); //rgd genes matched by eg ID
-        List newSeqXdbs = fileGene.getXdbIdsByXdbKey(XdbId.XDB_KEY_GENEBANKNU); // the GB sequence in the new record
         List<Gene> activeRgdGene = new ArrayList<>(); // will hold active rgd gene matched by entrezgene ID
         String info="";
         // get matched active gene by entrezgene id
@@ -546,18 +545,10 @@ public class QualityCheckBulkGene  {
                     return flag;
                 }
                 else {
-                    // other species, eg id doesn't match, mgi id doesn't match, check if it has any sequence
-                    if (newSeqXdbs.size() >0) {
-                        // it has sequence, load as a new record
-                        flag = new Flags(Flags.NEWGENE, Flags.INSERT);
-                        dbLog.addLogProp("eg id doesn't match, mgi/hgnc id doesn't match, new sequence found", "NEW_GENE", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
-                        return flag;
-                    } else {
-                        // it has no sequence, go to no sequence log file
-                        flag = new Flags(Flags.NOSEQ, Flags.ERROR);
-                        dbLog.addLogProp("eg id doesn't match, mgi/hgnc id doesn't match, no sequence found", "NO_SEQ", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
-                        return flag;
-                    }
+                    // mouse/human species, eg id doesn't match, mgi id doesn't match, load as new
+                    flag = new Flags(Flags.NEWGENE, Flags.INSERT);
+                    dbLog.addLogProp("eg id doesn't match, mgi/hgnc id doesn't match", "NEW_GENE", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
+                    return flag;
                 }
             }
             else {
@@ -568,74 +559,13 @@ public class QualityCheckBulkGene  {
             }
         }        
         
-        /*
-         to here, entrezgene ID match active gene in RGD or MGIID match active gene in RGD        
-         the flag value is EGINRGD     
-        */
-        
-        //check if the MGD id match        
+        // match by NCBI gene ID or MGI/HGNC id to active gene in RGD
+
         flag.setRgdId(fileGene.rgdGene.getRgdId());
         flag.setRelatedInfo("");  
-          
-        /*
-         * Check the sequence
-         */
-        List<XdbId> rgdSeqXdbs = dao.getXdbIdsByRgdId(XdbId.XDB_KEY_GENEBANKNU, flag.getRgdId());
-        rgdSeqXdbs = xdbManager.removeGeneBankNucleotides(rgdSeqXdbs);
-        if (newSeqXdbs.size() ==0) {
-            // exception: do not enforce sequence requirement for mitochondrial genes
-            if( !Utils.stringsAreEqual(fileGene.getChromosome(),"MT") ) {
-                flag = new Flags(Flags.NOSEQ, Flags.ERROR, flag.getRgdId());
-                flag.setRelatedInfo("RGD:"+ fileGene.rgdGene.getRgdId());
-                dbLog.addLogProp("no seq"+flag.getRelatedInfo(), "NO_SEQ", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
-                return flag;
-            }
-        }
-
-        if (rgdSeqXdbs.size() <=0 ) {
-            // the rgd record has no sequence
-            flag.setLoadStatus(Flags.UPDATE);
-            dbLog.addLogProp("rgd record has no sequence", "UPDATE", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
-            return flag;
-        }
-
-        if (newSeqXdbs.size() <= 0) {
-            flag = new Flags(Flags.NOSEQ, Flags.SKIP, flag.getRgdId());
-            dbLog.addLogProp("no sequence", "NO_SEQ", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
-            return flag;
-        }
-
-        //the new entrezgene record has at least one sequence
-        if (oneXdbMatch(rgdSeqXdbs, newSeqXdbs)) {
-            // the eg id and rgd id match, at least one sequence match proceed to update
-            flag.setLoadStatus(Flags.UPDATE);
-            dbLog.addLogProp("the eg id and rgd id match, at least one sequence match proceed to update", "UPDATE", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
-            return flag;
-        }
-        else {
-            // is there a single XM or XR sequence in RGD?
-            boolean isXmXr=false;
-            for (XdbId rgdXdb: rgdSeqXdbs) {
-                if (rgdXdb.getAccId()!=null) {
-                    if (rgdXdb.getAccId().startsWith("XM_") || rgdXdb.getAccId().startsWith("XR_")){
-                        isXmXr=true;
-                    }
-                }
-            }
-            // there is XM  or XR sequence in RGD
-            if (isXmXr){
-            // the eg id and rgd id match, sequence doesn't match, has XM sequence
-                logger.debug("the eg id and rgd id match, sequence doesn't match, has XM sequence");
-                flag.setLoadStatus(Flags.UPDATE);
-                dbLog.addLogProp("the eg id and rgd id match, sequence doesn't match, has XM sequence", "UPDATE", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
-                return flag;
-            }
-            else {
-                // the eg id and rgd id match, sequence doesn't match, no sequence is XM or XR
-                handleMissingSequence(flag, fileGene, rgdSeqXdbs, newSeqXdbs);
-                return flag;
-            }
-        }
+        flag.setLoadStatus(Flags.UPDATE);
+        dbLog.addLogProp("rgd record update regardless of sequences", "UPDATE", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
+        return flag;
     }
      
     private String rgdAccXdbToString(List<XdbId> rgdAccXdb) throws Exception {
