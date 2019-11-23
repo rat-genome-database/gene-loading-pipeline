@@ -36,12 +36,10 @@ public class DecisionMaker {
 
         dbLog = PipelineLogger.getInstance();
 
-        if( bg.isFlagSet("NO_SPECIES") ) {
-            // no species error is not normally possible, and it usually happens when the record is skipped
-            // from processing, so it should be excluded from any processing
-            dbFlagManager.setFlag("NO_SPECIES", bg.getRecNo());
-        }
-        else {
+        if( bg.isFlagSet("BAD_SPECIES") ) {
+            dbFlagManager.setFlag("BAD_SPECIES", bg.getRecNo());
+            decide(bg, bg.getCustomFlags());
+        } else {
             decide(bg, bg.getCustomFlags());
             handleGeneTrackStatus(bg);
         }

@@ -46,12 +46,6 @@ public class Flags {
         this.loadStatus = loadStatus;
     }
 
-    public Flags(String flagValue, String loadStatus, int rgdId) {
-        this.flagValue = flagValue;
-        this.loadStatus = loadStatus;
-        this.rgdId = rgdId;
-    }
-
     public String getFlagValue() {
 		return flagValue;
 	}

@@ -1,7 +1,8 @@
 Nov 22, 2019
   -for non-rat species: qc checks relaxed and new genes are loaded regardless if sequences are present or not
        also no sequence checking is performed, so sequences are always updated
-
+  -improved handling of records where species name is different than specified on the command line
+  
 Nov 12, 2019
   -fixed spring IOT code (no longer displaying two 'null' lines when the pipeline is starting)
 

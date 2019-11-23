@@ -40,44 +40,53 @@ public class QualityCheckBulkGene  {
     protected final Logger logNomen = Logger.getLogger("nomen"); // tracks changes in gene names, symbols and descriptions
     protected final Logger logSymbol = Logger.getLogger("symbol"); // tracks changes in gene symbols, user friendly
 
+    public void process(BulkGene bulkGene) throws Exception {
+
+        Flags flag = check(bulkGene);
+        bulkGene.setCustomFlags(flag);
+
+        // 2nd pass
+        afterCheck(bulkGene);
+
+        // record analyzed: write all log props to database
+        dbLog.writeLogProps(bulkGene.getRecNo());
+        dbLog.removeAllLogProps(bulkGene.getRecNo());
+    }
+
     // do pipeline checks and see
-    public Flags check (BulkGene fileGene) throws Exception {
+    public Flags check (BulkGene bg) throws Exception {
 
         // check if the new entrezGene has an entrezGene ID; do logs
-        Flags flag = checkEgId(fileGene);
+        Flags flag = checkEgId(bg);
         if( flag!=null )
             return flag;
 
-        int speciesTypeKey = fileGene.getGene().getSpeciesTypeKey();
-        if( speciesTypeKey==SpeciesType.ALL ) {
-            // the species had not been recognized during xml parsing;
-            // check if we have species-type-key override
-            // if yes, use the species type key override
-            int speciesTypeKeyOverride = DataLoadingManager.getInstance().getSpeciesTypeKey();
-            if( speciesTypeKeyOverride!=SpeciesType.ALL ) {
-                fileGene.getGene().setSpeciesTypeKey(speciesTypeKeyOverride);
-                speciesTypeKey = fileGene.getGene().getSpeciesTypeKey();
-                logger.debug("###########incoming EG species (override): " + SpeciesType.getTaxonomicName(speciesTypeKey));
-            }
+        int speciesTypeKey = bg.getGene().getSpeciesTypeKey();
+
+        // check if incoming species is the same species specified on cmdline; if not, abort
+        int speciesTypeKeyFromCmdline = DataLoadingManager.getInstance().getSpeciesTypeKey();
+        if( speciesTypeKey != speciesTypeKeyFromCmdline ) {
+            bg.setFlag("BAD_SPECIES");
+            return new Flags(Flags.ERROR, Flags.ERROR);
         }
 
         switch (speciesTypeKey) {
             case SpeciesType.RAT: {
-                return ratCheck(fileGene);
+                return ratCheck(bg);
             }
             case SpeciesType.HUMAN: {
                 XdbId xdb = new XdbId();
                 xdb.setXdbKey(XdbId.XDB_KEY_HGNC);
-                return orthologsCheck(fileGene, xdb);
+                return orthologsCheck(bg, xdb);
             }
             case SpeciesType.MOUSE: {
                 XdbId xdb = new XdbId();
                 xdb.setXdbKey(XdbId.XDB_KEY_MGD);
-                return orthologsCheck(fileGene, xdb);
+                return orthologsCheck(bg, xdb);
             }
             default: {
                 XdbId xdb = new XdbId();
-                return orthologsCheck(fileGene, xdb);
+                return orthologsCheck(bg, xdb);
             }
         }
     }

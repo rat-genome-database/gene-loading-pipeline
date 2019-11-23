@@ -440,14 +440,12 @@ public class DataLoadingManager {
             }
         }
 
-        // create a pool of quality checking threads
-        QualityCheckingThread qc = new QualityCheckingThread(qualityCheck);
         // create one data loading thread
         DataLoadingThread dl = new DataLoadingThread(bgFileName, decisionMaker);
         dl.open();
 
         for( BulkGene bg: bulkGenes ) {
-            qc.process(bg);
+            qualityCheck.process(bg);
             dl.process(bg, counters);
         }
         dl.close();
@@ -812,8 +810,8 @@ public class DataLoadingManager {
             );
 
         dbFlagManager.registerFlag(
-            "NO_SPECIES",
-            "couldn't recognize the species"
+            "BAD_SPECIES",
+            "unexpected species"
             );
         dbFlagManager.registerFlag(
             "EG_IN_RGD",
