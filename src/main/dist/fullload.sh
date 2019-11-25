@@ -14,7 +14,7 @@ cd $HOMEDIR
 java -Dspring.config=../properties/default_db2.xml \
     -Dlog4j.configuration=file://$HOMEDIR/properties/log4j.properties \
     -jar lib/EntrezGeneLoading.jar \
-    -download+process 2000/01/01 auto \
+    -download+process fullload auto \
     -species $1 > fullload_$1.log
 mailx -s "[$SERVER] Full Load Gene pipeline finished running for %1" $ELIST < fullload_$1.log
 
