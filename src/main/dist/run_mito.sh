@@ -2,12 +2,12 @@
 #
 echo  "starting EntrezGene pipeline in mitochondrial mode"
 cd /home/rgddata/pipelines/EntrezGeneLoading
-java -Dspring.config=../properties/default_db.xml -jar EntrezGeneLoading.jar -mitochondrial -species rat > mtrat.log
-mailx -s "[KIRWAN] Rat EntrezGene pipeline for mitochondrial genes finished running" rgd.developers@mcw.edu < mtrat.log
-#
-java -Dspring.config=../properties/default_db.xml -jar EntrezGeneLoading.jar -mitochondrial -species mouse > mtmouse.log
-mailx -s "[KIRWAN] Mouse EntrezGene pipeline for mitochondrial genes finished running" rgd.developers@mcw.edu < mtmouse.log
-#
-java -Dspring.config=../properties/default_db.xml -jar EntrezGeneLoading.jar -mitochondrial -species human > mthuman.log
-mailx -s "[KIRWAN] Human EntrezGene pipeline for mitochondrial genes finished running" rgd.developers@mcw.edu < mthuman.log
+SERVER=`hostname -s | tr '[a-z]' '[A-Z]'`
+
+SPECIES_LIST=( "human" "mouse" "rat" "dog" "bonobo" "squirrel" "chinchilla" "pig" )
+
+for SPECIES in "${SPECIES_LIST[@]}"; do
+    $HOMEDIR/run_species.sh -mitochondrial "$SPECIES" > mt${SPECIES}.log
+    mailx -s "[$SERVER] $SPECIES EntrezGene pipeline for mitochondrial genes OK" mtutaj@mcw.edu < mt${SPECIES}.log
+done
 
