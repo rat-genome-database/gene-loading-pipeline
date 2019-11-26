@@ -1,6 +1,6 @@
 Nov 25, 2019
   updated script for loading mitochondrial genes
-  
+
 Nov 22, 2019
   -for non-rat species: qc checks relaxed and new genes are loaded regardless if sequences are present or not
        also no sequence checking is performed, so sequences are always updated
