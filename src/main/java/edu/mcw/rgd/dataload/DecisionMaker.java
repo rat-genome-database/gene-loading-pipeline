@@ -19,7 +19,6 @@ public class DecisionMaker {
     int newGenes=0;
     int updated=0;
     int error=0;
-    int noSeq=0;
     int noMHID=0;
     int skipped=0;
     int nameMismatch=0;
@@ -83,9 +82,7 @@ public class DecisionMaker {
         }
 
         // insert, update or upgrade depends on the flag value
-        if (flag.getFlagValue().equals(Flags.NOSEQ)) {
-            noSeq++;
-        } else if (flag.getFlagValue().equals(Flags.NOMHID)) {
+        if (flag.getFlagValue().equals(Flags.NOMHID)) {
             noMHID ++;
         } else if (flag.getLoadStatus().equals(Flags.SKIP)) {
             throw new Exception("Unexpected SKIP status");
@@ -96,10 +93,6 @@ public class DecisionMaker {
         switch (flag.getLoadStatus()) {
             case Flags.ERROR:
                 error++;
-                if (flag.getFlagValue().contains(Flags.NOSEQ)) {
-                    bulkGeneLoader.updateGeneOnly(bg);
-                    updated++;
-                }
                 break;
             case Flags.INSERT:
                 // do not insert new genes that are flagged as DISCONTINUED or SECONDARY (very rare, but could happen)
@@ -172,10 +165,6 @@ public class DecisionMaker {
     }
     public int getNoMHID() {
         return noMHID;
-    }
-    
-    public int getNoSeq() {
-        return noSeq;
     }
     
     public BulkGeneLoaderImpl getBulkGeneLoader() {

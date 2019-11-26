@@ -230,7 +230,6 @@ public class QualityCheckBulkGene  {
         List<XdbId> rgdSeqXdbs = dao.getXdbIdsByRgdId(XdbId.XDB_KEY_GENEBANKNU, bulkGene.rgdGene.getRgdId());
         rgdSeqXdbs = xdbManager.removeGeneBankNucleotides(rgdSeqXdbs);
         List newSeqXdbs = bulkGene.getXdbIdsByXdbKey(XdbId.XDB_KEY_GENEBANKNU);
-        //logger.debug("the rgd xdb size: "+ rgdSeqXdbs.size());
         if (rgdSeqXdbs.size()==0 && newSeqXdbs.size()>0) {
             // the eg id and rgd id match, rgd has no sequence, new eg record has sequence
             // remove the EG ID from rgd gene
@@ -250,177 +249,13 @@ public class QualityCheckBulkGene  {
         }
         else {
             logger.debug("eg id and rgd id match, rgd record has sequence");
-            //ArrayList<RgdAccXdb> newSeqXdbs=fileGene.getRgdAccXdbByName(RgdAccXdb.GBNU);
 
-            if (oneXdbMatch(rgdSeqXdbs, newSeqXdbs)) {
-                //the eg id and rgd id match, at least one sequence match
-                // proceed to update
-                flag.setLoadStatus(Flags.UPDATE);
-                // check the new eg and rgd gene type
-                if (bulkGene.getEgType().contains("pseudotype")) {
-                    if (bulkGene.rgdGene.getType().contains("pseudotype")) {
-                        logger.debug("eg id and rgd id match, at least one sequence match, the type of both incoming eg and rgd gene is pseudo");
-                        // proceed to update
-                        dbLog.addLogProp("eg id and rgd id match, at least one sequence match, the type of both incoming eg and rgd gene is pseudo", "UPDATE", bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
-                    }
-                    else {
-
-                        if (bulkGene.rgdGene.getType().contains("predicted")) {
-                            logger.debug("eg id and rgd id match, at least one sequence match, eg type is pseudo, rgd type is predicted");
-                            // proceed to update
-                            dbLog.addLogProp("eg id and rgd id match, at least one sequence match, eg type is pseudo, rgd type is predicted", "UPDATE", bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
-
-                        }
-                        else {
-                            // change gene type, do update
-                            flag.setFlagValue(flag.getFlagValue()+","+ Flags.EGINRGD_DIFFTYPE);
-                            dbLog.addLogProp("eg id and rgd id match, at least one sequence match, eg type is pseudo, rgd type is neither pseudo nor predicted", "EG_IN_RGD_DIFF_TYPE", bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
-                        }
-                    }
-                }
-                else {
-                    logger.debug("eg id and rgd id match, at least one sequence match, eg type is not pseudo");
-                    dbLog.addLogProp("eg id and rgd id match, at least one sequence match, eg type is pseudo, incoming eg type is not pseudo", "UPDATE", bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
-                }
-
-                return flag;
-            }
-            else {
-                // there is not a single match between sequences in incoming data vs RGD
-                //
-                // is there a single XM or XR or NG sequence in RGD?
-                boolean isXmXrNg = hasSequence(rgdSeqXdbs, new String[]{"XM_","XR_","NG_"});
-
-                // there is XM or XR or NG sequence in RGD
-                if (isXmXrNg) {
-                    return handleXmXrNgSeq(flag, bulkGene);
-                }
-                else {
-                    // the eg id and rgd id match, sequence doesn't match, no sequence is XM or XR or NG
-                    //
-                    handleMissingSequence(flag, bulkGene, rgdSeqXdbs, newSeqXdbs);
-                    return flag;
-                }
-            }
-        }
-    }
-
-    // return true if there is at least one of the specified sequences given in 'seqs' array on the list
-    boolean hasSequence(List<XdbId> xdbs, String[] seqs) {
-
-        for (XdbId rgdXdb: xdbs) {
-            if (rgdXdb.getAccId()!=null) {
-                for( String seq: seqs ) {
-                    if (rgdXdb.getAccId().startsWith(seq) ) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    // return true if all of the specified sequences given in 'seqs' array are on the list
-    boolean hasAllSequences(List<XdbId> xdbs, String[] seqs) {
-
-        for (XdbId rgdXdb: xdbs) {
-            if (rgdXdb.getAccId()!=null) {
-                boolean isMatch = false;
-                for( String seq: seqs ) {
-                    if (rgdXdb.getAccId().startsWith(seq) ) {
-                        isMatch = true;
-                        break;
-                    }
-                }
-                if( !isMatch )
-                    return false;
-            }
-        }
-        return true;
-    }
-
-    private void handleMissingSequence(Flags flag, BulkGene bulkGene, List<XdbId> rgdSeqXdbs, List<XdbId> newSeqXdbs) throws Exception {
-
-        // the eg id and rgd id match, sequence doesn't match, no sequence in RGD is XM or XR or NG
-        String changedSeqIds = "RGD SEQs:"+rgdAccXdbToString(rgdSeqXdbs)+",NEW SEQs:"+rgdAccXdbToString(newSeqXdbs);
-        logger.debug("eg id and rgd id match, sequence doesn't match, no sequence in RGD is XM or XR or NG");
-
-        // IF the gene is pseudo AND there is no incoming sequence present, but THERE are sequences in RGD,
-        // THEN flag it as PSEUDO_GENE_WITH_NO_SEQ and proceed to gene UPDATE
-        if (bulkGene.getEgType().contains("pseudo") && !rgdSeqXdbs.isEmpty() && newSeqXdbs.isEmpty()) {
-
-            // proceed to update
+            // there is not a single match between sequences in incoming data vs RGD
+            logger.debug("eg id and rgd id match");
             flag.setLoadStatus(Flags.UPDATE);
-
-            String msg = "eg id and rgd id match, pseudo gene, sequence in RGD, no incoming sequence";
-            logger.debug(msg);
-            flag.setFlagValue(flag.getFlagValue()+","+ Flags.PSEUDO_WITH_NOSEQ);
-            dbLog.addLogProp(msg+"; "+changedSeqIds, Flags.PSEUDO_WITH_NOSEQ, bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
+            dbLog.addLogProp("eg id and rgd id match", "UPDATE", bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
+            return flag;
         }
-        else if( hasSequence(newSeqXdbs, new String[]{"XM_","XR_","NG_","NM_","NR_"}) ) {
-            // EG ID and rgd id match, sequence does not match, no sequence in RGD is XM or XR or NG
-            // but there is XM or XR or NG or NM or NR sequence in incoming data
-
-            flag.setFlagValue(flag.getFlagValue()+","+ Flags.EGINRGD_NEWSEQS);
-            flag.setLoadStatus(Flags.UPDATE);
-            dbLog.addLogProp(changedSeqIds+"<br>eg id and rgd id match, sequence doesn't match, no sequence in RGD is XM or XR or NG, incoming sequence is XM or XR or NG or NR or NM", "EG_IN_RGD_NEW_SEQS", bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
-            // print the accession ID
-            flag.setRelatedInfo(flag.getRelatedInfo()+", "+changedSeqIds);
-        }
-        else
-        // EG ID and rgd id match, sequence does not match, no sequence in RGD is XM or XR or NG or NM or NR
-        // and there is no XM or XR or NG sequence in incoming data
-        // but both the incoming data and matching gene RGD do contain AA sequences
-        if( hasSequence(newSeqXdbs, new String[]{"AABR", "AAHX"}) && hasAllSequences(rgdSeqXdbs, new String[]{"AABR", "AAHX"}) ) {
-
-            flag.setFlagValue(flag.getFlagValue()+","+ Flags.EGINRGD_AASEQS);
-            flag.setLoadStatus(Flags.UPDATE);
-            dbLog.addLogProp(changedSeqIds+"<br>eg id and rgd id match, sequence doesn't match, new AA sequences", "EG_IN_RGD_AA_SEQS", bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
-            // print the accession ID
-            flag.setRelatedInfo(flag.getRelatedInfo()+", "+changedSeqIds);
-
-        } else {
-            flag.setFlagValue(flag.getFlagValue()+","+ Flags.EGINRGD_DIFFSEQ);
-            flag.setLoadStatus(Flags.ERROR);
-            dbLog.addLogProp(changedSeqIds+"<br>eg id and rgd id match, sequence doesn't match, no sequence is XM or XR or NG or NM or NR", "EG_IN_RGD_DIFF_SEQ", bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
-            // print the accession ID
-            flag.setRelatedInfo(flag.getRelatedInfo()+", "+changedSeqIds);
-        }
-    }
-
-    Flags handleXmXrNgSeq(Flags flag, BulkGene bulkGene) {
-
-        // the eg id and rgd id match, sequence doesn't match, has XM or XR or NG sequence
-        logger.debug("eg id and rgd id match, sequence doesn't match, has XM or XR or NG sequence");
-        flag.setLoadStatus(Flags.UPDATE);
-        dbLog.addLogProp("eg id and rgd id match, sequence doesn't match, has XM or XR or NG sequence", "UPDATE", bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
-
-        if (bulkGene.getEgType().contains("pseudotype")) {
-            if (bulkGene.rgdGene.getType().contains("pseudotype")) {
-                logger.debug("eg id and rgd id match, sequence doesn't match, has xm sequence, the type of both incoming eg and rgd gene is pseudo");
-                // proceed to update
-                dbLog.addLogProp("... type of both incoming eg and rgd gene is pseudo", "UPDATE", bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
-            }
-            else {
-
-                if (bulkGene.rgdGene.getType().contains("predicted")) {
-                    logger.debug("eg id and rgd id match, sequence doesn't match, has xm sequence, eg type is pseudo, rgd type is predicted");
-                    // proceed to update
-                    dbLog.addLogProp("... eg type is pseudo, rgd type is predicted", "UPDATE", bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
-                }
-                else {
-                    // change gene type, do update
-                    flag.setFlagValue(flag.getFlagValue()+","+ Flags.EGINRGD_DIFFTYPE);
-                    flag.setRelatedInfo(flag.getRelatedInfo()+",Changed gene type in RGD");
-                    dbLog.addLogProp("... changed gene type in rgd", "EG_IN_RGD_DIFF_TYPE", bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
-                }
-            }
-        }
-        else {
-            logger.debug("eg id and rgd id match, at least one sequence match, incoming eg type is not pseudo");
-            dbLog.addLogProp("... incoming eg type is not pseudo", "UPDATE", bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
-        }
-        return flag;
     }
 
     private boolean oneXdbMatch(List<XdbId> rgdXdbs, List<XdbId> newXdbs ) {

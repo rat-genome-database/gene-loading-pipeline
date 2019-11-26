@@ -521,7 +521,6 @@ public class DataLoadingManager {
         logger.info(genesWithWrongType + " entrezgenes are skipped because of wrong type.");
         if (speciesTypeKey==SpeciesType.HUMAN || speciesTypeKey==SpeciesType.MOUSE) {
             logger.info(decisionMaker.getNoMHID() + " entrezgenes are skipped because they have no MGI/HGNC ID.");
-            logger.info(decisionMaker.getNoSeq()+ " entrezgenes are not loaded because they have no sequence.");
         }
         logger.info(decisionMaker.getNewGenes() + " entrezgenes are new and inserted.");
         logger.info(decisionMaker.getUpdated() + " entrezgenes are updated.");        
@@ -532,7 +531,6 @@ public class DataLoadingManager {
         dbLogger.log("totalNumberGenes: total entrezgene records processed", Integer.toString(bgTotal), PipelineLogger.TOTAL);
         if (speciesTypeKey==SpeciesType.HUMAN || speciesTypeKey==SpeciesType.MOUSE) {
             dbLogger.log("genesNoMHID: entrezgene records skipped because they have no MGI/HGNC ID", Integer.toString(decisionMaker.getNoMHID()), PipelineLogger.TOTAL);
-            dbLogger.log("genesNoSequence: entrezgene records are not loaded because they have no sequence", Integer.toString(decisionMaker.getNoSeq()), PipelineLogger.TOTAL);
         }
         dbLogger.log("genesNew: entrezgene records new and inserted", Integer.toString(decisionMaker.getNewGenes()), PipelineLogger.TOTAL);
         dbLogger.log("genesUpdated: entrezgene records updated", Integer.toString(decisionMaker.getUpdated()), PipelineLogger.TOTAL);
@@ -560,7 +558,6 @@ public class DataLoadingManager {
             rgdLogger.log (subSystem, "genesUpdated", decisionMaker.getUpdated());
             rgdLogger.log (subSystem, "genesSkipped", decisionMaker.skipped);
             if (subSystem.equals("entrezGeneMouse") || subSystem.equals("entrezGeneHuman")) {
-                rgdLogger.log(subSystem, "genesNoSequence", decisionMaker.getNoSeq());
                 rgdLogger.log(subSystem, "genesNoMHID", decisionMaker.getNoMHID());
             }
         }        

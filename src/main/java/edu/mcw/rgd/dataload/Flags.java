@@ -9,13 +9,7 @@ public class Flags {
     public static final String EGINRGD_DIFFRGDID="EG_IN_RGD_DIFF_RGDID";
     public static final String EGINRGD_DIFFMHID="EG_IN_RGD_DIFF_MGDID(HGNCID)";
     public static final String EGINRGD_VAR="EGID_IN_RGD_VARIATION";
-    public static final String EGINRGD_DIFFTYPE="GENE_TYPE_DIFF";
-    public static final String EGINRGD_DIFFSEQ="EG_IN_RGD_DIFF_SEQ";
-    public static final String PSEUDO_WITH_NOSEQ="PSEUDO_WITH_NOSEQ"; // not a conflict!
-    public static final String EGINRGD_NEWSEQS="EG_IN_RGD_NEW_SEQS";
-    public static final String EGINRGD_AASEQS="EG_IN_RGD_AA_SEQS";
 
-    public static final String NOSEQ="NO_SEQUENCE";
     public static final String NOMHID="NO_M-H_ID";
     public static final String NOEGID="NO_ENTREZGENE_ID";    
     public static final String MULTIGENES="MULTIPLE_GENES";
