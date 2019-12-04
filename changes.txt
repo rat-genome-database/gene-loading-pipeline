@@ -1,3 +1,6 @@
+Dec 04, 2019
+  code to delete redundant gene aliases have been moved to DataQcPipeline
+
 Nov 26, 2019
   rat genes are loaded regardless of presence of sequences
 

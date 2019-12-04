@@ -179,15 +179,6 @@ public class EGDAO {
     }
 
     /**
-     * delete all aliases that are the same as a gene name or gene symbol
-     * @return number of deleted aliases
-     * @throws Exception if something wrong happens in spring framework
-     */
-    public int deleteRedundantGeneAliases() throws Exception {
-        return aliasDAO.deleteRedundantGeneAliases();
-    }
-
-    /**
      * update last modified date for specified rgd id
      * @param rgdId rgd id
      * @throws Exception when unexpected error in spring framework occurs

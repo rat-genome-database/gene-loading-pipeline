@@ -235,12 +235,6 @@ public class DataLoadingManager {
                 manager.logStatistics();
                 manager.geneStatusIssueTracker.writeIssuesToFile();
             }
-            // download all genes for given species
-            else if (args[0].contains("delete_redundant_aliases") ) {
-                int deletedAliases = EGDAO.getInstance().deleteRedundantGeneAliases();
-                System.out.println("deleted "+deletedAliases+" redundant gene aliases (aliases that were the same as gene name or symbol)");
-                return;
-            }
             else {
                 manager.printHelp();
                 return;
@@ -595,8 +589,6 @@ public class DataLoadingManager {
             "      download and process all mitochondrial genes from NCBI\n" +
             "-microRNA\n" +
             "      download and process all microRNA genes found in RGD\n" +
-            "-delete_redundant_aliases\n" +
-            "      delete aliases that are the same as gene symbol or name\n" +
             "\n"+
             "     'dateFrom' and 'dateTo' must be formatted as 'yyyy/mm/dd'\n" +
             "     if 'dateFrom' is 'auto', it is set to the 'dateTo' date of latest successful pipeline run\n" +
