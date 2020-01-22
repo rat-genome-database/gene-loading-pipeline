@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- build Dec 04, 2019" />
+        <property name="version" value="Ncbi Gene Pipeline   -- build Jan 22, 2020" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -24,6 +24,7 @@
                 <entry key="Dog" value-ref="dogGenomicAssemblies"/>
                 <entry key="Squirrel" value-ref="squirrelGenomicAssemblies"/>
                 <entry key="Pig" value-ref="pigGenomicAssemblies"/>
+                <entry key="Vervet" value-ref="vervetGenomicAssemblies"/>
             </map>
         </property>
         <!--gene location history: gene location info provided by RefSeq for non-current (previous) assemblies -->
@@ -64,6 +65,7 @@
                 <entry key="CanFam3.1" value="631"/>
                 <entry key="SpeTri2.0" value="720"/>
                 <entry key="Sscrofa10.2" value="910"/>
+                <entry key="Chlorocebus_sabeus 1.1" value="1311"/>
             </map>
         </property>
         <property name="firstRecNo" value="0" /><!--number of record from which the processing starts-->
@@ -183,6 +185,14 @@
         </constructor-arg>
     </bean>
 
+    <bean id="vervetGenomicAssemblies" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="Reference Chlorocebus_sabeus 1.1 Primary Assembly" value="1311" />
+                <entry key="Cytomap" value="1300"/>
+            </map>
+        </constructor-arg>
+    </bean>
 
     <bean id="geneRelationships" class="edu.mcw.rgd.dataload.GeneRelationships">
         <property name="version" value="GeneRelationships module v. 2.0.0 as of May 10, 2019" />

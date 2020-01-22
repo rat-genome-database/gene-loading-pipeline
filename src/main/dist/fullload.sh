@@ -1,5 +1,5 @@
-#runs weekly loading for one species
-# parameter is rat|mouse|human|...
+#for given species, download and process all genes that have been modified since 2000/01/01 at NCBI
+# parameter is common species name: rat|mouse|human|...
 #
 HOMEDIR=/home/rgddata/pipelines/EntrezGeneLoading
 SERVER=`hostname -s | tr '[a-z]' '[A-Z]'`

@@ -1,10 +1,9 @@
-# script to run first rat EntrezGene pipeline followed by Ortholog loading and Ortholog ftp export
-# and then human and mouse EntrezGene pipelines
+# load gene models from NCBI for a number of species
 . /etc/profile
 HOMEDIR=/home/rgddata/pipelines/EntrezGeneLoading
 cd $HOMEDIR
 
-SPECIES_LIST=( "human" "mouse" "rat" "dog" "bonobo" "squirrel" "chinchilla" "pig" )
+SPECIES_LIST=( "human" "mouse" "rat" "dog" "bonobo" "squirrel" "chinchilla" "pig" "vervet" )
 
 for SPECIES in "${SPECIES_LIST[@]}"; do
     $HOMEDIR/run_species.sh "$SPECIES"

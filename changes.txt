@@ -1,3 +1,6 @@
+Jan 22, 2020
+  added support for new species Vervet (green monkey)
+
 Dec 04, 2019
   code to delete redundant gene aliases have been moved to DataQcPipeline
 
