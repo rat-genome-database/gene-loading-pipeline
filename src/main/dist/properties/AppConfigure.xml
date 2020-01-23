@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- build Jan 22, 2020" />
+        <property name="version" value="Ncbi Gene Pipeline   -- build Jan 23, 2020" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -25,6 +25,7 @@
                 <entry key="Squirrel" value-ref="squirrelGenomicAssemblies"/>
                 <entry key="Pig" value-ref="pigGenomicAssemblies"/>
                 <entry key="Vervet" value-ref="vervetGenomicAssemblies"/>
+                <entry key="Molerat" value-ref="moleratGenomicAssemblies"/>
             </map>
         </property>
         <!--gene location history: gene location info provided by RefSeq for non-current (previous) assemblies -->
@@ -66,6 +67,7 @@
                 <entry key="SpeTri2.0" value="720"/>
                 <entry key="Sscrofa10.2" value="910"/>
                 <entry key="Chlorocebus_sabeus 1.1" value="1311"/>
+                <entry key="HetGla_female_1.0" value="1410"/>
             </map>
         </property>
         <property name="firstRecNo" value="0" /><!--number of record from which the processing starts-->
@@ -190,6 +192,14 @@
             <map>
                 <entry key="Reference Chlorocebus_sabeus 1.1 Primary Assembly" value="1311" />
                 <entry key="Cytomap" value="1300"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="moleratGenomicAssemblies" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="Reference HetGla_female_1.0 Primary Assembly" value="1410"/>
             </map>
         </constructor-arg>
     </bean>
