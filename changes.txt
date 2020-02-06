@@ -1,3 +1,6 @@
+Feb 06, 2020
+  inserted genes have 'gene_source' set to 'NCBI'
+
 Jan 23, 2020
   added support for new species Naked Mole-Rat
 

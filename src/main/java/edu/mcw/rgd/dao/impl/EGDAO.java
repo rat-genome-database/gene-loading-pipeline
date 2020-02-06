@@ -419,6 +419,9 @@ public class EGDAO {
      */
     public void insertGene(Gene gene) throws Exception{
 
+        // ensure 'gene_type' is set to NCBI
+        gene.setGeneSource("NCBI");
+
         geneDAO.insertGene(gene);
     }
 
