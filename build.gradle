@@ -17,9 +17,6 @@ String myAppName = 'EntrezGeneLoading'
 
 repositories {
     mavenCentral()
-    maven {
-        url 'https://packages.atlassian.com/maven-3rdparty'
-    }
 }
 
 dependencies {
@@ -31,7 +28,6 @@ dependencies {
     compile 'org.apache.httpcomponents:httpclient:4.5.11'
     compile 'org.springframework:spring-beans:5.2.3.RELEASE'
     compile 'org.springframework:spring-jdbc:5.2.3.RELEASE'
-    compile 'com.oracle:ojdbc6:11.2.0.4.0-atlassian-hosted'
     compile 'com.io7m.xom:xom:1.2.10'
 
     compile fileTree(dir: 'lib', include: '*.jar')
