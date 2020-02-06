@@ -1,6 +1,7 @@
 Feb 06, 2020
   inserted genes have 'gene_source' set to 'NCBI'
   updated dependency for oracle jdbc driver
+  gene associations: added support for green monkey and naked mole rat
 
 Jan 23, 2020
   added support for new species Naked Mole-Rat
