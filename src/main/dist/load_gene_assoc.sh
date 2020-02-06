@@ -12,7 +12,7 @@ fi
 cd $HOMEDIR
 echo "" > $LOGFILE
 
-SPECIES_LIST=( "human" "mouse" "rat" "dog" "bonobo" "squirrel" "chinchilla" "pig" )
+SPECIES_LIST=( "human" "mouse" "rat" "dog" "bonobo" "squirrel" "chinchilla" "pig" "vervet" "molerat")
 
 for SPECIES in "${SPECIES_LIST[@]}"; do
 
