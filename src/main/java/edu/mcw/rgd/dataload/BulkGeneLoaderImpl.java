@@ -92,6 +92,10 @@ public class BulkGeneLoaderImpl {
             counters.increment("ORTHO_NOMEN_SYMBOL");
             dbFlagManager.setFlag("ORTHO_NOMEN_SYMBOL", bg.getRecNo());
         }
+        if (bg.isFlagSet("ORTHO_NOMEN_SYMBOL_CHANGE_SUPPRESSED_BY_HGNC")) {
+            counters.increment("ORTHO_NOMEN_SYMBOL_CHANGE_SUPPRESSED");
+            dbFlagManager.setFlag("ORTHO_NOMEN_SYMBOL_CHANGE_SUPPRESSED", bg.getRecNo());
+        }
 
         // update gene name and generate nomen event, excluding rat
         String prevName = rgdGene.getName();
@@ -103,6 +107,10 @@ public class BulkGeneLoaderImpl {
             }
             counters.increment("ORTHO_NOMEN_NAME");
             dbFlagManager.setFlag("ORTHO_NOMEN_NAME", bg.getRecNo());
+        }
+        if (bg.isFlagSet("ORTHO_NOMEN_NAME_CHANGE_SUPPRESSED_BY_HGNC")) {
+            counters.increment("ORTHO_NOMEN_NAME_CHANGE_SUPPRESSED");
+            dbFlagManager.setFlag("ORTHO_NOMEN_NAME_CHANGE_SUPPRESSED", bg.getRecNo());
         }
 
         // update gene description excluding rat
