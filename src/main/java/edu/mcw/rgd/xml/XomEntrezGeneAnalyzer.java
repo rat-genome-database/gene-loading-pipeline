@@ -575,7 +575,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
                     break;
             }
             bulkGene.setChromosome(chromosome);
-            bulkGene.setFishband(raw.substring(i));
+            bulkGene.setFishband(raw.substring(i).trim());
 
             // try cM map
             raw = xpcM.stringValueOf(element);
