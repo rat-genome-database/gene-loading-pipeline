@@ -243,8 +243,6 @@ public class BulkGeneXmlCreator {
             el.addAttribute(new Attribute("chromosome", map.getChromosome()));
         if( map.getFishBand()!=null )
             el.addAttribute(new Attribute("fishBand", map.getFishBand()));
-        if( map.getBandType()!=null )
-            el.addAttribute(new Attribute("bandType", map.getBandType()));
         if( map.getStartPos()!=null )
             el.addAttribute(new Attribute("startPos", Integer.toString(map.getStartPos())));
         if( map.getStopPos()!=null )

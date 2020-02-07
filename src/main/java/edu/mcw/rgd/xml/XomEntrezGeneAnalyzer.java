@@ -812,8 +812,10 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
             if( bulkGene.getChromosome()==null && !Utils.isStringEmpty(bulkGene.chromosome2) )
                 bulkGene.setChromosome(bulkGene.chromosome2);
 
-            // create cytogenetic mapping for a chromosome and optional fishband
-            if( !Utils.isStringEmpty(bulkGene.getChromosome()) && genomicAssemblies!=null && genomicAssemblies.get("Cytomap")!=null ) {
+            // create cytogenetic mapping for a chromosome and mandatory fishband
+            if( !Utils.isStringEmpty(bulkGene.getChromosome()) && !Utils.isStringEmpty(bulkGene.getFishband())
+                    && genomicAssemblies!=null && genomicAssemblies.get("Cytomap")!=null ) {
+
                 MapData map = new MapData();
                 map.setChromosome(bulkGene.getChromosome());
                 map.setFishBand(bulkGene.getFishband());
