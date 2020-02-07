@@ -1,3 +1,7 @@
+Feb 07, 2020
+  cytoband logic updated: fishband field is now mandatory for loading
+  removed support for discontinued MAPS_DATA.BAND_TYPE field
+
 Feb 06, 2020
   inserted genes have 'gene_source' set to 'NCBI'
   updated dependency for oracle jdbc driver

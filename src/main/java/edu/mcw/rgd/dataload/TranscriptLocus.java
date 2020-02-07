@@ -20,7 +20,6 @@ public class TranscriptLocus {
 
     List<TranscriptFeature> coords; // genomic coordinates -- exons
     List<TranscriptFeature> cdsCoords; // genomic coordinates -- cdss
-    // note: we will cheat a bit here, and put into bandType field the type of genomic feature: Feature
 
 
     public TranscriptLocus() {

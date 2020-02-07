@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- build Feb 06, 2020" />
+        <property name="version" value="Ncbi Gene Pipeline   -- build Feb 07, 2020" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
