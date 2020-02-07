@@ -797,6 +797,14 @@ public class DataLoadingManager {
             "ORTHO_NOMEN_DESC",
             "gene description changed"
             );
+        dbFlagManager.registerFlag(
+            "ORTHO_NOMEN_SYMBOL_CHANGE_SUPPRESSED",
+            "gene symbol in RGD different from NCBI; change suppressed by HGNC authority"
+        );
+        dbFlagManager.registerFlag(
+            "ORTHO_NOMEN_NAME_CHANGE_SUPPRESSED",
+            "gene name in RGD different from NCBI; change suppressed by HGNC authority"
+        );
 
         dbFlagManager.registerFlag(
             "BAD_SPECIES",

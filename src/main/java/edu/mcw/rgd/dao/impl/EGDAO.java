@@ -421,6 +421,8 @@ public class EGDAO {
 
         // ensure 'gene_type' is set to NCBI
         gene.setGeneSource("NCBI");
+        // ensure 'nomen_source' is set to NCBI
+        gene.setNomenSource("NCBI");
 
         geneDAO.insertGene(gene);
     }

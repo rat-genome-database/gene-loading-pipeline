@@ -637,29 +637,48 @@ public class QualityCheckBulkGene  {
             return;
 
         if( !Utils.stringsAreEqual(egGene.getSymbol(), rgdGene.getSymbol())) {
-            logNomen.info("gene symbol change: RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getSymbol() + "], NEW=[" + egGene.getSymbol() + "]");
-            logSymbol.info("|"+SpeciesType.getCommonName(rgdGene.getSpeciesTypeKey())
-                    +"|RGDID:"+rgdGene.getRgdId()
-                    +"|RGD SYMBOL|"+rgdGene.getSymbol()
-                    +"|NCBI SYMBOL|"+egGene.getSymbol());
-            bg.setFlag("ORTHO_NOMEN_SYMBOL");
 
-            Alias alias = new Alias();
-            alias.setValue(rgdGene.getSymbol());
-            alias.setTypeName("old_gene_symbol");
-            alias.setNotes("From entrezgene " + (new Timestamp(System.currentTimeMillis())).toString());
-            bg.aliases.addAlias(alias);
+            // if the current gene authority is HGNC, suppress gene symbol changes
+            if( Utils.stringsAreEqual(rgdGene.getNomenSource(), "HGNC") ) {
+
+                bg.setFlag("ORTHO_NOMEN_SYMBOL_CHANGE_SUPPRESSED_BY_HGNC");
+                logNomen.info("gene symbol change suppressed by HGNC: RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getSymbol() + "], NEW=[" + egGene.getSymbol() + "]");
+
+            } else {
+                logNomen.info("gene symbol change: RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getSymbol() + "], NEW=[" + egGene.getSymbol() + "]");
+                logSymbol.info("|" + SpeciesType.getCommonName(rgdGene.getSpeciesTypeKey())
+                        + "|RGDID:" + rgdGene.getRgdId()
+                        + "|RGD SYMBOL|" + rgdGene.getSymbol()
+                        + "|NCBI SYMBOL|" + egGene.getSymbol());
+                bg.setFlag("ORTHO_NOMEN_SYMBOL");
+
+                Alias alias = new Alias();
+                alias.setValue(rgdGene.getSymbol());
+                alias.setTypeName("old_gene_symbol");
+                alias.setNotes("From entrezgene " + (new Timestamp(System.currentTimeMillis())).toString());
+                bg.aliases.addAlias(alias);
+            }
         }
 
         if( !Utils.stringsAreEqual(egGene.getName(), rgdGene.getName())) {
-            logNomen.info("gene name change: RGD_ID=["+rgdGene.getRgdId()+"], OLD=["+rgdGene.getName()+"], NEW=["+egGene.getName()+"]");
-            bg.setFlag("ORTHO_NOMEN_NAME");
 
-            Alias alias = new Alias();
-            alias.setValue(rgdGene.getName());
-            alias.setTypeName("old_gene_name");
-            alias.setNotes("From entrezgene " + (new Timestamp(System.currentTimeMillis())).toString());
-            bg.aliases.addAlias(alias);
+            // if the current gene authority is HGNC, suppress gene name changes
+            if( Utils.stringsAreEqual(rgdGene.getNomenSource(), "HGNC") ) {
+
+                bg.setFlag("ORTHO_NOMEN_NAME_CHANGE_SUPPRESSED_BY_HGNC");
+                logNomen.info("gene name change suppressed by HGNC: RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getName() + "], NEW=[" + egGene.getName() + "]");
+
+            } else {
+
+                logNomen.info("gene name change: RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getName() + "], NEW=[" + egGene.getName() + "]");
+                bg.setFlag("ORTHO_NOMEN_NAME");
+
+                Alias alias = new Alias();
+                alias.setValue(rgdGene.getName());
+                alias.setTypeName("old_gene_name");
+                alias.setNotes("From entrezgene " + (new Timestamp(System.currentTimeMillis())).toString());
+                bg.aliases.addAlias(alias);
+            }
         }
 
         if( !Utils.stringsAreEqual(egGene.getDescription(), rgdGene.getDescription())) {

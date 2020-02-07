@@ -1,6 +1,7 @@
 Feb 07, 2020
   cytoband logic updated: fishband field is now mandatory for loading
   removed support for discontinued MAPS_DATA.BAND_TYPE field
+  suppress nomenclature events for genes with NOMEN_SOURCE=HGNC
 
 Feb 06, 2020
   inserted genes have 'gene_source' set to 'NCBI'
