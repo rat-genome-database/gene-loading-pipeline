@@ -12,6 +12,7 @@ import org.jaxen.JaxenException;
 import org.jaxen.XPath;
 import org.jaxen.xom.XOMXPath;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.sql.Timestamp;
 import java.util.*;
@@ -72,7 +73,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
     static XPath xpChromosome, xpChromosome2, xpcM, xpXdbProductAcc;
     static String sAssemblyMapChr, sAssemblyMapScaffold, sAnyAssemblyChr, sAnyAssemblyScaffold;
     static XPath xpAssemblyMapName, xpAssemblyAccession, xpMapStartPos, xpMapStopPos, xpMapStrand, xpAnyAssemblyName;
-    static XPath xpAssemblyMapLabel, xpGeneTrackStatus, xpGeneTrackCurrentId, xpXdbMgd, xpXdbHgnc, xpMTCommentary;
+    static XPath xpAssemblyMapLabel, xpGeneTrackStatus, xpGeneTrackCurrentId, xpXdbMgd, xpXdbHgnc, xpXdbVgnc, xpMTCommentary;
     static XPath xpXdbHomologene, xpXdbUniGene, xpXdbKeggReport, xpXdbKeggPathway, xpXdbKeggPathwayName, xpXdbUniProtType;
     static XPath xpXdbUniProt, xpXdbPubMed, xpXdbGenBankN, xpXdbGenBankP, xpXdbEnsembl, xpXdbEnsemblP, xpXdbMiRBase;
     static XPath xpProducts, xpGenomicCoords, xpGenomicCoords2, xpSeqInterval, xpProductType, xpProductLabel, xpAccession;
@@ -119,6 +120,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
             xpAliasesS = new XOMXPath("Gene-ref/Gene-ref_syn/Gene-ref_syn_E");
             xpXdbMgd = new XOMXPath("Gene-ref/Gene-ref_db/Dbtag[Dbtag_db='MGI']/Dbtag_tag/Object-id/Object-id_str");
             xpXdbHgnc = new XOMXPath("Gene-ref/Gene-ref_db/Dbtag[Dbtag_db='HGNC']/Dbtag_tag/Object-id/Object-id_str");
+            xpXdbVgnc = new XOMXPath("Gene-ref/Gene-ref_db/Dbtag[Dbtag_db='VGNC']/Dbtag_tag/Object-id/Object-id_str");
             xpXdbEnsemblP = new XOMXPath("Gene-ref/Gene-ref_db/Dbtag[Dbtag_db='Ensembl']/Dbtag_tag/Object-id/Object-id_str");
             xpXdbMiRBase = new XOMXPath("Gene-ref/Gene-ref_db/Dbtag[Dbtag_db='miRBase']/Dbtag_tag/Object-id/Object-id_str");
 
@@ -255,6 +257,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
 
             parseXdb(xpXdbMgd, element, XdbId.XDB_KEY_MGD);
             parseXdb(xpXdbHgnc, element, XdbId.XDB_KEY_HGNC);
+            parseXdb(xpXdbVgnc, element, 127);
             parseXdb(xpXdbMiRBase, element, XdbId.XDB_KEY_MIRBASE);
             parseXdbEnsembl(xpXdbEnsemblP, element);
         }
@@ -1164,5 +1167,18 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
 
     public void setCounters(CounterPool counters) {
         this.counters = counters;
+    }
+
+
+    public List<BulkGene> process(CounterPool counters) throws Exception {
+
+        setCounters(counters);
+
+        // use non-validating xml parser
+        setValidate(false);
+
+        parse(new File(getFileName()));
+
+        return bulkGenes;
     }
 }

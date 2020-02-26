@@ -1,3 +1,6 @@
+Feb 26, 2020
+  added loading of VGNC ids
+
 Feb 07, 2020
   cytoband logic updated: fishband field is now mandatory for loading
   removed support for discontinued MAPS_DATA.BAND_TYPE field
