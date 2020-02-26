@@ -11,6 +11,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map;
@@ -409,8 +410,7 @@ public class DataLoadingManager {
         parser.setGeneLocationHistory(getGeneLocationHistoryForCurrentSpecies());
         parser.setFileName(fileName);
 
-        XmlProcessingThread xmlProcessor = new XmlProcessingThread(parser);
-        List<BulkGene> bulkGenes = xmlProcessor.process(counters);
+        List<BulkGene> bulkGenes = parser.process(counters);
 
         // generate file name for storing bulkgenes
         String format = "data/BulkGenes_%s_%s_%s.xml";
