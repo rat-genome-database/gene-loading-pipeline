@@ -176,7 +176,7 @@ public class EntrezGeneExtractor {
                 retstart += recCountToFetch;
 
                 // sleep between consecutive fetches to avoid overload of NCBI server (try to be nice to them :-) )
-                Thread.sleep(1000*this.delayBetweenFetches);
+                sleepBetweenFetchRequests();
             }
         }
         else if( !eSearch.recordCount.equals("0") ) {
@@ -277,7 +277,7 @@ public class EntrezGeneExtractor {
                     dbLogger.log("NCBI eFetch uri", eSearch.fetchQuery, PipelineLogger.INFO);
 
                     // sleep between consecutive fetches to avoid overload of NCBI server (try to be nice to them :-) )
-                    Thread.sleep(1000*this.delayBetweenFetches);
+                    sleepBetweenFetchRequests();
 
                     // successful download -- if time duration needed to download the file via eFetch is more than 1 min
                     //    then decrease the list len by 10%
@@ -299,7 +299,7 @@ public class EntrezGeneExtractor {
                         "\nId List Len : "+ idListLen);
 
                     // sleep between consecutive fetches to avoid overload of NCBI server (try to be nice to them :-) )
-                    Thread.sleep(1000 * this.delayBetweenFetches);
+                    sleepBetweenFetchRequests();
                 }
             }
 
@@ -485,8 +485,23 @@ public class EntrezGeneExtractor {
            logger.error("Making directory SecurityException catched");
        }
        return success;
-     }
-    
+    }
+
+    void sleepBetweenFetchRequests() throws InterruptedException {
+
+        // during work hours: 8am through 6 pm, and Monday through Friday, double the sleep duration
+        long millis = 1000*getDelayBetweenFetches();
+
+        Calendar cal = new GregorianCalendar();
+        int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+        int hourOfDay = cal.get(Calendar.HOUR_OF_DAY);
+        if( dayOfWeek!=Calendar.SATURDAY && dayOfWeek!=Calendar.SUNDAY && hourOfDay>=8 && hourOfDay<=18 ) {
+            millis *= 2;
+        }
+
+        Thread.sleep(millis);
+    }
+
     public String getDateFrom() {
         return dateFrom;
     }
