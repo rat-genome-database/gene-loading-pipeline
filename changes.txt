@@ -1,5 +1,6 @@
 Feb 26, 2020
   added loading of VGNC ids
+  during typical work hours the duration between consequtive requests to NCBI EUTILS is doubled
 
 Feb 07, 2020
   cytoband logic updated: fishband field is now mandatory for loading
