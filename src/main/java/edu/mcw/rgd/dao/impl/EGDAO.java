@@ -312,7 +312,8 @@ public class EGDAO {
         for( XdbId xdbId: xdbIds ) {
             logXdbIds.info("DELETE "+objectType+"|"+xdbId.dump("|"));
         }
-        return xdbidDAO.deleteXdbIds((List<XdbId>)xdbIds);
+        xdbidDAO.deleteXdbIds((List<XdbId>)xdbIds);
+        return xdbIds.size();
     }
 
     /**
@@ -327,12 +328,11 @@ public class EGDAO {
         if( xdbIds==null )
             return 0;
 
-        int affectedRows = 0;
         for( XdbId xdbId: xdbIds ) {
             logXdbIds.info("UPDATE|"+xdbId.dump("|"));
-            affectedRows += xdbidDAO.updateByKey(xdbId);
+            xdbidDAO.updateByKey(xdbId);
         }
-        return affectedRows;
+        return xdbIds.size();
     }
 
     /**
@@ -361,10 +361,13 @@ public class EGDAO {
      */
     public int insertXdbs(Collection<XdbId> xdbIds, String objectType) throws Exception {
 
+        xdbidDAO.insertXdbs((List<XdbId>)xdbIds);
+
         for( XdbId xdbId: xdbIds ) {
             logXdbIds.info("INSERT "+objectType+"|" + xdbId.dump("|"));
         }
-        return xdbidDAO.insertXdbs((List<XdbId>)xdbIds);
+
+        return xdbIds.size();
     }
 
     /**
