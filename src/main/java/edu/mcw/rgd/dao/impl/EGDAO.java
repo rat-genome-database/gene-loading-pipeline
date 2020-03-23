@@ -78,11 +78,7 @@ public class EGDAO {
     }
 
     public int getPrimaryMapKey(int speciesTypeKey) throws Exception {
-        if( speciesTypeKey==8 ) {
-            return 0; // no primary ref assembly for zebrafish
-        }
-
-        Map map = mapDAO.getPrimaryRefAssembly(speciesTypeKey);
+        Map map = mapDAO.getPrimaryRefAssembly(speciesTypeKey, "NCBI");
         if( map!=null )
             return map.getKey();
         else
