@@ -1,3 +1,6 @@
+Mar 23, 2020
+  fix in how to get primary ref assemblies
+
 Feb 27, 2020
   fixed counts of XDB IDS deleted/inserted/matched (count double was reported)
 
