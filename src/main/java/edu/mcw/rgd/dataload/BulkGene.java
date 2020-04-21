@@ -50,15 +50,7 @@ public class BulkGene {
     // auxiliary data evaluated during second phase of quality check
     // (if evaluated here, the data loading will be faster)
 
-    List<XdbId> xdbIds; // incoming xdbs
-    // new xdb ids to be put to rgd
-    public List<XdbId> toBeInsertedXdbIds;
-    // old xdb ids to be removed from rgd
-    public List<XdbId> toBeRemovedXdbIds;
-    // xdb ids to be updated from rgd
-    public List<XdbId> toBeUpdatedXdbIds;
-    // xdb ids matching with rgd rgd
-    public List<XdbId> matchingXdbIds;
+    private List<XdbId> xdbIds = new ArrayList<>(); // incoming xdbs
 
     public GenePositions genePositions;
 
@@ -76,7 +68,6 @@ public class BulkGene {
 
 	public BulkGene(){
 		gene.setSymbol("empty");
-		xdbIds = new ArrayList<>();
         dao = EGDAO.getInstance();
         genePositions = new GenePositions(dao);
         transcriptXdbIds = new TranscriptXdbIds();
@@ -120,7 +111,7 @@ public class BulkGene {
         }
 		this.xdbIds.add(newRec);
 	}
-	
+
 	public List<XdbId> getXdbIdsByXdbKey(int xdbKey) {
 
 		ArrayList<XdbId> xdbs = new ArrayList<> ();
@@ -128,8 +119,8 @@ public class BulkGene {
             if( xdbId.getXdbKey()==xdbKey ) {
                 if (xdbId.getAccId()!=null)
                     xdbs.add(xdbId);
-            }   	         
-        }  
+            }
+        }
         return xdbs;
     }
 

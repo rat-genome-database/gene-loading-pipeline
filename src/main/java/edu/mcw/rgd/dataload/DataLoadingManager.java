@@ -395,7 +395,6 @@ public class DataLoadingManager {
         String speciesName = SpeciesType.getCommonName(speciesTypeKey);
         logger.info("Processing entrezgene file:" + fileName);
         dbLogger.log("Starting XML processing of entrezgene file", fileName, PipelineLogger.INFO);
-        System.out.println("setting up threads");
 
         qualityCheck.setGenomicAssemblies(getGenomicAssembliesForCurrentSpecies());
         qualityCheck.setDbFlagManager(dbFlagManager);
@@ -447,8 +446,6 @@ public class DataLoadingManager {
         // store count of records processed
         bgTotal = bulkGenes.size();
         genesWithWrongType = counters.get("WRONG_GENE_TYPE");
-
-        System.out.println("threads stopped!");
 
         dbLogger.log("Finished XML processing of entrezgene file", fileName, PipelineLogger.INFO);
 

@@ -885,10 +885,6 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
 
             // xdb ids -- compute linkText and srcPipeline
             for( XdbId xdb : bulkGene.getXdbIds() ) {
-
-                if( xdb.getLinkText()==null )
-                    xdb.setLinkText(xdb.getAccId());
-
                 xdb.setSrcPipeline(XdbManager.EG_PIPELINE);
             }
 

@@ -257,7 +257,6 @@ public class EGDAO {
     }
 
     public List<XdbId> getXdbIdsByRgdId(int xdbKey, int rgdId) throws Exception {
-
         return xdbidDAO.getXdbIdsByRgdId(xdbKey, rgdId);
     }
 
@@ -309,25 +308,6 @@ public class EGDAO {
             logXdbIds.info("DELETE "+objectType+"|"+xdbId.dump("|"));
         }
         xdbidDAO.deleteXdbIds((List<XdbId>)xdbIds);
-        return xdbIds.size();
-    }
-
-    /**
-     * update properties of list of XdbIds objects
-     * @param xdbIds list of objects with data to be updated
-     * @return count of rows affected
-     * @throws Exception when unexpected error in spring framework occurs
-     */
-    public int updateXdbIds(List<XdbId> xdbIds) throws Exception {
-
-        // sanity check
-        if( xdbIds==null )
-            return 0;
-
-        for( XdbId xdbId: xdbIds ) {
-            logXdbIds.info("UPDATE|"+xdbId.dump("|"));
-            xdbidDAO.updateByKey(xdbId);
-        }
         return xdbIds.size();
     }
 
