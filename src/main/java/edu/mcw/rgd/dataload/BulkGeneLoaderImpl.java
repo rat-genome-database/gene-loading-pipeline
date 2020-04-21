@@ -5,6 +5,7 @@ import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.PipelineLogFlagManager;
 import edu.mcw.rgd.process.Utils;
+import edu.mcw.rgd.process.XdbManager;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -35,8 +36,8 @@ public class BulkGeneLoaderImpl {
 
         updateGeneOnly(bg);
 
-        // update list of xdb ids for current rgd_id and pipeline
-        updateXdbIds(bg);
+        // insert xdbs
+        updateXdbIds(bg.rgdGene.getRgdId(), bg);
 
         // add new aliases to database
         counters.add("ALIASES_INSERTED", bg.dao.insertAliases(bg.aliases.forInsert));
@@ -350,22 +351,20 @@ public class BulkGeneLoaderImpl {
 
         // are any xdb ids to be inserted?
         List<XdbId> xdbs = bg.getXdbIds();
-        if (xdbs!=null && xdbs.size() >0 ) {
+        if (xdbs!=null ) {
+
+            GeneXdbIds geneXdbIds = new GeneXdbIds();
+
             // ensure all xdb ids have valid rgd-id
-            for( XdbId xdb: xdbs ) {
-                xdb.setRgdId(rgdId);
+            for( XdbId id: xdbs ) {
+                id.setRgdId(rgdId);
+                id.setSrcPipeline(XdbManager.EG_PIPELINE);
+
+                geneXdbIds.addIncoming(id);
             }
-            bg.toBeInsertedXdbIds = xdbs;
-            updateXdbIds(bg);
+
+            geneXdbIds.qc(rgdId, counters);
         }
-    }
-
-    void updateXdbIds(BulkGene bg) throws Exception {
-
-        counters.add("XDBIDS_DELETED", bg.dao.deleteXdbIds(bg.toBeRemovedXdbIds, "GENE"));
-        counters.add("XDBIDS_INSERTED", bg.dao.insertXdbs(bg.toBeInsertedXdbIds, "GENE"));
-        counters.add("XDBIDS_UPDATED", bg.dao.updateXdbIds(bg.toBeUpdatedXdbIds));
-        bg.dao.updateModificationDate(bg.matchingXdbIds);
     }
 
     void updateAliases(int rgdId, BulkGene bg) throws Exception {

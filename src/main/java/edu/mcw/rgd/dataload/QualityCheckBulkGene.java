@@ -258,19 +258,6 @@ public class QualityCheckBulkGene  {
         }
     }
 
-    private boolean oneXdbMatch(List<XdbId> rgdXdbs, List<XdbId> newXdbs ) {
-
-        for (XdbId rgdXdb: rgdXdbs) {
-            for (XdbId newXdb: newXdbs) {
-                if (newXdb.getAccId()!=null && rgdXdb.getAccId()!=null && newXdb.getAccId().trim().equals(rgdXdb.getAccId().trim())) {
-                    return true;
-                }
-            }
-        }        
-        return false;        
-    }
-    
-    
     public Flags orthologsCheck (BulkGene fileGene, XdbId xdbId) throws Exception {
 
         Flags flag;
@@ -499,8 +486,6 @@ public class QualityCheckBulkGene  {
 
             bg.aliases.qcIncomingAliases(bg.rgdGene, rgdId, counters);
 
-            qcXdbIds(bg, rgdId);
-
             //##### TRANSCRIPTS
             // load rgd transcripts
             bg.rgdTranscripts = transcriptDAO.getTranscriptsForGene(rgdId);
@@ -523,77 +508,6 @@ public class QualityCheckBulkGene  {
             bg.rgdTranscripts = new ArrayList<Transcript>();
         if( bg.rgdFeatures==null )
             bg.rgdFeatures = new ArrayList<TranscriptFeature>(32);
-    }
-
-    void qcXdbIds(BulkGene bg, int rgdId) throws Exception {
-
-        // get a copy of rgd xdb ids for given rgdid and ENTREZGENE pipeline
-        XdbId xdbId = new XdbId();
-        xdbId.setRgdId(rgdId);
-        xdbId.setSrcPipeline(XdbManager.EG_PIPELINE);
-        List<XdbId> rgdXdbIds = bg.dao.getXdbIds(xdbId);
-
-        // set rgdid for incoming xdb ids
-        List<XdbId> xdbs = bg.getXdbIds();
-        if (xdbs!=null && xdbs.size() >0 ) {
-            // ensure all incoming xdb ids have valid rgd-id assigned
-            for( XdbId xdb: xdbs ) {
-                xdb.setRgdId(rgdId);
-            }
-        }
-        // construct a set of duplicates: xdbids that are present both in rgd and in incoming list
-        List<XdbId> matchingXdbs = new ArrayList<XdbId>(rgdXdbIds);
-        matchingXdbs.retainAll(xdbs);
-        // remove from incoming xdbids those that are already in rgd
-        List<XdbId> xdbsIncoming = new ArrayList<XdbId>(xdbs);
-        xdbsIncoming.removeAll(rgdXdbIds);
-        // remove from rgdids the duplicates (present on incoming xdbid list)
-        rgdXdbIds.removeAll(matchingXdbs);
-        counters.add("XDBIDS_MATCHED", matchingXdbs.size());
-        // update bg
-        bg.toBeInsertedXdbIds = xdbsIncoming;
-        bg.toBeRemovedXdbIds = rgdXdbIds;
-        bg.matchingXdbIds = matchingXdbs;
-
-        qcKeggPathwayIds(bg);
-    }
-
-    void qcKeggPathwayIds(BulkGene bg) throws Exception {
-
-        // if there are any KEGG pathway ids among to-be-inserted or to-be-removed array,
-        // they should be removed
-        Iterator<XdbId> it = bg.toBeInsertedXdbIds.iterator();
-        while( it.hasNext() ) {
-            if( it.next().getXdbKey()==XdbId.XDB_KEY_KEGGPATHWAY )
-                it.remove();
-        }
-
-        it = bg.toBeRemovedXdbIds.iterator();
-        while( it.hasNext() ) {
-            if( it.next().getXdbKey()==XdbId.XDB_KEY_KEGGPATHWAY )
-                it.remove();
-        }
-
-        KeggPathwayIdsSyncer syncer = new KeggPathwayIdsSyncer();
-        syncer.dao = bg.dao;
-
-        // get incoming KEGG pathway ids
-        List<XdbId> incomingKeggPathwayIds = bg.getXdbIdsByXdbKey(XdbId.XDB_KEY_KEGGPATHWAY);
-        for( XdbId xdbId: incomingKeggPathwayIds ) {
-            syncer.addIncomingObject(xdbId);
-        }
-
-        syncer.qc(bg.getCustomFlags().getRgdId());
-
-        bg.toBeInsertedXdbIds.addAll(syncer.getForInsertList());
-        bg.toBeUpdatedXdbIds = syncer.getForUpdateList();
-
-        // never remove ids not created by 'ENTREZGENE' pipeline
-        for( XdbId xdbId: (List<XdbId>) syncer.getForDeleteList() ) {
-            if( Utils.stringsAreEqualIgnoreCase(xdbId.getSrcPipeline(), XdbManager.EG_PIPELINE) ) {
-                bg.toBeRemovedXdbIds.add(xdbId);
-            }
-        }
     }
 
     void computeCodingStatusForTranscripts(BulkGene bg) {
