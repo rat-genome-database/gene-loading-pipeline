@@ -440,6 +440,7 @@ public class DataLoadingManager {
         for( BulkGene bg: bulkGenes ) {
             qualityCheck.process(bg);
             dl.process(bg, counters);
+            counters.increment("GENES_PROCESSED");
         }
         dl.close();
 
