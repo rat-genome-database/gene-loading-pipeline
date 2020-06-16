@@ -568,8 +568,14 @@ public class EGDAO {
         for( String line: fileContent.split("[\\r\\n]") ) {
             String egId = line.trim();
             int geneId = Integer.parseInt(egId);
-            for( Gene gene: dao.getGenesByEGID(egId) ) {
-                // skip different species
+            Collection<Gene> genes = dao.getGenesByEGID(egId);
+            if( genes.isEmpty() ) {
+                // potentially new gene
+                egIds.add(geneId);
+                continue;
+            }
+            for( Gene gene: genes ) {
+                // filter out genes from different species
                 if( gene.getSpeciesTypeKey()!=speciesTypeKey ) {
                     continue;
                 }

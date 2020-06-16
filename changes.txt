@@ -1,3 +1,6 @@
+Jun 16, 2020
+  -eg_ids_from_file option extended to allow new gene processing
+
 Apr 20, 2020
   refactored code for handling xdb ids for genes; duplicate HGNC IDs are no longer inserted
     (when incoming HGNC ID is already assigned to different gene, it won't be inserted)
