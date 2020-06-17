@@ -260,7 +260,7 @@ public class QualityCheckBulkGene  {
 
     public Flags orthologsCheck (BulkGene fileGene, XdbId xdbId) throws Exception {
 
-        Flags flag;
+        Flags flag = null;
 
         // check if the eg type is one of the types we want
         checkAllowedTypes(fileGene);
@@ -383,10 +383,14 @@ public class QualityCheckBulkGene  {
                 }
             }
             else {
-                // new gene has no mgd or HGNC id
-                flag = new Flags(Flags.NOMHID, Flags.SKIP);
-                dbLog.addLogProp("new record doesn't have mgi/hgnc ID", "NO_MHID", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
-                return flag;
+                // new gene has no MGD or HGNC id -- try Ensembl id
+                if( qcEnsembl(fileGene, dao) ) {
+                    flag = new Flags(Flags.EGINRGD);
+                } else {
+                    flag = new Flags(Flags.NOMHID, Flags.SKIP);
+                    dbLog.addLogProp("new record doesn't have mgi/hgnc ID", "NO_MHID", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
+                    return flag;
+                }
             }
         }        
         
@@ -398,9 +402,50 @@ public class QualityCheckBulkGene  {
         dbLog.addLogProp("rgd record update regardless of sequences", "UPDATE", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
         return flag;
     }
-     
-    private String rgdAccXdbToString(List<XdbId> rgdAccXdb) throws Exception {
-        return Utils.concatenate(",", rgdAccXdb, "getAccId");
+
+    /// return true if there was a match by Ensembl gene ids
+    boolean qcEnsembl(BulkGene bg, EGDAO dao) throws Exception {
+
+        // new gene has no mgd or HGNC id -- try Ensembl id
+        List<XdbId> ensemblIds = bg.getXdbIdsByXdbKey(XdbId.XDB_KEY_ENSEMBL_GENES);
+        if( ensemblIds.isEmpty() ) {
+            return false;
+        }
+
+        // the new Entrezgene has Ensembl gene ids
+        logger.debug("The eg id is not in RGD, incoming eg record has a Ensembl Gene ID");
+        String ensemblId = ensemblIds.get(0).getAccId();
+        List<Gene> activeGenes = new ArrayList<>();
+        for( XdbId id: ensemblIds ) {
+            List<Gene> matchingActiveGenes = dao.getActiveGenesByXdbId(id.getXdbKey(), id.getAccId());
+
+            // add matching active genes if they are not already there
+            for( Gene mg: matchingActiveGenes ) {
+                boolean inActiveGenes = false;
+                for (Gene g : activeGenes) {
+                    if( mg.getRgdId()==g.getRgdId() ) {
+                        inActiveGenes = true;
+                        break;
+                    }
+                }
+                if( !inActiveGenes ) {
+                    activeGenes.add(mg);
+                }
+            }
+        }
+
+        if( activeGenes.size() == 1 ) {
+            // Ensembl gene id matches exactly one active gene in rgd
+            bg.rgdGene = activeGenes.get(0);
+            dbLog.addLogProp("eg id is not in RGD, incoming eg record has a Ensembl Gene ID", "EG_IN_RGD", bg.getRecNo(), PipelineLogger.REC_FLAG);
+            // log the matching Ensembl ID
+            dbLog.addLogProp("Ensembl Gene", ensemblId, bg.getRecNo(), PipelineLogger.REC_XDBID);
+
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     Flags checkEgId(BulkGene bulkGene ) {
