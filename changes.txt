@@ -1,3 +1,6 @@
+Jun 17, 2020
+  -non-rat genes: gene matching: added 3rd step matching by Ensembl Gene Ids
+
 Jun 16, 2020
   -eg_ids_from_file option extended to allow new gene processing
 
