@@ -147,12 +147,7 @@ public class EGDAO {
      */
     public List<Alias> getAliases(int rgdId) throws Exception {
         List<Alias> aliases = aliasDAO.getAliases(rgdId);
-        Iterator<Alias> it = aliases.iterator();
-        while( it.hasNext() ) {
-            Alias alias = it.next();
-            if( Utils.defaultString(alias.getTypeName()).startsWith("array_id") )
-                it.remove();
-        }
+        aliases.removeIf(alias -> Utils.defaultString(alias.getTypeName()).startsWith("array_id"));
         return aliases;
     }
 
@@ -235,13 +230,8 @@ public class EGDAO {
     public List<Gene> getGenesByEGID(String egId) throws Exception {
 
         List<Gene> genes = xdbidDAO.getGenesByXdbId(XdbId.XDB_KEY_ENTREZGENE, egId);
-        Iterator<Gene> it = genes.listIterator();
-        while( it.hasNext() ) {
-            Gene gene = it.next();
-            // remove all genes of type "splice" or "allele" from the list
-            if( gene.isVariant() )
-                it.remove();
-        }
+        // remove all genes of type "splice" or "allele" from the list
+        genes.removeIf(Gene::isVariant);
         return genes;
     }
 
@@ -674,5 +664,11 @@ public class EGDAO {
      */
     public int createFeature(TranscriptFeature tf, int speciesTypeKey) throws Exception {
         return transcriptDAO.createFeature(tf, speciesTypeKey);
+    }
+
+    public boolean isObsoleteHgncId(String hgncId) throws Exception {
+
+        String sql = "SELECT COUNT(hgnc_id) FROM obsolete_hgnc_ids WHERE hgnc_id=?";
+        return geneDAO.getCount(sql, hgncId) > 0;
     }
 }

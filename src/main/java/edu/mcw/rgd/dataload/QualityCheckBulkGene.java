@@ -258,16 +258,17 @@ public class QualityCheckBulkGene  {
         }
     }
 
-    public Flags orthologsCheck (BulkGene fileGene, XdbId xdbId) throws Exception {
+    public Flags orthologsCheck (BulkGene bg, XdbId xdbId) throws Exception {
 
         Flags flag = null;
 
         // check if the eg type is one of the types we want
-        checkAllowedTypes(fileGene);
+        checkAllowedTypes(bg);
 
         EGDAO dao = EGDAO.getInstance();
-        List<XdbId> nMHXdb = fileGene.getXdbIdsByXdbKey(xdbId.getXdbKey()); // the file MGD ID or HGNC ID
-        List<Gene> genesByEgId = dao.getGenesByEGID(fileGene.getEgId()); //rgd genes matched by eg ID
+        bg.removeObsoleteHgncIds(dao);
+        List<XdbId> nMHXdb = bg.getXdbIdsByXdbKey(xdbId.getXdbKey()); // the file MGD ID or HGNC ID
+        List<Gene> genesByEgId = dao.getGenesByEGID(bg.getEgId()); //rgd genes matched by eg ID
         List<Gene> activeRgdGene = new ArrayList<>(); // will hold active rgd gene matched by entrezgene ID
         String info="";
         // get matched active gene by entrezgene id
@@ -284,21 +285,21 @@ public class QualityCheckBulkGene  {
             // Entrezgene ID matches more than one active entrezgene in RGD
             flag = new Flags(Flags.MULTIGENES, Flags.ERROR);
             flag.setRelatedInfo("Associated with multiple genes in RGD: "+ info);   
-            dbLog.addLogProp(flag.getRelatedInfo(), "MULTIGENES", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
+            dbLog.addLogProp(flag.getRelatedInfo(), "MULTIGENES", bg.getRecNo(), PipelineLogger.REC_FLAG);
             return flag;
         }  
         else if (activeRgdGene.size()== 1){
             logger.debug("incoming EG is associated with one gene in RGD");
             flag = new Flags(Flags.EGINRGD);
-            fileGene.rgdGene = activeRgdGene.get(0);
-            dbLog.addLogProp("incoming EG is associated with one gene in RGD", "EG_IN_RGD", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
+            bg.rgdGene = activeRgdGene.get(0);
+            dbLog.addLogProp("incoming EG is associated with one gene in RGD", "EG_IN_RGD", bg.getRecNo(), PipelineLogger.REC_FLAG);
 
             // check MGI id
             if (nMHXdb.size() >0) {
                 // the new Entrezgene has the mgd id, check if two mgd id match
                 //logger.debug("The eg id is in RGD, the incoming eg record has a MGD(HGNC) ID");
                 String nMHAccId=nMHXdb.get(0).getAccId(); // the new MGD(HGNC) ID
-                List<XdbId> rgdMHXdbList = dao.getXdbIdsByRgdId(xdbId.getXdbKey(), fileGene.rgdGene.getRgdId());
+                List<XdbId> rgdMHXdbList = dao.getXdbIdsByRgdId(xdbId.getXdbKey(), bg.rgdGene.getRgdId());
                 boolean mhIdMatch=false;
                 String rgdMgdId=null;
                 // if only one MGD(HGNC) ID match, means the MGD(HGNC) ID match
@@ -317,13 +318,13 @@ public class QualityCheckBulkGene  {
                         // the rgd mgd id and new mgd id doesn't match
                         logger.debug("The eg id is in RGD, incoming eg record has a MGD(HGNC) ID, two ID doesn't match");
                         flag = new Flags(Flags.EGINRGD_DIFFMHID, Flags.ERROR);
-                        flag.setRgdId(fileGene.rgdGene.getRgdId());
+                        flag.setRgdId(bg.rgdGene.getRgdId());
                         flag.setRelatedInfo("RGD M(H) ID:"+rgdMgdId+" NEW M(H) ID:"+nMHAccId);
-                        dbLog.addLogProp("eg id is in RGD, incoming eg record has a MGD(HGNC) ID, two ID doesn't match; "+flag.getRelatedInfo(), "EGINRGD_DIFFMHID", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
+                        dbLog.addLogProp("eg id is in RGD, incoming eg record has a MGD(HGNC) ID, two ID doesn't match; "+flag.getRelatedInfo(), "EGINRGD_DIFFMHID", bg.getRecNo(), PipelineLogger.REC_FLAG);
                         return flag;
                     } else {
                         // log the matching MGD-ID or HGNC ID
-                        dbLog.addLogProp(xdbId.getXdbKey()==XdbId.XDB_KEY_MGD?"MGD":"HGNC", rgdMgdId, fileGene.getRecNo(), PipelineLogger.REC_XDBID);
+                        dbLog.addLogProp(xdbId.getXdbKey()==XdbId.XDB_KEY_MGD?"MGD":"HGNC", rgdMgdId, bg.getRecNo(), PipelineLogger.REC_XDBID);
                         // continue to check sequence
                     }
                 }
@@ -337,10 +338,10 @@ public class QualityCheckBulkGene  {
                 //check sequence
             }
         }
-        else if( fileGene.getGene().getSpeciesTypeKey()>=4 ) {
+        else if( bg.getGene().getSpeciesTypeKey()>=4 ) {
 
             flag = new Flags(Flags.NEWGENE, Flags.INSERT);
-            dbLog.addLogProp("new gene", "NEW_GENE", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
+            dbLog.addLogProp("new gene", "NEW_GENE", bg.getRecNo(), PipelineLogger.REC_FLAG);
             return flag;
         }
         else {
@@ -354,10 +355,10 @@ public class QualityCheckBulkGene  {
                 if (genesByMHAccId.size() ==1) {
                     // the new Entrezgene matches exactly one MGD ID in RGD
                     flag = new Flags(Flags.EGINRGD);
-                    fileGene.rgdGene = genesByMHAccId.get(0); // will continue to check the sequence
-                    dbLog.addLogProp("eg id is not in RGD, incoming eg record has a MGD(HGNC) ID", "EG_IN_RGD", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
+                    bg.rgdGene = genesByMHAccId.get(0); // will continue to check the sequence
+                    dbLog.addLogProp("eg id is not in RGD, incoming eg record has a MGD(HGNC) ID", "EG_IN_RGD", bg.getRecNo(), PipelineLogger.REC_FLAG);
                     // log the matching MGD-ID or HGNC ID
-                    dbLog.addLogProp(xdbId.getXdbKey()==XdbId.XDB_KEY_MGD?"MGD":"HGNC", nMHAccId, fileGene.getRecNo(), PipelineLogger.REC_XDBID);
+                    dbLog.addLogProp(xdbId.getXdbKey()==XdbId.XDB_KEY_MGD?"MGD":"HGNC", nMHAccId, bg.getRecNo(), PipelineLogger.REC_XDBID);
                 }
                 else if (genesByMHAccId.size() >1) {
                     flag = new Flags(Flags.MULTIGENES, Flags.ERROR);
@@ -369,26 +370,26 @@ public class QualityCheckBulkGene  {
 
                     // log all the matching MGD-IDs or HGNC IDs
                     for( XdbId multiXdbId: nMHXdb ) {
-                        dbLog.addLogProp(xdbId.getXdbKey()==XdbId.XDB_KEY_MGD?"MGD":"HGNC", multiXdbId.getAccId(), fileGene.getRecNo(), PipelineLogger.REC_XDBID);
+                        dbLog.addLogProp(xdbId.getXdbKey()==XdbId.XDB_KEY_MGD?"MGD":"HGNC", multiXdbId.getAccId(), bg.getRecNo(), PipelineLogger.REC_XDBID);
                     }
 
-                    dbLog.addLogProp("eg id is not in RGD, incoming eg record has multiple MGD(HGNC) ID: "+flag.getRelatedInfo(), "MULTIGENES", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
+                    dbLog.addLogProp("eg id is not in RGD, incoming eg record has multiple MGD(HGNC) ID: "+flag.getRelatedInfo(), "MULTIGENES", bg.getRecNo(), PipelineLogger.REC_FLAG);
                     return flag;
                 }
                 else {
                     // mouse/human species, eg id doesn't match, mgi id doesn't match, load as new
                     flag = new Flags(Flags.NEWGENE, Flags.INSERT);
-                    dbLog.addLogProp("eg id doesn't match, mgi/hgnc id doesn't match", "NEW_GENE", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
+                    dbLog.addLogProp("eg id doesn't match, mgi/hgnc id doesn't match", "NEW_GENE", bg.getRecNo(), PipelineLogger.REC_FLAG);
                     return flag;
                 }
             }
             else {
                 // new gene has no MGD or HGNC id -- try Ensembl id
-                if( qcEnsembl(fileGene, dao) ) {
+                if( qcEnsembl(bg, dao) ) {
                     flag = new Flags(Flags.EGINRGD);
                 } else {
                     flag = new Flags(Flags.NOMHID, Flags.SKIP);
-                    dbLog.addLogProp("new record doesn't have mgi/hgnc ID", "NO_MHID", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
+                    dbLog.addLogProp("new record doesn't have mgi/hgnc ID", "NO_MHID", bg.getRecNo(), PipelineLogger.REC_FLAG);
                     return flag;
                 }
             }
@@ -396,10 +397,10 @@ public class QualityCheckBulkGene  {
         
         // match by NCBI gene ID or MGI/HGNC id to active gene in RGD
 
-        flag.setRgdId(fileGene.rgdGene.getRgdId());
+        flag.setRgdId(bg.rgdGene.getRgdId());
         flag.setRelatedInfo("");  
         flag.setLoadStatus(Flags.UPDATE);
-        dbLog.addLogProp("rgd record update regardless of sequences", "UPDATE", fileGene.getRecNo(), PipelineLogger.REC_FLAG);
+        dbLog.addLogProp("rgd record update regardless of sequences", "UPDATE", bg.getRecNo(), PipelineLogger.REC_FLAG);
         return flag;
     }
 
@@ -650,26 +651,14 @@ public class QualityCheckBulkGene  {
     void removeTranscriptsWithInvalidMapKeys(List<Transcript> trs) {
         for (Transcript tr : trs) {
             // remove all genomic positions that are not a list of maps processed by the pipeline
-            Iterator<MapData> mdIt = tr.getGenomicPositions().iterator();
-            while (mdIt.hasNext()) {
-                MapData md = mdIt.next();
-                if (!validMapKeys.contains(md.getMapKey())) {
-                    mdIt.remove();
-                }
-            }
+            tr.getGenomicPositions().removeIf(md -> !validMapKeys.contains(md.getMapKey()));
         }
     }
 
     // remove transcript features having positions on assembly maps not processed by the pipeline
     void removeFeaturesWithInvalidMapKeys(List<TranscriptFeature> trfs) {
-        Iterator<TranscriptFeature> it = trfs.iterator();
-        while( it.hasNext() ) {
-            TranscriptFeature tf = it.next();
-
-            // remove the feature if it s located on assembly map not processed by the pipeline
-            if( !validMapKeys.contains(tf.getMapKey()) )
-                it.remove();
-        }
+        // remove the feature if it s located on assembly map not processed by the pipeline
+        trfs.removeIf(tf -> !validMapKeys.contains(tf.getMapKey()));
     }
 
     public List getEgType() {

@@ -124,6 +124,17 @@ public class BulkGene {
         return xdbs;
     }
 
+    public void removeObsoleteHgncIds(EGDAO dao) {
+
+        xdbIds.removeIf( id -> {
+            try {
+                return id.getXdbKey()==XdbId.XDB_KEY_HGNC && dao.isObsoleteHgncId(id.getAccId());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
     public boolean hasRefSeqNucleotide() {
 
         for( XdbId xdbId: getXdbIdsByXdbKey(XdbId.XDB_KEY_GENEBANKNU) ) {
