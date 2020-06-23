@@ -257,7 +257,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
 
             parseXdb(xpXdbMgd, element, XdbId.XDB_KEY_MGD);
             parseXdb(xpXdbHgnc, element, XdbId.XDB_KEY_HGNC);
-            parseXdb(xpXdbVgnc, element, 127);
+            parseXdb(xpXdbVgnc, element, XdbId.XDB_KEY_VGNC);
             parseXdb(xpXdbMiRBase, element, XdbId.XDB_KEY_MIRBASE);
             parseXdbEnsembl(xpXdbEnsemblP, element);
         }
