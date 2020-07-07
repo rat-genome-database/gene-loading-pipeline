@@ -1,5 +1,8 @@
+Jul 07, 2020
+  -gene name/symbol changes & nomenclature events are suppressed for genes with nomen source not set to 'NCBI'
+
 Jun 23, 2020
-  -human genes: incoming obsolete GNC IDs are skipped from processing
+  -human genes: incoming obsolete HGNC IDs are skipped from processing
 
 Jun 17, 2020
   -non-rat genes: gene matching: added 3rd step matching by Ensembl Gene Ids
