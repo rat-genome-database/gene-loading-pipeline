@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- build Jun 23, 2020" />
+        <property name="version" value="Ncbi Gene Pipeline   -- build Jul 07, 2020" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -154,6 +154,7 @@
     <bean id="bonoboGenomicAssemblies" class="java.util.HashMap">
         <constructor-arg>
         <map>
+            <entry key="Reference Mhudiblu_PPA_v0 Primary Assembly" value="513" />
             <entry key="Reference panpan1.1 Primary Assembly" value="511" />
             <entry key="Cytomap" value="500"/>
         </map>
