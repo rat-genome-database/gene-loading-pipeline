@@ -596,13 +596,14 @@ public class QualityCheckBulkGene  {
         if( rgdGene==null )
             return;
 
+        String authority = Utils.NVL(rgdGene.getNomenSource(), "NCBI").toUpperCase();
         if( !Utils.stringsAreEqual(egGene.getSymbol(), rgdGene.getSymbol())) {
 
-            // if the current gene authority is HGNC, suppress gene symbol changes
-            if( Utils.stringsAreEqual(rgdGene.getNomenSource(), "HGNC") ) {
+            // if the current gene authority is different from NCBI, suppress gene symbol changes
+            if( !authority.equals("NCBI") ) {
 
-                bg.setFlag("ORTHO_NOMEN_SYMBOL_CHANGE_SUPPRESSED_BY_HGNC");
-                logNomen.info("gene symbol change suppressed by HGNC: RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getSymbol() + "], NEW=[" + egGene.getSymbol() + "]");
+                bg.setFlag("ORTHO_NOMEN_SYMBOL_CHANGE_SUPPRESSED_BY_"+authority);
+                logNomen.info("gene symbol change suppressed by "+authority+": RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getSymbol() + "], NEW=[" + egGene.getSymbol() + "]");
 
             } else {
                 logNomen.info("gene symbol change: RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getSymbol() + "], NEW=[" + egGene.getSymbol() + "]");
@@ -622,11 +623,11 @@ public class QualityCheckBulkGene  {
 
         if( !Utils.stringsAreEqual(egGene.getName(), rgdGene.getName())) {
 
-            // if the current gene authority is HGNC, suppress gene name changes
-            if( Utils.stringsAreEqual(rgdGene.getNomenSource(), "HGNC") ) {
+            // if the current gene authority is different from NCBI, suppress gene name changes
+            if( !authority.equals("NCBI") ) {
 
-                bg.setFlag("ORTHO_NOMEN_NAME_CHANGE_SUPPRESSED_BY_HGNC");
-                logNomen.info("gene name change suppressed by HGNC: RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getName() + "], NEW=[" + egGene.getName() + "]");
+                bg.setFlag("ORTHO_NOMEN_NAME_CHANGE_SUPPRESSED_BY_"+authority);
+                logNomen.info("gene name change suppressed by "+authority+": RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getName() + "], NEW=[" + egGene.getName() + "]");
 
             } else {
 
