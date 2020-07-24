@@ -1,3 +1,6 @@
+Jul 24, 2020
+  -GeneReactivator module has been moved to 'gene-ncbi' project
+
 Jul 07, 2020
   -gene name/symbol changes & nomenclature events are suppressed for genes with nomen source not set to 'NCBI'
   -added support to load latest bonobo assembly 'Mhudiblu_PPA_v0'

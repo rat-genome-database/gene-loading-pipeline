@@ -11,7 +11,6 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map;
@@ -29,7 +28,6 @@ public class DataLoadingManager {
     private QualityCheckBulkGene qualityCheck;
     private DecisionMaker decisionMaker;
     private RGDSpringLogger rgdLogger;
-    private GeneReactivator geneReactivator;
     private NcbiEutils eUtils;
     // collection of eg ids processed by the pipeline
     private Map<Integer,Integer> egIds = new HashMap<>();
@@ -202,12 +200,6 @@ public class DataLoadingManager {
                 GeneRelationships relManager = (GeneRelationships) bf.getBean("geneRelationships");
                 relManager.loadAssociations(speciesTypeKey);
 
-                runSec = (System.currentTimeMillis()-startMilisec)/1000;
-            }
-            // reactivate genes -- list of rgd ids given in a file
-            else if (args[0].contains("reactivate_genes")) {
-
-                manager.geneReactivator.run();
                 runSec = (System.currentTimeMillis()-startMilisec)/1000;
             }
             // download all genes for given species
@@ -562,7 +554,7 @@ public class DataLoadingManager {
         String info =
             "Please enter command line option:\n" +
             " [-download+process | -download_only | -process_only | -refseq | -transform | -load_gene_associations \n"+
-            "  | -reactivate_genes | -delete_redundant_aliases] arg1 arg2 ...\n" +
+            "  | -delete_redundant_aliases] arg1 arg2 ...\n" +
             " -species [rat|mouse|human]\n" +
             "---------------------------------\n" +
             "-download+process dateFrom dateTo\n" +
@@ -581,8 +573,6 @@ public class DataLoadingManager {
             "     compare proteins translated from a transcript against RefSeq proteins for given assembly\n" +
             "-load_gene_associations\n" +
             "     download gene_group.gz file from NCBI and load all gene relationships into RGD_ASSOCIATIONS table\n" +
-            "-reactivate_genes\n" +
-            "     reactivate genes, generating proper nomenclature events; gene list specified in external file\n" +
             "-mitochondrial\n" +
             "      download and process all mitochondrial genes from NCBI\n" +
             "-microRNA\n" +
@@ -690,14 +680,6 @@ public class DataLoadingManager {
 
     public int getSpeciesTypeKey() {
         return speciesTypeKey;
-    }
-
-    public GeneReactivator getGeneReactivator() {
-        return geneReactivator;
-    }
-
-    public void setGeneReactivator(GeneReactivator geneReactivator) {
-        this.geneReactivator = geneReactivator;
     }
 
     void registerDbLogFlags() throws Exception {
