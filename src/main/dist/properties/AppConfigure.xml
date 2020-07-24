@@ -1,12 +1,11 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- build Jul 07, 2020" />
+        <property name="version" value="Ncbi Gene Pipeline   -- build Jul 24, 2020" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
 	    <property name="rgdLogger" ref="rgdLogger"/>
-        <property name="geneReactivator" ref="geneReactivator"/>
         <property name="eUtils" ref="ncbiEutils"/>
         <property name="scaffoldOnlyAssemblies">
             <map>
@@ -286,14 +285,6 @@
         <property name="dataDirAr" value="ftp://ftp.ncbi.nlm.nih.gov/refseq/removed/archive"/>
         <property name="fileMask" value="removed-records.*"/>
         <property name="reportFile" value="data/refseq_removed.txt"/>
-    </bean>
-
-    <bean id="geneReactivator" class="edu.mcw.rgd.dataload.GeneReactivator">
-        <property name="file" value="logs/inactive.log" />
-        <property name="refKey" value="25644" />
-        <property name="nomenEventType" value="REACTIVATED" />
-        <property name="nomenEventDesc" value="Gene reactivated at release of RGSC5.0 assembly" />
-
     </bean>
 </beans>
 
