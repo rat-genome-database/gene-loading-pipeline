@@ -18,7 +18,6 @@ import java.util.Map;
  */
 public class QualityCheckBulkGene  {
     XdbManager xdbManager = new XdbManager();
-    TranscriptDAO transcriptDAO = new TranscriptDAO();
     PipelineLogger dbLog = PipelineLogger.getInstance();
     PipelineLogFlagManager dbFlagManager;
 
@@ -46,7 +45,8 @@ public class QualityCheckBulkGene  {
         bulkGene.setCustomFlags(flag);
 
         // 2nd pass
-        afterCheck(bulkGene);
+        EGDAO dao = EGDAO.getInstance();
+        afterCheck(bulkGene, dao);
 
         // record analyzed: write all log props to database
         dbLog.writeLogProps(bulkGene.getRecNo());
@@ -480,7 +480,7 @@ public class QualityCheckBulkGene  {
     }
 
     // STAGE 2: additional check after the standard quality check had been run
-    public void afterCheck (BulkGene bg) throws Exception {
+    public void afterCheck (BulkGene bg, EGDAO dao) throws Exception {
 
         Flags flag = bg.getCustomFlags();
 
@@ -534,10 +534,10 @@ public class QualityCheckBulkGene  {
 
             //##### TRANSCRIPTS
             // load rgd transcripts
-            bg.rgdTranscripts = transcriptDAO.getTranscriptsForGene(rgdId);
+            bg.rgdTranscripts = dao.getNcbiTranscriptsForGene(rgdId);
             removeTranscriptsWithInvalidMapKeys(bg.rgdTranscripts);
             // load all genomic features with positions
-            bg.rgdFeatures = transcriptDAO.getFeaturesForGene(rgdId);
+            bg.rgdFeatures = dao.getFeaturesForGene(rgdId);
             removeFeaturesWithInvalidMapKeys(bg.rgdFeatures);
         }
         else

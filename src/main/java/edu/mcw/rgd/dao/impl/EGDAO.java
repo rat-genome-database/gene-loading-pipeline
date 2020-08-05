@@ -1,6 +1,7 @@
 package edu.mcw.rgd.dao.impl;
 
 import edu.mcw.rgd.dao.spring.IntListQuery;
+import edu.mcw.rgd.dao.spring.TranscriptFeatureQuery;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.datamodel.Map;
 import edu.mcw.rgd.process.Utils;
@@ -615,6 +616,17 @@ public class EGDAO {
         return egIds;
     }
 
+    public List<Transcript> getNcbiTranscriptsForGene(int geneRgdId) throws Exception {
+
+        // load all transcripts for gene: both from NCBI and Ensembl
+        List<Transcript> transcripts = transcriptDAO.getTranscriptsForGene(geneRgdId);
+        // remove Ensembl transcripts
+        transcripts.removeIf(tr -> tr.getAccId().startsWith("ENS"));
+
+        // return NCBI only transcripts
+        return transcripts;
+    }
+
     /**
      * detach a transcript from gene, by removing a row from TRANSCRIPTS table
      * @param tr Transcript object
@@ -664,6 +676,10 @@ public class EGDAO {
      */
     public int createFeature(TranscriptFeature tf, int speciesTypeKey) throws Exception {
         return transcriptDAO.createFeature(tf, speciesTypeKey);
+    }
+
+    public List<TranscriptFeature> getFeaturesForGene(int geneRgdId) throws Exception {
+        return transcriptDAO.getFeaturesForGene(geneRgdId);
     }
 
     public boolean isObsoleteHgncId(String hgncId) throws Exception {
