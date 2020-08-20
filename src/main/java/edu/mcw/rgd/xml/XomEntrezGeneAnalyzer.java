@@ -3,6 +3,7 @@ package edu.mcw.rgd.xml;
 import edu.mcw.rgd.dataload.BulkGene;
 import edu.mcw.rgd.dataload.TranscriptInfo;
 import edu.mcw.rgd.dataload.TranscriptLocus;
+import edu.mcw.rgd.dataload.TranscriptVersionManager;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.process.*;
 import nu.xom.Element;
@@ -76,7 +77,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
     static XPath xpAssemblyMapLabel, xpGeneTrackStatus, xpGeneTrackCurrentId, xpXdbMgd, xpXdbHgnc, xpXdbVgnc, xpMTCommentary;
     static XPath xpXdbHomologene, xpXdbUniGene, xpXdbKeggReport, xpXdbKeggPathway, xpXdbKeggPathwayName, xpXdbUniProtType;
     static XPath xpXdbUniProt, xpXdbPubMed, xpXdbGenBankN, xpXdbGenBankP, xpXdbEnsembl, xpXdbEnsemblP, xpXdbMiRBase;
-    static XPath xpProducts, xpGenomicCoords, xpGenomicCoords2, xpSeqInterval, xpProductType, xpProductLabel, xpAccession;
+    static XPath xpProducts, xpGenomicCoords, xpGenomicCoords2, xpSeqInterval, xpProductType, xpProductLabel, xpAccession, xpAccessionVer;
     static XPath xpProducts2, xpPackedInterval, xpBioSourceGenome;
     static XPath xpGeneRefSeq, xpTrRefSeq, xpTrRefSeqAcc;
     static XPath xpAnnotInfo, xpAnnotLabel, xpAnnotText;
@@ -150,6 +151,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
             xpProductType = new XOMXPath("Gene-commentary_type/@value");
             xpProductLabel = new XOMXPath("Gene-commentary_label");
             xpAccession = new XOMXPath("Gene-commentary_accession");
+            xpAccessionVer = new XOMXPath("Gene-commentary_version");
             xpProducts2 = new XOMXPath("Gene-commentary_products/Gene-commentary");
 
             // mitochondrial gene commentaries do not have headings
@@ -325,6 +327,14 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
                         if( Utils.isStringEmpty(transcriptAccId) ) {
                             continue;
                         }
+
+                        // transcript accession version
+                        String transcriptAccVer = xpAccessionVer.stringValueOf(elProduct);
+                        if( !Utils.isStringEmpty(transcriptAccVer) ) {
+                            TranscriptVersionManager.getInstance().addVersion(transcriptAccId, transcriptAccVer);
+                        }
+
+
                         TranscriptInfo transcript = bulkGene.getTranscriptByAccId(transcriptAccId);
                         if( transcript==null )
                             transcript = bulkGene.createTranscript(transcriptAccId);

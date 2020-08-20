@@ -457,6 +457,8 @@ public class DataLoadingManager {
             System.out.println("WARNING! Positions found for assembly ["+ignoredAssembly+"] : "+ parser.getAnyAssemblyNameCountMap().get(ignoredAssembly).toString());
         }
 
+        TranscriptVersionManager.getInstance().qcAndLoad(counters);
+
         // dump counter statistics
         Enumeration<String> counterNames = counters.getCounterNames();
         Set<String> sortedCounterNames = new TreeSet<>();

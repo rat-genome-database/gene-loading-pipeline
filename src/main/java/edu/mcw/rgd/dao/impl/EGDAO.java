@@ -687,4 +687,21 @@ public class EGDAO {
         String sql = "SELECT COUNT(hgnc_id) FROM obsolete_hgnc_ids WHERE hgnc_id=?";
         return geneDAO.getCount(sql, hgncId) > 0;
     }
+
+    ///// STABLE_TRANSCRIPTS - transcript versions
+
+    public String getTranscriptVersionInfo(String acc) throws Exception {
+        String sql = "SELECT MAX(last_version) FROM stable_transcripts WHERE accession=?";
+        return transcriptDAO.getStringResult(sql, acc);
+    }
+
+    public void updateTranscriptVersionInfo(String acc, String version) throws Exception {
+        String sql = "UPDATE stable_transcripts SET last_version=?, last_version_date=SYSDATE WHERE accession=?";
+        transcriptDAO.update(sql, version, acc);
+    }
+
+    public void insertTranscriptVersionInfo(String acc, String version, int rgdId) throws Exception {
+        String sql = "INSERT INTO stable_transcripts (accession,last_version,last_version_date,rgd_id) VALUES(?,?,SYSDATE,?)";
+        transcriptDAO.update(sql, acc, version, rgdId);
+    }
 }
