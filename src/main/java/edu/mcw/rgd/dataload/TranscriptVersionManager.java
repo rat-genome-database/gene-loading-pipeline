@@ -2,6 +2,7 @@ package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.dao.impl.EGDAO;
 import edu.mcw.rgd.process.CounterPool;
+import org.apache.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +24,8 @@ public class TranscriptVersionManager {
 
     // hashmap of tr accession to Info
     private Map<String, Info> map = new HashMap<String, Info>();
+
+    Logger log = Logger.getLogger("transcriptVersions");
 
     public void addVersion(String acc, String version) {
 
@@ -55,7 +58,8 @@ public class TranscriptVersionManager {
                 info.rgdId = rgdId;
             }
             else if( info.rgdId != rgdId ) {
-                throw new RuntimeException("transcript rgd id mismatch: "+info.rgdId+" vs "+rgdId);
+                log.warn("WARNING: transcript rgd id mismatch: "+acc+" for "+info.rgdId+" vs "+rgdId);
+                info.conflict = true;
             }
         }
     }
@@ -68,18 +72,28 @@ public class TranscriptVersionManager {
             String acc = entry.getKey();
             Info info = entry.getValue();
             counters.increment("TRANSCRIPT_VERSIONS__PROCESSED");
+
+            if( info.conflict ) {
+                counters.increment("TRANSCRIPT_VERSIONS_WITH_CONFLICT");
+                continue;
+            }
+
             String accVer = acc + "." + info.version;
 
             String accVerInDb = dao.getTranscriptVersionInfo(acc);
             if( accVerInDb==null ) {
+                log.debug("INSERTED "+acc+" RGD:"+info.rgdId+" "+accVer);
                 dao.insertTranscriptVersionInfo(acc, accVer, info.rgdId);
                 counters.increment("TRANSCRIPT_VERSIONS_INSERTED");
             } else {
                 if( accVerInDb.equals(accVer) ) {
                     counters.increment("TRANSCRIPT_VERSIONS_UP_TO_DATE");
                 } else {
-                    dao.updateTranscriptVersionInfo(acc, accVer);
-                    counters.increment("TRANSCRIPT_VERSIONS_MODIFIED");
+                    if( accVer.length() > accVerInDb.length() || accVerInDb.compareTo(accVer)<0 ) {
+                        log.debug("UPDATED "+acc+" RGD:"+info.rgdId+" "+accVerInDb+" ==> "+accVer);
+                        dao.updateTranscriptVersionInfo(acc, accVer);
+                        counters.increment("TRANSCRIPT_VERSIONS_MODIFIED");
+                    }
                 }
             }
         }
@@ -88,6 +102,7 @@ public class TranscriptVersionManager {
     class Info {
         public int version;
         public int rgdId;
+        public boolean conflict = false;
 
         public String toString() {
             return "VER="+version+", RGD:"+rgdId;
