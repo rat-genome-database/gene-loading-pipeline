@@ -391,6 +391,7 @@ public class BulkGeneLoaderImpl {
         updateTranscriptPositions(bg);
         updateTranscriptFeatures(bg);
         updateTranscriptXdbIds(bg);
+        updateTranscriptVersions(bg);
 
         logger.debug("========= TRANSCRIPTS DONE: EG_ID="+bg.getEgId()+", GENE_RGD_ID="+rgdid);
     }
@@ -699,6 +700,14 @@ public class BulkGeneLoaderImpl {
         for( Transcript tr: bg.rgdTranscripts ) {
             bg.transcriptXdbIds.qc(tr, bg);
             bg.transcriptXdbIds.load(bg, counters);
+        }
+    }
+
+    void updateTranscriptVersions(BulkGene bg) {
+
+        TranscriptVersionManager m = TranscriptVersionManager.getInstance();
+        for( Transcript tr: bg.rgdTranscripts ) {
+            m.addRgdId(tr.getAccId(), tr.getRgdId());
         }
     }
 

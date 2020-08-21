@@ -1,6 +1,7 @@
 package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.dao.impl.EGDAO;
+import edu.mcw.rgd.dao.impl.TranscriptDAO;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.log.*;
 import edu.mcw.rgd.process.*;
@@ -65,6 +66,16 @@ public class DataLoadingManager {
         // write out the current version and connection information
         System.out.println(manager.getVersion());
         System.out.println(manager.rgdLogger.getConnectionInfo());
+
+        if(false) {
+            try {
+                TranscriptDAO tdao = new TranscriptDAO();
+                tdao.deleteTranscript(9098785, 7722322);
+            } catch (Exception e) {
+
+            }
+            System.exit(-1);
+        }
 
         if (args.length>=1) {
             try {
@@ -456,6 +467,8 @@ public class DataLoadingManager {
             dbLogger.log("[IGNORED] Assembly Count: "+ignoredAssembly, parser.getAnyAssemblyNameCountMap().get(ignoredAssembly).toString(), PipelineLogger.TOTAL);
             System.out.println("WARNING! Positions found for assembly ["+ignoredAssembly+"] : "+ parser.getAnyAssemblyNameCountMap().get(ignoredAssembly).toString());
         }
+
+        TranscriptVersionManager.getInstance().qcAndLoad(counters);
 
         // dump counter statistics
         Enumeration<String> counterNames = counters.getCounterNames();
