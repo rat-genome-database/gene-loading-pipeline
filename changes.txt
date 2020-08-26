@@ -1,3 +1,6 @@
+Aug 26, 2020
+  -updated code to use STABLE_TRANSCRIPTS from rgdcore
+
 Aug 20, 2020
   -added handling of transcript versions in table STABLE_TRANSCRIPTS
 

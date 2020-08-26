@@ -691,17 +691,14 @@ public class EGDAO {
     ///// STABLE_TRANSCRIPTS - transcript versions
 
     public String getTranscriptVersionInfo(String acc) throws Exception {
-        String sql = "SELECT MAX(last_version) FROM stable_transcripts WHERE accession=?";
-        return transcriptDAO.getStringResult(sql, acc);
+        return transcriptDAO.getTranscriptVersionInfo(acc);
     }
 
     public void updateTranscriptVersionInfo(String acc, String version) throws Exception {
-        String sql = "UPDATE stable_transcripts SET last_version=?, last_version_date=SYSDATE WHERE accession=?";
-        transcriptDAO.update(sql, version, acc);
+        transcriptDAO.updateTranscriptVersionInfo(acc, version);
     }
 
     public void insertTranscriptVersionInfo(String acc, String version, int rgdId) throws Exception {
-        String sql = "INSERT INTO stable_transcripts (accession,last_version,last_version_date,rgd_id) VALUES(?,?,SYSDATE,?)";
-        transcriptDAO.update(sql, acc, version, rgdId);
+        transcriptDAO.insertTranscriptVersionInfo(acc, version, rgdId);
     }
 }
