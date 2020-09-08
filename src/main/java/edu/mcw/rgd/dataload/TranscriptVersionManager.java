@@ -82,9 +82,14 @@ public class TranscriptVersionManager {
 
             String accVerInDb = dao.getTranscriptVersionInfo(acc);
             if( accVerInDb==null ) {
-                log.debug("INSERTED "+acc+" RGD:"+info.rgdId+" "+accVer);
-                dao.insertTranscriptVersionInfo(acc, accVer, info.rgdId);
-                counters.increment("TRANSCRIPT_VERSIONS_INSERTED");
+                if( info.rgdId==0 ) {
+                    log.warn("INSERT FAILED FOR " + acc + " " + accVer+"   no RGD ID provided");
+                    counters.increment("TRANSCRIPT_VERSIONS_SKIPPED_NO_RGD_ID");
+                } else {
+                    log.debug("INSERTED " + acc + " RGD:" + info.rgdId + " " + accVer);
+                    dao.insertTranscriptVersionInfo(acc, accVer, info.rgdId);
+                    counters.increment("TRANSCRIPT_VERSIONS_INSERTED");
+                }
             } else {
                 if( accVerInDb.equals(accVer) ) {
                     counters.increment("TRANSCRIPT_VERSIONS_UP_TO_DATE");

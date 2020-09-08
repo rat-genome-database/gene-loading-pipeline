@@ -1,3 +1,6 @@
+Sep 08, 2020
+  -tuned up code for transcript versions
+
 Aug 26, 2020
   -updated code to use STABLE_TRANSCRIPTS from rgdcore
 
