@@ -83,6 +83,7 @@ public class TranscriptVersionManager {
             String accVerInDb = dao.getTranscriptVersionInfo(acc);
             if( accVerInDb==null ) {
                 if( info.rgdId==0 ) {
+                    // for human, these transcripts are mostly for genes that we do not load into RGD, f.e. because they do not have a HGNC_ID assigned
                     log.warn("INSERT FAILED FOR " + acc + " " + accVer+"   no RGD ID provided");
                     counters.increment("TRANSCRIPT_VERSIONS_SKIPPED_NO_RGD_ID");
                 } else {
