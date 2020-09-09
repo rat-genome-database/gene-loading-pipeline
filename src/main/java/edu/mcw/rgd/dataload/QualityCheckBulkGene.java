@@ -338,12 +338,6 @@ public class QualityCheckBulkGene  {
                 //check sequence
             }
         }
-        else if( bg.getGene().getSpeciesTypeKey()>=4 ) {
-
-            flag = new Flags(Flags.NEWGENE, Flags.INSERT);
-            dbLog.addLogProp("new gene", "NEW_GENE", bg.getRecNo(), PipelineLogger.REC_FLAG);
-            return flag;
-        }
         else {
             // the egid doesn't match active egid in rgd, start checking MGD (HGNC) ID             
             if (nMHXdb.size() >0) {
@@ -388,8 +382,12 @@ public class QualityCheckBulkGene  {
                 if( qcEnsembl(bg, dao) ) {
                     flag = new Flags(Flags.EGINRGD);
                 } else {
-                    flag = new Flags(Flags.NOMHID, Flags.SKIP);
-                    dbLog.addLogProp("new record doesn't have mgi/hgnc ID", "NO_MHID", bg.getRecNo(), PipelineLogger.REC_FLAG);
+                    //flag = new Flags(Flags.NOMHID, Flags.SKIP);
+                    //dbLog.addLogProp("new record doesn't have mgi/hgnc ID", "NO_MHID", bg.getRecNo(), PipelineLogger.REC_FLAG);
+                    //return flag;
+
+                    flag = new Flags(Flags.NEWGENE, Flags.INSERT);
+                    dbLog.addLogProp("eg id doesn't match, no mgi/hgnc id, no match by Ensembl id", "NEW_GENE", bg.getRecNo(), PipelineLogger.REC_FLAG);
                     return flag;
                 }
             }

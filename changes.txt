@@ -1,3 +1,7 @@
+Sep 09, 2020
+  -non-rat genes (applies to HUMAN and MOUSE): new genes are always loaded, regardless if sequences are present or not
+     and MGI ID or HGNC ID is no longer required to load a new gene
+
 Sep 08, 2020
   -tuned up code for transcript versions
 
