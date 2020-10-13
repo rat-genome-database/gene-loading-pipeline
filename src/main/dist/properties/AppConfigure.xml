@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- build Sep 09, 2020" />
+        <property name="version" value="Ncbi Gene Pipeline   -- build Oct 13, 2020" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -60,6 +60,7 @@
                 <entry key="GRCm38.p3" value="35"/>
                 <entry key="GRCm38.p4" value="35"/>
                 <entry key="GRCm38.p6" value="35"/>
+                <entry key="GRCm39" value="239"/>
 
                 <entry key="panpan1.1" value="511"/>
                 <entry key="Mhudiblu_PPA_v0" value="513"/>
@@ -110,6 +111,7 @@
         <constructor-arg>
             <map>
                 <entry key="Cytomap" value="12"/>
+                <entry key="Reference GRCm39 C57BL/6J" value="239"/>
                 <entry key="Reference GRCm38 C57BL/6J" value="35"/>
                 <entry key="Reference GRCm38.p1 C57BL/6J" value="35"/>
                 <entry key="Reference GRCm38.p2 C57BL/6J" value="35"/>
