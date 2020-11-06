@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- build Oct 13, 2020" />
+        <property name="version" value="Ncbi Gene Pipeline   -- build Nov 06, 2020" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -11,6 +11,7 @@
             <map>
                 <entry key="Chinchilla" value="ChiLan"/>
                 <entry key="Squirrel" value="SpeTri"/>
+                <entry key="Molerat" value="HetGla"/>
             </map>
         </property>
         <property name="genomicAssemblies">
