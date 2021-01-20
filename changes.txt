@@ -1,3 +1,7 @@
+Jan 19, 2021
+  -can process species with mixed chromosome and scaffold assemblies
+  -added scaffold assembly HetGla_Female_1.0 for naked molerat
+
 Nov 06, 2020
   -fixed conf to load map positions for molerat
 

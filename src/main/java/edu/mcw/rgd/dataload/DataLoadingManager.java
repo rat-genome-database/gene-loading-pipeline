@@ -51,7 +51,7 @@ public class DataLoadingManager {
     
     protected final Logger logger = Logger.getLogger("process");
     private String version;
-    private Map<String,String> scaffoldOnlyAssemblies;
+    private Map<Integer, String> scaffoldAssemblies;
 
     public static DataLoadingManager getInstance() {
         return _instance;
@@ -408,7 +408,7 @@ public class DataLoadingManager {
         // setup thread for concurrent xml parsing
         XomEntrezGeneAnalyzer parser = new XomEntrezGeneAnalyzer();
         parser.setFirstRecNo(getFirstRecNo());
-        parser.setGenomicAssemblies(getGenomicAssembliesForCurrentSpecies(), getScaffoldOnlyAssemblies().get(speciesName));
+        parser.setGenomicAssemblies(getGenomicAssembliesForCurrentSpecies(), getScaffoldAssemblies());
         parser.setGeneLocationHistory(getGeneLocationHistoryForCurrentSpecies());
         parser.setFileName(fileName);
 
@@ -861,11 +861,11 @@ public class DataLoadingManager {
         return genomicAssemblies;
     }
 
-    public void setScaffoldOnlyAssemblies(Map<String,String> scaffoldOnlyAssemblies) {
-        this.scaffoldOnlyAssemblies = scaffoldOnlyAssemblies;
+    public void setScaffoldAssemblies(Map<Integer, String> scaffoldAssemblies) {
+        this.scaffoldAssemblies = scaffoldAssemblies;
     }
 
-    public Map<String,String> getScaffoldOnlyAssemblies() {
-        return scaffoldOnlyAssemblies;
+    public Map<Integer, String> getScaffoldAssemblies() {
+        return scaffoldAssemblies;
     }
 }

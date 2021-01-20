@@ -1,7 +1,6 @@
 package edu.mcw.rgd.dao.impl;
 
 import edu.mcw.rgd.dao.spring.IntListQuery;
-import edu.mcw.rgd.dao.spring.TranscriptFeatureQuery;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.datamodel.Map;
 import edu.mcw.rgd.process.Utils;
@@ -177,16 +176,6 @@ public class EGDAO {
      */
     public void updateLastModifiedDate(int rgdId) throws Exception {
         rgdDAO.updateLastModifiedDate(rgdId);
-    }
-
-    /**
-     * Update properties of rgd id object
-     *
-     * @param rgdId  rgd id
-     * @throws Exception when unexpected error in spring framework occurs
-     */
-    public void updateRgdId(RgdId rgdId) throws Exception {
-        rgdDAO.updateRgdId(rgdId);
     }
 
     /**

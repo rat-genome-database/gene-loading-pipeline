@@ -1051,7 +1051,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
         return genomicAssemblies;
     }
 
-    public void setGenomicAssemblies(java.util.Map<String, String> genomicAssemblies, String scaffoldAssembly) throws JaxenException {
+    public void setGenomicAssemblies(java.util.Map<String, String> genomicAssemblies, Map<Integer, String> scaffoldAssemblies) throws JaxenException {
         this.genomicAssemblies = genomicAssemblies;
 
         // reverse genomic assemblies map, i.e. build map of map-keys mapped to one or more assembly names
@@ -1062,20 +1062,20 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
             }
         }
 
-        String assembly, anyAssembly;
-        if( scaffoldAssembly!=null ) {
-            assembly = sAssemblyMapScaffold.replace("##SCAFFOLD##", scaffoldAssembly);
-            anyAssembly = sAnyAssemblyScaffold.replace("##SCAFFOLD##", scaffoldAssembly);
-        } else {
-            assembly = sAssemblyMapChr;
-            anyAssembly = "";
-        }
-        anyAssembly = sAnyAssemblyChr.replace("##SCAFFOLD##", anyAssembly);
-        xpAnyAssemblyName = new XOMXPath(anyAssembly);
-
         // traverse all maps and build XPATH for matching multiple assembly map keywords
-        for( Object mapKey: rmap.keySet() ) {
-            List<String> assemblyNames = (List<String>) rmap.get(mapKey);
+        String scaffoldAssemblySuffix = "";
+        for( Object mapKeyStr: rmap.keySet() ) {
+            int mapKey = Integer.parseInt(mapKeyStr.toString());
+            String assembly;
+            String scaffoldAssembly = scaffoldAssemblies.get(mapKey);
+            if( scaffoldAssembly!=null ) {
+                assembly = sAssemblyMapScaffold.replace("##SCAFFOLD##", scaffoldAssembly);
+                scaffoldAssemblySuffix += sAnyAssemblyScaffold.replace("##SCAFFOLD##", scaffoldAssembly);
+            } else {
+                assembly = sAssemblyMapChr;
+            }
+
+            List<String> assemblyNames = (List<String>) rmap.get(mapKeyStr);
             String xpathExp = "";
             for( String assemblyName: assemblyNames ) {
                 if( !xpathExp.isEmpty() )
@@ -1085,8 +1085,11 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
             }
             xpathExp = "("+xpathExp+")";
 
-            genomicAssemblyXPathMap.put(new XOMXPath(assembly.replace("##ASSEMBLY##", xpathExp)), Integer.parseInt(mapKey.toString()));
+            genomicAssemblyXPathMap.put(new XOMXPath(assembly.replace("##ASSEMBLY##", xpathExp)), mapKey);
         }
+
+        String anyAssemblyName = sAnyAssemblyChr.replace("##SCAFFOLD##", scaffoldAssemblySuffix);
+        xpAnyAssemblyName = new XOMXPath(anyAssemblyName);
     }
 
     void incrementAssemblyNameCount(String assemblyName) {
