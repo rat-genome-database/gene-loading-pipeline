@@ -1,6 +1,5 @@
-Jan 19, 2021
-  -can process species with mixed chromosome and scaffold assemblies
-  -added scaffold assembly HetGla_Female_1.0 for naked molerat
+Jan 20, 2021
+  -removed code to parse UniGene Ids (UniGene database discontinued at NCBI in 2019)
 
 Nov 06, 2020
   -fixed conf to load map positions for molerat
