@@ -75,7 +75,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
     static String sAssemblyMapChr, sAssemblyMapScaffold, sAnyAssemblyChr, sAnyAssemblyScaffold;
     static XPath xpAssemblyMapName, xpAssemblyAccession, xpMapStartPos, xpMapStopPos, xpMapStrand, xpAnyAssemblyName;
     static XPath xpAssemblyMapLabel, xpGeneTrackStatus, xpGeneTrackCurrentId, xpXdbMgd, xpXdbHgnc, xpXdbVgnc, xpMTCommentary;
-    static XPath xpXdbHomologene, xpXdbUniGene, xpXdbKeggReport, xpXdbKeggPathway, xpXdbKeggPathwayName, xpXdbUniProtType;
+    static XPath xpXdbHomologene, xpXdbKeggReport, xpXdbKeggPathway, xpXdbKeggPathwayName, xpXdbUniProtType;
     static XPath xpXdbUniProt, xpXdbPubMed, xpXdbGenBankN, xpXdbGenBankP, xpXdbEnsembl, xpXdbEnsemblP, xpXdbMiRBase;
     static XPath xpProducts, xpGenomicCoords, xpGenomicCoords2, xpSeqInterval, xpProductType, xpProductLabel, xpAccession, xpAccessionVer;
     static XPath xpProducts2, xpPackedInterval, xpBioSourceGenome;
@@ -85,7 +85,6 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
     static {
         try {
             // <Entrezgene_comments>
-            xpXdbUniGene = new XOMXPath(".//Dbtag[Dbtag_db='UniGene']/Dbtag_tag/Object-id/Object-id_str");
             xpXdbKeggReport = new XOMXPath(".//Dbtag[Dbtag_db='KEGG']/Dbtag_tag/Object-id/Object-id_str");
             xpXdbKeggPathway = new XOMXPath(".//Dbtag[contains(Dbtag_db,'KEGG pathway')]/Dbtag_tag/Object-id/Object-id_str");
             xpXdbKeggPathwayName = new XOMXPath("../../../../../../../Gene-commentary_text");
@@ -191,7 +190,6 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
 
         try {
 
-            parseXdbUniGene(xpXdbUniGene, element);
             parseXdb(xpXdbKeggReport, element, XdbId.XDB_KEY_KEGGREPORT);
             parseXdb(xpXdbKeggPathway, element, XdbId.XDB_KEY_KEGGPATHWAY);
             parseXdb(xpXdbUniProt, element, XdbId.XDB_KEY_UNIPROT);
@@ -731,25 +729,6 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
                     bulkGene.transcriptXdbIds.addUniProtId(xdb.getAccId(), uniProtDbType, productAccId);
                 }
             }
-            bulkGene.addXdbId(xdb);
-        }
-    }
-
-    // helper function used to extract a variable list of XDB keys of particular type
-    void parseXdbUniGene(XPath xpath, Element element) throws Exception {
-        List<Element> nodes = xpath.selectNodes(element);
-        for( Element el : nodes ) {
-            XdbId xdb = new XdbId();
-
-            // strip any 'Rs.', 'Mm.' or 'Hs.' prefixes from accession id
-            // but leave them in link_text field
-            String accId =  el.getValue();
-            xdb.setLinkText(accId);
-            if( accId.startsWith("Rn.") || accId.startsWith("Mm.") || accId.startsWith("Hs.") ) {
-                accId = accId.substring(3);
-            }
-            xdb.setAccId(accId);
-            xdb.setXdbKey(XdbId.XDB_KEY_UNIGENE);
             bulkGene.addXdbId(xdb);
         }
     }
