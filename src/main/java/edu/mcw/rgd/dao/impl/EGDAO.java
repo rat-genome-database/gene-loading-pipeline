@@ -19,6 +19,8 @@ import java.util.*;
  */
 public class EGDAO {
 
+    boolean skipDeletesForTranscripts = true;
+
     private AliasDAO aliasDAO = new AliasDAO();
     private AssociationDAO assocDAO = new AssociationDAO();
     private GeneDAO geneDAO = assocDAO.getGeneDAO();
@@ -137,6 +139,9 @@ public class EGDAO {
      * @throws Exception if something wrong happens in spring framework
      */
     public int deleteMapData(List<MapData> mapDataList) throws Exception{
+        if( skipDeletesForTranscripts ) {
+            return 0;
+        }
         return mapDAO.deleteMapData(mapDataList);
     }
 
@@ -180,16 +185,6 @@ public class EGDAO {
     }
 
     /**
-     * Update properties of rgd id object
-     *
-     * @param rgdId  rgd id
-     * @throws Exception when unexpected error in spring framework occurs
-     */
-    public void updateRgdId(RgdId rgdId) throws Exception {
-        rgdDAO.updateRgdId(rgdId);
-    }
-
-    /**
      * create a new rgd_id object
      * @param objectKey object key
      * @param objectStatus object status: 'ACTIVE', 'RETIRED', 'WITHDRAWN'
@@ -209,6 +204,10 @@ public class EGDAO {
      * @throws Exception on error in framework
      */
     public int unlinkFeature(int featureRgdId) throws Exception {
+
+        if( skipDeletesForTranscripts ) {
+            return 0;
+        }
 
         // delete the transcript feature itself
         String query = "delete from TRANSCRIPT_FEATURES where FEATURE_RGD_ID=?";
@@ -634,6 +633,10 @@ public class EGDAO {
      * @throws Exception on error in framework
      */
     public int detachTranscriptFromGene(Transcript tr) throws Exception {
+        if( skipDeletesForTranscripts ) {
+            return 0;
+        }
+
         return transcriptDAO.detachTranscriptFromGene(tr.getRgdId(), tr.getGeneRgdId());
     }
 
