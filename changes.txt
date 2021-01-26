@@ -1,3 +1,6 @@
+Jan 26, 2021
+  -added loading of mRatBN7.2 assembly
+
 Jan 20, 2021
   -removed code to parse UniGene Ids (UniGene database discontinued at NCBI in 2019)
 
