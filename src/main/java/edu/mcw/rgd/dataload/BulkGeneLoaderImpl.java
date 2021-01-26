@@ -489,8 +489,12 @@ public class BulkGeneLoaderImpl {
                 getDbFlagManager().setFlag("TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED", bg.getRecNo());
             } else {
                 for( Transcript tr: obsoleteInRgdTranscripts ) {
-                    bg.dao.detachTranscriptFromGene(tr);
-                    logtr.info("TRANSCRIPT_DETACHED_FROM_GENE: "+tr.dump("|"));
+                    if( bg.dao.detachTranscriptFromGene(tr) != 0 ) {
+                        logtr.info("TRANSCRIPT_DETACHED_FROM_GENE: " + tr.dump("|"));
+                    } else {
+                        counters.increment("TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED");
+                        getDbFlagManager().setFlag("TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED", bg.getRecNo());
+                    }
 
                     // increment counter of transcripts detached
                     counters.increment("TRANSCRIPTS_DETACHED");
@@ -612,12 +616,18 @@ public class BulkGeneLoaderImpl {
         // determine which transcript features have not been matched and remove them from database
         int rowsAffected = 0;
         for( TranscriptFeature tf: rgdFeaturesToUnlink ) {
-            rowsAffected += bg.dao.unlinkFeature(tf.getRgdId());
 
-            counters.increment(
-                    tf.getFeatureType()== TranscriptFeature.FeatureType.EXON
-                            ? "EXONS_UNLINKED"
-                            : "UTRS_UNLINKED");
+            int cnt = bg.dao.unlinkFeature(tf.getRgdId());
+            if( cnt==0 ) {
+
+            } else {
+                rowsAffected += cnt;
+
+                counters.increment(
+                        tf.getFeatureType() == TranscriptFeature.FeatureType.EXON
+                                ? "EXONS_UNLINKED"
+                                : "UTRS_UNLINKED");
+            }
         }
         if( rowsAffected>0 ) {
             logger.debug("===== UNLINK FEATURES: rows affected " + rowsAffected);

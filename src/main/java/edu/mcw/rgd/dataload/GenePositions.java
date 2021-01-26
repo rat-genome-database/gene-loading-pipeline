@@ -263,14 +263,19 @@ public class GenePositions {
                 }
             }
 
-            egDAO.deleteMapData(mdForDelete);
+            if( egDAO.deleteMapData(mdForDelete) != 0 ) {
 
-            for( MapData md: mdForDelete ) {
-                logger.info("EGID="+bg.getEgId()+" MAPS_DATA DELETE >"+dumpMapPosition(md));
+                for (MapData md : mdForDelete) {
+                    logger.info("EGID=" + bg.getEgId() + " MAPS_DATA DELETE >" + dumpMapPosition(md));
+                }
+
+                dbFlagManager.setFlag(counterPrefix + "_MAPPOS_DELETED", bg.getRecNo());
+                counters.add(counterPrefix + "_MAPPOS_DELETED", mdForDelete.size());
+            } else {
+                dbFlagManager.setFlag(counterPrefix + "_MAPPOS_DELETE_SUPPRESSED", bg.getRecNo());
+                counters.add(counterPrefix + "_MAPPOS_DELETE_SUPPRESSED", mdForDelete.size());
+
             }
-
-            dbFlagManager.setFlag(counterPrefix+"_MAPPOS_DELETED", bg.getRecNo());
-            counters.add(counterPrefix+"_MAPPOS_DELETED", mdForDelete.size());
         }
     }
 
@@ -361,14 +366,18 @@ public class GenePositions {
         }
 
         if( !mdsOverlapping.isEmpty() ) {
-            egDAO.deleteMapData(mdsOverlapping);
+            if( egDAO.deleteMapData(mdsOverlapping)!=0 ) {
+                for( MapData md: mdsOverlapping ) {
+                    logger.info("OVERLAPPING MAPS_DATA DELETE >"+dumpMapPosition(md));
+                }
 
-            for( MapData md: mdsOverlapping ) {
-                logger.info("OVERLAPPING MAPS_DATA DELETE >"+dumpMapPosition(md));
+                dbFlagManager.setFlag("TRANSCRIPT_OVERLAPPING_MAPPOS_DELETED", bg.getRecNo());
+                counters.add("TRANSCRIPT_OVERLAPPING_MAPPOS_DELETED", mdsOverlapping.size());
+            } else {
+                dbFlagManager.setFlag("TRANSCRIPT_OVERLAPPING_MAPPOS_DELETE_SUPPRESSED", bg.getRecNo());
+                counters.add("TRANSCRIPT_OVERLAPPING_MAPPOS_DELETE_SUPPRESSED", mdsOverlapping.size());
             }
 
-            dbFlagManager.setFlag("TRANSCRIPT_OVERLAPPING_MAPPOS_DELETED", bg.getRecNo());
-            counters.add("TRANSCRIPT_OVERLAPPING_MAPPOS_DELETED", mdsOverlapping.size());
         }
     }
 

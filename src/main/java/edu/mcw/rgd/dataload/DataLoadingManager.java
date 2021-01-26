@@ -749,6 +749,10 @@ public class DataLoadingManager {
             "deletion of suppressed transcript position that overlaps other transcript position"
             );
         dbFlagManager.registerFlag(
+                "TRANSCRIPT_OVERLAPPING_MAPPOS_DELETE_SUPPRESSED",
+                "suppressed deletion of suppressed transcript position that overlaps other transcript position"
+        );
+        dbFlagManager.registerFlag(
             "TRANSCRIPT_DETACHED_FROM_GENE",
             "transcript detached from gene because it is no longer present in the incoming data"
         );
