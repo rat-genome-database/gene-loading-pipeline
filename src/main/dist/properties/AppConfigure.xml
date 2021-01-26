@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- build Jan 20, 2021" />
+        <property name="version" value="Ncbi Gene Pipeline   -- build Jan 26, 2021" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -145,6 +145,7 @@
                 <entry key="Reference assembly (based on RGSC_v3.4)" value="60"/>
                 <entry key="Reference Rnor_5.0 Primary Assembly" value="70" />
                 <entry key="Reference Rnor_6.0 Primary Assembly" value="360" />
+                <entry key="Reference mRatBN7.2 Primary Assembly" value="372"/>
                 <entry key="Cytomap" value="99"/>
             </map>
         </constructor-arg>
