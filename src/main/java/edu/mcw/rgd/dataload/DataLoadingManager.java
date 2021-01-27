@@ -729,6 +729,10 @@ public class DataLoadingManager {
             "gene position has been deleted"
             );
         dbFlagManager.registerFlag(
+            "GENE_MAPPOS_DELETE_SUPPRESSED",
+            "suppressed deletion of a gene position"
+        );
+        dbFlagManager.registerFlag(
             "TRANSCRIPT_MAPPOS_INSERTED",
             "new transcript position has been inserted"
             );
