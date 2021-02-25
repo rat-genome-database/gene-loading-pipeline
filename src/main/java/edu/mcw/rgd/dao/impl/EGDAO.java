@@ -134,11 +134,12 @@ public class EGDAO {
     /**
      * delete map data given a list of map data key
      * @param mapDataList list of map data objects
+     * @param isGene if true, the positions are for a gene
      * @return number of rows deleted
      * @throws Exception if something wrong happens in spring framework
      */
-    public int deleteMapData(List<MapData> mapDataList) throws Exception{
-        if( skipDeletesForTranscripts ) {
+    public int deleteMapData(List<MapData> mapDataList, boolean isGene) throws Exception{
+        if( !isGene && skipDeletesForTranscripts ) {
             return 0;
         }
         return mapDAO.deleteMapData(mapDataList);
