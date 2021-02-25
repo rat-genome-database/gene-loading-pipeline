@@ -263,7 +263,7 @@ public class GenePositions {
                 }
             }
 
-            if( egDAO.deleteMapData(mdForDelete) != 0 ) {
+            if( egDAO.deleteMapData(mdForDelete, counterPrefix.equals("GENE")) != 0 ) {
 
                 for (MapData md : mdForDelete) {
                     logger.info("EGID=" + bg.getEgId() + " MAPS_DATA DELETE >" + dumpMapPosition(md));
@@ -366,7 +366,7 @@ public class GenePositions {
         }
 
         if( !mdsOverlapping.isEmpty() ) {
-            if( egDAO.deleteMapData(mdsOverlapping)!=0 ) {
+            if( egDAO.deleteMapData(mdsOverlapping, false)!=0 ) {
                 for( MapData md: mdsOverlapping ) {
                     logger.info("OVERLAPPING MAPS_DATA DELETE >"+dumpMapPosition(md));
                 }

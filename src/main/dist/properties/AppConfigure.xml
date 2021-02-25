@@ -1,19 +1,22 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- build Jan 26, 2021" />
+        <property name="version" value="Ncbi Gene Pipeline   -- build Feb 25, 2021" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
 	    <property name="rgdLogger" ref="rgdLogger"/>
         <property name="eUtils" ref="ncbiEutils"/>
-        <property name="scaffoldOnlyAssemblies">
+
+        <property name="scaffoldAssemblies">
             <map>
-                <entry key="Chinchilla" value="ChiLan"/>
-                <entry key="Squirrel" value="SpeTri"/>
-                <entry key="Molerat" value="HetGla"/>
+                <entry key="44" value="ChiLan1.0"/> <!-- chinchilla -->
+                <entry key="720" value="SpeTri2.0"/> <!-- squirrel -->
+                <entry key="1313" value="Vero_WHO_p1.0"/> <!-- vervet -->
+                <entry key="1410" value="HetGla_Female_1.0"/> <!-- molerat -->
             </map>
         </property>
+
         <property name="genomicAssemblies">
             <map>
                 <entry key="Human" value-ref="humanGenomicAssemblies"/>
@@ -69,6 +72,7 @@
                 <entry key="SpeTri2.0" value="720"/>
                 <entry key="Sscrofa10.2" value="910"/>
                 <entry key="Chlorocebus_sabeus 1.1" value="1311"/>
+                <entry key="Vero_WHO_p1.0" value="1313"/>
                 <entry key="HetGla_female_1.0" value="1410"/>
             </map>
         </property>
@@ -195,6 +199,7 @@
     <bean id="vervetGenomicAssemblies" class="java.util.HashMap">
         <constructor-arg>
             <map>
+                <entry key="Reference Vero_WHO_p1.0" value="1313" />
                 <entry key="Reference Chlorocebus_sabeus 1.1 Primary Assembly" value="1311" />
                 <entry key="Cytomap" value="1300"/>
             </map>
