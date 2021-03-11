@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- build Feb 25, 2021" />
+        <property name="version" value="Ncbi Gene Pipeline   -- version 2021-03-11" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -68,12 +68,20 @@
 
                 <entry key="panpan1.1" value="511"/>
                 <entry key="Mhudiblu_PPA_v0" value="513"/>
+
                 <entry key="CanFam3.1" value="631"/>
+                <entry key="Dog10K_Boxer_Tasha" value="633"/>
+                <entry key="ROS_Cfam_1.0" value="634"/>
+                <entry key="UMICH_Zoey_3.1" value="635"/>
+                <entry key="UNSW_CanFamBas_1.0" value="636"/>
+                <entry key="UU_Cfam_GSD_1.0" value="637"/>
+
                 <entry key="SpeTri2.0" value="720"/>
                 <entry key="Sscrofa10.2" value="910"/>
                 <entry key="Chlorocebus_sabeus 1.1" value="1311"/>
                 <entry key="Vero_WHO_p1.0" value="1313"/>
                 <entry key="HetGla_female_1.0" value="1410"/>
+
             </map>
         </property>
         <property name="firstRecNo" value="0" /><!--number of record from which the processing starts-->
@@ -172,8 +180,13 @@
     <bean id="dogGenomicAssemblies" class="java.util.HashMap">
         <constructor-arg>
             <map>
-                <entry key="Reference CanFam3.1 Primary Assembly" value="631" />
                 <entry key="Cytomap" value="600"/>
+                <entry key="Reference CanFam3.1 Primary Assembly" value="631" />
+                <entry key="Alternate Dog10K_Boxer_Tasha Primary Assembly" value="633" />
+                <entry key="Reference ROS_Cfam_1.0" value="634" />
+                <entry key="Alternate UMICH_Zoey_3.1" value="635" />
+                <entry key="Alternate UNSW_CanFamBas_1.0" value="636" />
+                <entry key="Alternate UU_Cfam_GSD_1.0" value="637" />
             </map>
         </constructor-arg>
     </bean>
