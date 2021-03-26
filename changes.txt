@@ -1,3 +1,6 @@
+Mar 26, 2021
+   -added loading of new squirrel assembly HiC_ltri_2
+
 Mar 11, 2021
    -added support for 5 new dog assemblies
 

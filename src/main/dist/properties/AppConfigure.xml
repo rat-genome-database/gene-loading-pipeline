@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- version 2021-03-11" />
+        <property name="version" value="Ncbi Gene Pipeline   -- version 2021-03-26" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -12,6 +12,7 @@
             <map>
                 <entry key="44" value="ChiLan1.0"/> <!-- chinchilla -->
                 <entry key="720" value="SpeTri2.0"/> <!-- squirrel -->
+                <entry key="722" value="HiC_Itri_2"/><!-- another squirrel -->
                 <entry key="1313" value="Vero_WHO_p1.0"/> <!-- vervet -->
                 <entry key="1410" value="HetGla_Female_1.0"/> <!-- molerat -->
             </map>
@@ -77,6 +78,8 @@
                 <entry key="UU_Cfam_GSD_1.0" value="637"/>
 
                 <entry key="SpeTri2.0" value="720"/>
+                <entry key="HiC_Itri_2" value="722"/>
+
                 <entry key="Sscrofa10.2" value="910"/>
                 <entry key="Chlorocebus_sabeus 1.1" value="1311"/>
                 <entry key="Vero_WHO_p1.0" value="1313"/>
@@ -195,6 +198,7 @@
         <constructor-arg>
             <map>
                 <entry key="Reference SpeTri2.0" value="720"/>
+                <entry key="Reference HiC_Itri_2 Primary Assembly" value="722"/>
             </map>
         </constructor-arg>
     </bean>
