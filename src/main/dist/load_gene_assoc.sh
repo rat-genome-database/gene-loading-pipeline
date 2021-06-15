@@ -6,13 +6,17 @@ LOGFILE=$HOMEDIR/assoc.log
 
 ELIST=mtutaj@mcw.edu
 if [ "$SERVER" == "REED" ]; then
-    ELIST="rgd.developers@mcw.edu,rgd.pipelines@mcw.edu"
+    ELIST="rgd.devops@mcw.edu,rgd.pipelines@mcw.edu"
 fi
 
 cd $HOMEDIR
 echo "" > $LOGFILE
 
-SPECIES_LIST=( "human" "mouse" "rat" "dog" "bonobo" "squirrel" "chinchilla" "pig" "vervet" "molerat")
+#              "human" "mouse" "rat" "dog" "bonobo" "squirrel" "chinchilla" "pig" "vervet" "molerat"
+SPECIES_LIST=( "1"     "2"     "3"   "6"   "5"      "7"        "4"          "9"   "13"     "14")
+
+# old unreliable code: species common name can change
+#SPECIES_LIST=( "human" "mouse" "rat" "dog" "bonobo" "squirrel" "chinchilla" "pig" "vervet" "molerat")
 
 for SPECIES in "${SPECIES_LIST[@]}"; do
 

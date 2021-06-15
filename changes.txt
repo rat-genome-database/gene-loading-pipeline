@@ -1,3 +1,6 @@
+Jun 15, 2021
+   updated scripts to better handle processed species list
+
 Mar 26, 2021
    -added loading of new squirrel assembly HiC_ltri_2
 

@@ -3,7 +3,12 @@
 HOMEDIR=/home/rgddata/pipelines/EntrezGeneLoading
 cd $HOMEDIR
 
-SPECIES_LIST=( "human" "mouse" "rat" "dog" "bonobo" "squirrel" "chinchilla" "pig" "vervet" "molerat" )
+#              "human" "mouse" "rat" "dog" "bonobo" "squirrel" "chinchilla" "pig" "vervet" "molerat"
+SPECIES_LIST=( "1"     "2"     "3"   "6"   "5"      "7"        "4"          "9"   "13"     "14")
+
+# old unreliable code: species common name can change
+#SPECIES_LIST=( "human" "mouse" "rat" "dog" "bonobo" "squirrel" "chinchilla" "pig" "vervet" "molerat")
+
 
 for SPECIES in "${SPECIES_LIST[@]}"; do
     $HOMEDIR/run_species.sh "$SPECIES"
