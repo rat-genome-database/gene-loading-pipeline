@@ -531,7 +531,7 @@ public class BulkGeneLoaderImpl {
         positions.qcMapData(bg, logger);
         positions.syncMapData(bg, logger, getDbFlagManager(), "TRANSCRIPT", true, counters);
 
-        positions.deleteOverlappingPositionsMarkedForDelete(bg, getDbFlagManager(), counters);
+        //positions.deleteOverlappingPositionsMarkedForDelete(bg, getDbFlagManager(), counters);
     }
 
     void updateTranscriptFeatures(BulkGene bg) throws Exception {
@@ -617,7 +617,7 @@ public class BulkGeneLoaderImpl {
         int rowsAffected = 0;
         for( TranscriptFeature tf: rgdFeaturesToUnlink ) {
 
-            int cnt = bg.dao.unlinkFeature(tf.getRgdId());
+            int cnt = bg.dao.unlinkFeature(tf.getRgdId(), tf.getTranscriptRgdId());
             if( cnt==0 ) {
 
             } else {

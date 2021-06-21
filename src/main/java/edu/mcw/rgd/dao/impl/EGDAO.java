@@ -18,7 +18,7 @@ import java.util.*;
  */
 public class EGDAO {
 
-    boolean skipDeletesForTranscripts = true;
+    boolean skipDeletesForTranscripts = false;
 
     private AliasDAO aliasDAO = new AliasDAO();
     private AssociationDAO assocDAO = new AssociationDAO();
@@ -203,15 +203,15 @@ public class EGDAO {
      * @return number of rows affected
      * @throws Exception on error in framework
      */
-    public int unlinkFeature(int featureRgdId) throws Exception {
+    public int unlinkFeature(int featureRgdId, int transcriptRgdId) throws Exception {
 
         if( skipDeletesForTranscripts ) {
             return 0;
         }
 
         // delete the transcript feature itself
-        String query = "delete from TRANSCRIPT_FEATURES where FEATURE_RGD_ID=?";
-        return transcriptDAO.update(query, featureRgdId);
+        String query = "DELETE FROM transcript_features WHERE feature_rgd_id=? AND transcript_rgd_id=?";
+        return transcriptDAO.update(query, featureRgdId, transcriptRgdId);
     }
 
     private List<Integer> getRgdIdListByEGID(int egId) throws Exception {
