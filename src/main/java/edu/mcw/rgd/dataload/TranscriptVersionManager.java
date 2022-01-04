@@ -2,7 +2,8 @@ package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.dao.impl.EGDAO;
 import edu.mcw.rgd.process.CounterPool;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,7 @@ public class TranscriptVersionManager {
     // hashmap of tr accession to Info
     private Map<String, Info> map = new HashMap<String, Info>();
 
-    Logger log = Logger.getLogger("transcriptVersions");
+    Logger log = LogManager.getLogger("transcriptVersions");
 
     public void addVersion(String acc, String version) {
 

@@ -6,7 +6,8 @@ import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.PipelineLogFlagManager;
 import edu.mcw.rgd.process.PipelineLogger;
 import edu.mcw.rgd.process.Utils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Date;
 
@@ -26,7 +27,7 @@ public class DecisionMaker {
     PipelineLogger dbLog = null;
     PipelineLogFlagManager dbFlagManager;
 
-    protected final Logger logger = Logger.getLogger("process");
+    protected final Logger logger = LogManager.getLogger("process");
 
     // look at the flags and decide if the record need update or insert
     public void decide(BulkGene bg, CounterPool counters) throws Exception {
@@ -135,7 +136,7 @@ public class DecisionMaker {
 
             // UNKNOWN gene track status in the past years was associated entirely with mitochondrial genes
             // so we don't want to report this as problematic
-            Logger log = Logger.getLogger("geneTrackStatus");
+            Logger log = LogManager.getLogger("geneTrackStatus");
             if( bg.getGeneTrackStatus().equals("UNKNOWN") ) {
                 log.debug(msg);
             } else {

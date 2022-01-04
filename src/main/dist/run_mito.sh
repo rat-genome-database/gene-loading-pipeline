@@ -9,7 +9,7 @@ SPECIES_LIST=( "human" "mouse" "rat" "dog" "bonobo" "squirrel" "chinchilla" "pig
 
 for SPECIES in "${SPECIES_LIST[@]}"; do
     java -Dspring.config=../properties/default_db2.xml \
-        -Dlog4j.configuration=file://$HOMEDIR/properties/log4j.properties \
+        -Dlog4j.configurationFile=file://$HOMEDIR/properties/log4j2.xml \
         -jar lib/EntrezGeneLoading.jar -mitochondrial -species "$SPECIES" > mt${SPECIES}.log
     mailx -s "[$SERVER] mitochondrial $SPECIES EntrezGene pipeline OK" mtutaj@mcw.edu < mt${SPECIES}.log
 done

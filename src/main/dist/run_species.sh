@@ -12,7 +12,7 @@ fi
 echo  "starting $1 EntrezGene pipeline"
 cd $HOMEDIR
 java -Dspring.config=../properties/default_db2.xml \
-    -Dlog4j.configuration=file://$HOMEDIR/properties/log4j.properties \
+    -Dlog4j.configurationFile=file://$HOMEDIR/properties/log4j2.xml \
     -jar lib/EntrezGeneLoading.jar \
     -download+process auto auto \
     -species $1 > $1.log

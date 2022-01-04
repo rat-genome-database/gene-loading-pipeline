@@ -5,7 +5,8 @@ import edu.mcw.rgd.datamodel.Alias;
 import edu.mcw.rgd.datamodel.Gene;
 import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.Utils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
@@ -16,7 +17,7 @@ import java.util.*;
  */
 public class AliasLoader {
 
-    protected final Logger logAliases = Logger.getLogger("aliases");
+    protected final Logger logAliases = LogManager.getLogger("aliases");
 
     private List<Alias> incoming = new ArrayList<>(); // aliases retrieved from eg gene record
     public List<Alias> forInsert; // new aliases to be added to rgd db (subset of 'aliases')

@@ -2,7 +2,8 @@ package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.process.Utils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
@@ -13,7 +14,7 @@ import java.util.*;
  */
 public class TranscriptInfo extends Transcript {
 
-    final Logger logger = Logger.getLogger("transcript_positions");
+    final Logger logger = LogManager.getLogger("transcript_positions");
 
     private List<TranscriptLocus> loci = new ArrayList<TranscriptLocus>();
 

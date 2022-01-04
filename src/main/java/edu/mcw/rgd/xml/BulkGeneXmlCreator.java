@@ -5,7 +5,8 @@ import edu.mcw.rgd.dataload.*;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.process.Utils;
 import nu.xom.*;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.Map;
@@ -21,7 +22,7 @@ public class BulkGeneXmlCreator {
 
     private Document doc; // XOM document
 
-    protected final Logger logger = Logger.getLogger("process");
+    protected final Logger logger = LogManager.getLogger("process");
 
     private XdbIdDAO xdbDAO = new XdbIdDAO();
 

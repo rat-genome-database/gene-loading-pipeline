@@ -2,7 +2,8 @@ package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.PipelineLogger;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -19,7 +20,7 @@ public class DataLoadingThread {
     private PipelineLogger dbLogger = PipelineLogger.getInstance();
     private String bgFileName;
     private DecisionMaker decisionMaker;
-    private final Logger logger = Logger.getLogger("process");
+    private final Logger logger = LogManager.getLogger("process");
     private BufferedWriter out;
 
     public DataLoadingThread(String bgFileName, DecisionMaker dm) {

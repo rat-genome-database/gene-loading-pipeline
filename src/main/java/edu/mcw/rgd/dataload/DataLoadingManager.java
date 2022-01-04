@@ -7,7 +7,8 @@ import edu.mcw.rgd.log.*;
 import edu.mcw.rgd.process.*;
 import edu.mcw.rgd.process.mapping.MapManager;
 import edu.mcw.rgd.xml.*;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
@@ -49,7 +50,7 @@ public class DataLoadingManager {
     static long startMilisec=System.currentTimeMillis();
     static long runSec=0;
     
-    protected final Logger logger = Logger.getLogger("process");
+    protected final Logger logger = LogManager.getLogger("process");
     private String version;
     private Map<Integer, String> scaffoldAssemblies;
 

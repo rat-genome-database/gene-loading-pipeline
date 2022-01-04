@@ -12,7 +12,7 @@ fi
 echo  "starting full-load Gene pipeline for $1"
 cd $HOMEDIR
 java -Dspring.config=../properties/default_db2.xml \
-    -Dlog4j.configuration=file://$HOMEDIR/properties/log4j.properties \
+    -Dlog4j.configurationFile=file://$HOMEDIR/properties/log4j2.xml \
     -jar lib/EntrezGeneLoading.jar \
     -download+process fullload auto \
     -species $1 > fullload_$1.log

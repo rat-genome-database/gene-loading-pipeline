@@ -3,7 +3,8 @@ package edu.mcw.rgd.dataload;
 import edu.mcw.rgd.dao.impl.*;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.process.*;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -34,10 +35,10 @@ public class QualityCheckBulkGene  {
     // NOTE: this avoids deletions of other older assembly map positions for genes and transcripts
     Set<Integer> validMapKeys;
 
-    protected final Logger logger = Logger.getLogger("process");
-    protected final Logger logInactive = Logger.getLogger("inactive");
-    protected final Logger logNomen = Logger.getLogger("nomen"); // tracks changes in gene names, symbols and descriptions
-    protected final Logger logSymbol = Logger.getLogger("symbol"); // tracks changes in gene symbols, user friendly
+    protected final Logger logger = LogManager.getLogger("process");
+    protected final Logger logInactive = LogManager.getLogger("inactive");
+    protected final Logger logNomen = LogManager.getLogger("nomen"); // tracks changes in gene names, symbols and descriptions
+    protected final Logger logSymbol = LogManager.getLogger("symbol"); // tracks changes in gene symbols, user friendly
 
     public void process(BulkGene bulkGene) throws Exception {
 

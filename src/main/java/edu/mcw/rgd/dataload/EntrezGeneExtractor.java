@@ -3,7 +3,8 @@ package edu.mcw.rgd.dataload;
 import edu.mcw.rgd.datamodel.SpeciesType;
 import edu.mcw.rgd.process.*;
 import edu.mcw.rgd.xml.XomAnalyzer;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.util.*;
@@ -35,7 +36,7 @@ public class EntrezGeneExtractor {
 
     NcbiEutils.ESearchResult eSearchOverride;
 
-    protected final Logger logger = Logger.getLogger("process");
+    protected final Logger logger = LogManager.getLogger("process");
     PipelineLogger dbLogger = PipelineLogger.getInstance();
 
     // download the data into a local disk file; return nr of records to be found in the file

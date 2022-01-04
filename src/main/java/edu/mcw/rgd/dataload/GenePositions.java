@@ -5,7 +5,8 @@ import edu.mcw.rgd.datamodel.MapData;
 import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.PipelineLogFlagManager;
 import edu.mcw.rgd.process.Utils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
@@ -19,7 +20,7 @@ import java.util.*;
  * to avoid deleting historical data. Also all database operations regarding gene positions are logged into gene_positions file
  */
 public class GenePositions {
-    private final Logger logger = Logger.getLogger("gene_positions");
+    private final Logger logger = LogManager.getLogger("gene_positions");
 
     private List<MapData> mapData = new ArrayList<MapData>();
     private List<MapData> rgdMapData;

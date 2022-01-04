@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <!-- <PatternLayout pattern="%d{HH:mm:ss} [%t] %-5level %logger{36} - %msg%n"/> -->
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] %msg%n"/>
+        </Console>
+
+        <RollingFile name="status" append="true" fileName="logs/process.log" filePattern="logs/process.log.%d{yyyy-MM}">
+            <PatternLayout pattern="%d %p [%c] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <File name="summary" append="false" fileName="logs/summary.log">
+            <PatternLayout pattern="%m%n"/>
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+        </File>
+        <RollingFile name="detail" append="true" fileName="logs/root.log" filePattern="logs/root.log.%d{yyyy-MM}">
+            <PatternLayout pattern="%d %p [%c] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="file_download" append="true" fileName="logs/file_download.log" filePattern="logs/file_download.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="annot_status" append="true" fileName="logs/annot_status.log" filePattern="logs/annot_status.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="gene_positions" append="true" fileName="logs/gene_positions.log" filePattern="logs/gene_positions.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="transcripts" append="true" fileName="logs/transcripts.log" filePattern="logs/transcripts.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="transcript_positions" append="true" fileName="logs/transcript_positions.log" filePattern="logs/transcript_positions.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="transcript_features" append="true" fileName="logs/transcript_features.log" filePattern="logs/transcript_features.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="inactive" append="true" fileName="logs/inactive.log" filePattern="logs/inactive.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="nomen" append="true" fileName="logs/nomen.log" filePattern="logs/nomen.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="symbols" append="true" fileName="logs/symbols.log" filePattern="logs/symbols.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="xdb_ids" append="true" fileName="logs/xdb_ids.log" filePattern="logs/xdb_ids.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="assoc" append="true" fileName="logs/assoc.log" filePattern="logs/assoc.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="gene_track_status" append="true" fileName="logs/gene_track_status.log" filePattern="logs/gene_track_status.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="refseq_loader" append="true" fileName="logs/refseq_loader.log" filePattern="logs/refseq_loader.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="aliases" append="true" fileName="logs/aliases.log" filePattern="logs/aliases.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="transcriptVersions" append="true" fileName="logs/transcriptVersions.log" filePattern="logs/transcriptVersions.log.%d{yyyy-MM}">
+            <PatternLayout pattern="[%d] - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+        </Root>
+        <!-- daily -->
+        <Logger name="process" level="debug" additivity="false">
+            <AppenderRef ref="status" level="info"/>
+            <AppenderRef ref="summary" level="info"/><!-- human readable -->
+            <AppenderRef ref="detail"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+
+        <!-- monthly -->
+        <Logger name="edu.mcw.rgd.process.FileDownloader" level="debug" additivity="false">
+            <AppenderRef ref="file_download"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="annot_status" level="debug" additivity="false">
+            <AppenderRef ref="annot_status"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="gene_positions" level="debug" additivity="false">
+            <AppenderRef ref="gene_positions"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="transcripts" level="debug" additivity="false">
+            <AppenderRef ref="transcripts"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="transcript_positions" level="debug" additivity="false">
+            <AppenderRef ref="transcript_positions"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="transcript_features" level="debug" additivity="false">
+            <AppenderRef ref="transcript_features"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="inactive" level="debug" additivity="false">
+            <AppenderRef ref="inactive"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="nomen" level="debug" additivity="false">
+            <AppenderRef ref="nomen"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="symbols" level="debug" additivity="false">
+            <AppenderRef ref="symbols"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="xdb_ids" level="debug" additivity="false">
+            <AppenderRef ref="xdb_ids"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="assoc" level="debug" additivity="false">
+            <AppenderRef ref="assoc"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="geneTrackStatus" level="debug" additivity="false">
+            <AppenderRef ref="gene_track_status"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="refSeqLoader" level="debug" additivity="false">
+            <AppenderRef ref="refseq_loader"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="aliases" level="debug" additivity="false">
+            <AppenderRef ref="aliases"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+        <Logger name="transcriptVersions" level="debug" additivity="false">
+            <AppenderRef ref="transcriptVersions"/>
+            <AppenderRef ref="Console" level="info"/>
+        </Logger>
+    </Loggers>
+</Configuration>

@@ -8,7 +8,8 @@ import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.process.*;
 import nu.xom.Element;
 import org.apache.commons.collections.map.MultiValueMap;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jaxen.JaxenException;
 import org.jaxen.XPath;
 import org.jaxen.xom.XOMXPath;
@@ -33,7 +34,7 @@ import java.util.Map;
 @SuppressWarnings("unchecked")
 public class XomEntrezGeneAnalyzer extends XomAnalyzer {
 
-    Logger logAnnotStatus = Logger.getLogger("annot_status");
+    Logger logAnnotStatus = LogManager.getLogger("annot_status");
 
     // local variables used during parsing xml record
     private BulkGene bulkGene;
