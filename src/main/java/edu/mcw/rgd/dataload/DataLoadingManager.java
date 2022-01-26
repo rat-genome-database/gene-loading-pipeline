@@ -68,16 +68,6 @@ public class DataLoadingManager {
         System.out.println(manager.getVersion());
         System.out.println(manager.rgdLogger.getConnectionInfo());
 
-        if(false) {
-            try {
-                TranscriptDAO tdao = new TranscriptDAO();
-                tdao.deleteTranscript(9098785, 7722322);
-            } catch (Exception e) {
-
-            }
-            System.exit(-1);
-        }
-
         if (args.length>=1) {
             try {
 
@@ -249,8 +239,7 @@ public class DataLoadingManager {
             manager.dbLogger.close(true); // close pipeline log with 'success' indication
 
             } catch(Exception e) {
-                e.printStackTrace();
-                manager.getLogger().error("Critical error", e);
+                Utils.printStackTrace(e, manager.getLogger());
 
                 // try to write error message and stop db logger
                 try {
