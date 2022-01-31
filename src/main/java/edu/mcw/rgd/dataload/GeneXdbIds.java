@@ -5,7 +5,7 @@ import edu.mcw.rgd.datamodel.RgdId;
 import edu.mcw.rgd.datamodel.XdbId;
 import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.XdbManager;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.*;
 
