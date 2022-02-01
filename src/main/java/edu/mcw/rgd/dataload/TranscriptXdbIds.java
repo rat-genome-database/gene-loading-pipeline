@@ -4,17 +4,15 @@ import edu.mcw.rgd.datamodel.Transcript;
 import edu.mcw.rgd.datamodel.XdbId;
 import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.Utils;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mtutaj
- * Date: 9/30/15
- * Time: 3:27 PM
+ * @author mtutaj
+ * @since 9/30/15
  * <p>
  * handle xdb ids for transcripts; currently only UniProt ids
  */

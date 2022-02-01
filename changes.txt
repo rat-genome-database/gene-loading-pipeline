@@ -1,3 +1,6 @@
+Jan 31, 2022
+   upgraded to commons-collections4
+
 Jan 25, 2022
    cleanup: removed some test code
 
