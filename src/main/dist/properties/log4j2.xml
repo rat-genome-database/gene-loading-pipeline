@@ -7,7 +7,7 @@
         </Console>
 
         <RollingFile name="status" append="true" fileName="logs/process.log" filePattern="logs/process.log.%d{yyyy-MM}">
-            <PatternLayout pattern="%d %p [%c] - %m%n"/>
+            <PatternLayout pattern="%d{yyyy-MM-hh HH:mm:ss} %p [%c] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
@@ -17,98 +17,98 @@
             <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
         </File>
         <RollingFile name="detail" append="true" fileName="logs/root.log" filePattern="logs/root.log.%d{yyyy-MM}">
-            <PatternLayout pattern="%d %p [%c] - %m%n"/>
+            <PatternLayout pattern="%d{yyyy-MM-hh HH:mm:ss} %p [%c] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
 
         <RollingFile name="file_download" append="true" fileName="logs/file_download.log" filePattern="logs/file_download.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d] - %m%n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
         <RollingFile name="annot_status" append="true" fileName="logs/annot_status.log" filePattern="logs/annot_status.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d] - %m%n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
         <RollingFile name="gene_positions" append="true" fileName="logs/gene_positions.log" filePattern="logs/gene_positions.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d] - %m%n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
         <RollingFile name="transcripts" append="true" fileName="logs/transcripts.log" filePattern="logs/transcripts.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d] - %m%n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
         <RollingFile name="transcript_positions" append="true" fileName="logs/transcript_positions.log" filePattern="logs/transcript_positions.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d] - %m%n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
         <RollingFile name="transcript_features" append="true" fileName="logs/transcript_features.log" filePattern="logs/transcript_features.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d] - %m%n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
         <RollingFile name="inactive" append="true" fileName="logs/inactive.log" filePattern="logs/inactive.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d] - %m%n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
         <RollingFile name="nomen" append="true" fileName="logs/nomen.log" filePattern="logs/nomen.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d] - %m%n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
         <RollingFile name="symbols" append="true" fileName="logs/symbols.log" filePattern="logs/symbols.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d] - %m%n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
         <RollingFile name="xdb_ids" append="true" fileName="logs/xdb_ids.log" filePattern="logs/xdb_ids.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d] - %m%n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
         <RollingFile name="assoc" append="true" fileName="logs/assoc.log" filePattern="logs/assoc.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d] - %m%n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
         <RollingFile name="gene_track_status" append="true" fileName="logs/gene_track_status.log" filePattern="logs/gene_track_status.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d] - %m%n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
         <RollingFile name="refseq_loader" append="true" fileName="logs/refseq_loader.log" filePattern="logs/refseq_loader.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d] - %m%n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
         <RollingFile name="aliases" append="true" fileName="logs/aliases.log" filePattern="logs/aliases.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d] - %m%n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
         <RollingFile name="transcriptVersions" append="true" fileName="logs/transcriptVersions.log" filePattern="logs/transcriptVersions.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d] - %m%n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-hh HH:mm:ss}] - %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
