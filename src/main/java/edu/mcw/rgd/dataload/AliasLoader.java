@@ -121,7 +121,7 @@ public class AliasLoader {
             else {
                 alias.setRgdId(rgdId);
                 forInsert.add(alias);
-                logAliases.info("gene alias ["+ alias.getValue() +"] inserted into alias table");
+                logAliases.debug("gene alias ["+ alias.getValue() +"] inserted into alias table");
             }
         }
     }

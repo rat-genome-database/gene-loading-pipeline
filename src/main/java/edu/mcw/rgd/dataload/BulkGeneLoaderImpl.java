@@ -419,7 +419,7 @@ public class BulkGeneLoaderImpl {
                     if( !tr.equals(ti) ) {
                         // properties differ between incoming transcript and rgd
                         // log the changed properties
-                        logtr.info("OLD_TRANSCRIPT_PROPERTIES: "+tr.dump("|"));
+                        logtr.debug("OLD_TRANSCRIPT_PROPERTIES: "+tr.dump("|"));
 
                         if( !Utils.stringsAreEqual(tr.getRefSeqStatus(), ti.getRefSeqStatus()) ) {
                             getDbFlagManager().setFlag("TRANSCRIPT_REFSEQ_STATUS_CHANGED", bg.getRecNo());
@@ -449,7 +449,7 @@ public class BulkGeneLoaderImpl {
                             counters.increment("TRANSCRIPT_UPDATED");
                         }
 
-                        logtr.info("NEW_TRANSCRIPT_PROPERTIES: "+tr.dump("|"));
+                        logtr.debug("NEW_TRANSCRIPT_PROPERTIES: "+tr.dump("|"));
                     }
 
                     transcriptInRgd = true;
@@ -469,7 +469,7 @@ public class BulkGeneLoaderImpl {
                 bg.dao.createTranscript(newTr, bg.getGene().getSpeciesTypeKey());
                 ti.setRgdId(newTr.getRgdId());
                 bg.rgdTranscripts.add(newTr); // we new transcript now in rgd!
-                logtr.info("TRANSCRIPT_INSERTED: "+newTr.dump("|"));
+                logtr.debug("TRANSCRIPT_INSERTED: "+newTr.dump("|"));
 
                 // increment counter of transcripts added
                 counters.increment("TRANSCRIPTS_INSERTED");
@@ -491,7 +491,7 @@ public class BulkGeneLoaderImpl {
             } else {
                 for( Transcript tr: obsoleteInRgdTranscripts ) {
                     if( bg.dao.detachTranscriptFromGene(tr) != 0 ) {
-                        logtr.info("TRANSCRIPT_DETACHED_FROM_GENE: " + tr.dump("|"));
+                        logtr.debug("TRANSCRIPT_DETACHED_FROM_GENE: " + tr.dump("|"));
                     } else {
                         counters.increment("TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED");
                         getDbFlagManager().setFlag("TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED", bg.getRecNo());
@@ -610,7 +610,7 @@ public class BulkGeneLoaderImpl {
 
         List<TranscriptFeature> rgdFeaturesToUnlink = new ArrayList<TranscriptFeature>();
         for( TranscriptFeature f: rgdFeatures ) {
-            logtf.info("Feature to unlink: GeneId="+bg.getEgId()+" RgdId="+bg.gene.getRgdId()+" Gene="+bg.gene.getSymbol()+", "+f);
+            logtf.debug("Feature to unlink: GeneId="+bg.getEgId()+" RgdId="+bg.gene.getRgdId()+" Gene="+bg.gene.getSymbol()+", "+f);
         }
         rgdFeaturesToUnlink.addAll(rgdFeatures);
 
@@ -702,7 +702,7 @@ public class BulkGeneLoaderImpl {
                 tfIncoming.getFeatureType()== TranscriptFeature.FeatureType.EXON
                     ? "EXONS_INSERTED"
                     : "UTRS_INSERTED");
-        logtf.info("FEATURE INSERT "+tfIncoming.toString());
+        logtf.debug("FEATURE INSERT "+tfIncoming.toString());
         return tfIncoming;
     }
 

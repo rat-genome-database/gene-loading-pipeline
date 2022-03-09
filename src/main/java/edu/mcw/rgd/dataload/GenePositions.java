@@ -246,7 +246,7 @@ public class GenePositions {
             egDAO.insertMapData(mdForInsert);
 
             for( MapData md: mdForInsert ) {
-                logger.info("EGID="+bg.getEgId()+" MAPS_DATA INSERT >"+dumpMapPosition(md));
+                logger.debug("EGID="+bg.getEgId()+" MAPS_DATA INSERT >"+dumpMapPosition(md));
             }
 
             dbFlagManager.setFlag(counterPrefix+"_MAPPOS_INSERTED", bg.getRecNo());
@@ -267,7 +267,7 @@ public class GenePositions {
             if( egDAO.deleteMapData(mdForDelete, counterPrefix.equals("GENE")) != 0 ) {
 
                 for (MapData md : mdForDelete) {
-                    logger.info("EGID=" + bg.getEgId() + " MAPS_DATA DELETE >" + dumpMapPosition(md));
+                    logger.debug("EGID=" + bg.getEgId() + " MAPS_DATA DELETE >" + dumpMapPosition(md));
                 }
 
                 dbFlagManager.setFlag(counterPrefix + "_MAPPOS_DELETED", bg.getRecNo());
@@ -290,7 +290,7 @@ public class GenePositions {
             // among matches and inserts
             if( !findSimilarPosition(md, mdMatching) &&
                     !findSimilarPosition(md, mdForInsert) ) {
-                logger.info(" MAPS_DATA DELETE_SUPPRESSED >"+dumpMapPosition(md));
+                logger.debug(" MAPS_DATA DELETE_SUPPRESSED >"+dumpMapPosition(md));
                 suppressed++;
                 it.remove();
             }
@@ -369,7 +369,7 @@ public class GenePositions {
         if( !mdsOverlapping.isEmpty() ) {
             if( egDAO.deleteMapData(mdsOverlapping, false)!=0 ) {
                 for( MapData md: mdsOverlapping ) {
-                    logger.info("OVERLAPPING MAPS_DATA DELETE >"+dumpMapPosition(md));
+                    logger.debug("OVERLAPPING MAPS_DATA DELETE >"+dumpMapPosition(md));
                 }
 
                 dbFlagManager.setFlag("TRANSCRIPT_OVERLAPPING_MAPPOS_DELETED", bg.getRecNo());

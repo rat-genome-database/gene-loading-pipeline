@@ -173,7 +173,7 @@ public class QualityCheckBulkGene  {
                     // if the rgd gene is non active gene
                     // the rgd gene either has different eg id or has no eg id
                     dbLog.addLogProp("eg id is not in RGD, incoming eg record has a "+rgdGeneStatus+" rgdid", "NON_ACTIVE", bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
-                    logInactive.info("RGDID="+ngene.getRgdId()+", EGID="+bulkGene.getEgId());
+                    logInactive.debug("RGDID="+ngene.getRgdId()+", EGID="+bulkGene.getEgId());
                     return new Flags(Flags.NONACTIVE, Flags.ERROR);
                 }
                 else {
@@ -191,7 +191,7 @@ public class QualityCheckBulkGene  {
                     flag = new Flags(Flags.NONACTIVE, Flags.ERROR);
                     dbLog.addLogProp("eg id is not active in RGD and incoming eg record has no rgdid", "NON_ACTIVE", bulkGene.getRecNo(), PipelineLogger.REC_FLAG);
                     for( RgdId rgdId: dao.getRGDIdsByXdbId(XdbId.XDB_KEY_ENTREZGENE, bulkGene.getEgId()) ) {
-                        logInactive.info("RGDID="+rgdId.getRgdId()+", EGID="+bulkGene.getEgId());
+                        logInactive.debug("RGDID="+rgdId.getRgdId()+", EGID="+bulkGene.getEgId());
                     }
                     return flag;
 
@@ -602,11 +602,11 @@ public class QualityCheckBulkGene  {
             if( !authority.equals("NCBI") ) {
 
                 bg.setFlag("ORTHO_NOMEN_SYMBOL_CHANGE_SUPPRESSED_BY_"+authority);
-                logNomen.info("gene symbol change suppressed by "+authority+": RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getSymbol() + "], NEW=[" + egGene.getSymbol() + "]");
+                logNomen.debug("gene symbol change suppressed by "+authority+": RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getSymbol() + "], NEW=[" + egGene.getSymbol() + "]");
 
             } else {
-                logNomen.info("gene symbol change: RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getSymbol() + "], NEW=[" + egGene.getSymbol() + "]");
-                logSymbol.info("|" + SpeciesType.getCommonName(rgdGene.getSpeciesTypeKey())
+                logNomen.debug("gene symbol change: RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getSymbol() + "], NEW=[" + egGene.getSymbol() + "]");
+                logSymbol.debug("|" + SpeciesType.getCommonName(rgdGene.getSpeciesTypeKey())
                         + "|RGDID:" + rgdGene.getRgdId()
                         + "|RGD SYMBOL|" + rgdGene.getSymbol()
                         + "|NCBI SYMBOL|" + egGene.getSymbol());
@@ -626,11 +626,11 @@ public class QualityCheckBulkGene  {
             if( !authority.equals("NCBI") ) {
 
                 bg.setFlag("ORTHO_NOMEN_NAME_CHANGE_SUPPRESSED_BY_"+authority);
-                logNomen.info("gene name change suppressed by "+authority+": RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getName() + "], NEW=[" + egGene.getName() + "]");
+                logNomen.debug("gene name change suppressed by "+authority+": RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getName() + "], NEW=[" + egGene.getName() + "]");
 
             } else {
 
-                logNomen.info("gene name change: RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getName() + "], NEW=[" + egGene.getName() + "]");
+                logNomen.debug("gene name change: RGD_ID=[" + rgdGene.getRgdId() + "], OLD=[" + rgdGene.getName() + "], NEW=[" + egGene.getName() + "]");
                 bg.setFlag("ORTHO_NOMEN_NAME");
 
                 Alias alias = new Alias();
@@ -642,7 +642,7 @@ public class QualityCheckBulkGene  {
         }
 
         if( !Utils.stringsAreEqual(egGene.getDescription(), rgdGene.getDescription())) {
-            logNomen.info("gene description change: RGD_ID=["+rgdGene.getRgdId()+"], OLD=["+rgdGene.getDescription()+"], NEW=["+egGene.getDescription()+"]");
+            logNomen.debug("gene description change: RGD_ID=["+rgdGene.getRgdId()+"], OLD=["+rgdGene.getDescription()+"], NEW=["+egGene.getDescription()+"]");
             bg.setFlag("ORTHO_NOMEN_DESC");
         }
     }

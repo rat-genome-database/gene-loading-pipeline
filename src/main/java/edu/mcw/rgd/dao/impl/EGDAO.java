@@ -296,7 +296,7 @@ public class EGDAO {
             return 0;
 
         for( XdbId xdbId: xdbIds ) {
-            logXdbIds.info("DELETE "+objectType+"|"+xdbId.dump("|"));
+            logXdbIds.debug("DELETE "+objectType+"|"+xdbId.dump("|"));
         }
         xdbidDAO.deleteXdbIds((List<XdbId>)xdbIds);
         return xdbIds.size();
@@ -331,7 +331,7 @@ public class EGDAO {
         xdbidDAO.insertXdbs((List<XdbId>)xdbIds);
 
         for( XdbId xdbId: xdbIds ) {
-            logXdbIds.info("INSERT "+objectType+"|" + xdbId.dump("|"));
+            logXdbIds.debug("INSERT "+objectType+"|" + xdbId.dump("|"));
         }
 
         return xdbIds.size();
@@ -500,12 +500,12 @@ public class EGDAO {
     }
 
     public int insertAssociation(Association assoc) throws Exception {
-        logAssoc.info("INSERT "+assoc.dump("|"));
+        logAssoc.debug("INSERT "+assoc.dump("|"));
         return assocDAO.insertAssociation(assoc);
     }
 
     public int updateAssociation(Association assoc) throws Exception {
-        logAssoc.info("UPDATE "+assoc.dump("|"));
+        logAssoc.debug("UPDATE "+assoc.dump("|"));
         return assocDAO.updateAssociation(assoc);
     }
 
@@ -516,7 +516,7 @@ public class EGDAO {
      * @throws Exception when unexpected error in spring framework occurs
      */
     public int deleteAssociation( Association assoc ) throws Exception {
-        logAssoc.info("DELETE "+assoc.dump("|"));
+        logAssoc.debug("DELETE "+assoc.dump("|"));
         return assocDAO.deleteAssociationByKey(assoc.getAssocKey());
     }
 
