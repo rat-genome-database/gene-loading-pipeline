@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- build Mar 09, 2022" />
+        <property name="version" value="Ncbi Gene Pipeline   -- build MaApr 07, 2022" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -18,18 +18,18 @@
             </map>
         </property>
 
-        <property name="genomicAssemblies">
+        <property name="genomicAssemblies"> <!-- key is SPECIES_TYPES.SHORT_NAME -->
             <map>
-                <entry key="Human" value-ref="humanGenomicAssemblies"/>
-                <entry key="Mouse" value-ref="mouseGenomicAssemblies"/>
-                <entry key="Rat" value-ref="ratGenomicAssemblies"/>
-                <entry key="Chinchilla" value-ref="chinchillaGenomicAssemblies"/>
-                <entry key="Bonobo" value-ref="bonoboGenomicAssemblies"/>
-                <entry key="Dog" value-ref="dogGenomicAssemblies"/>
-                <entry key="Squirrel" value-ref="squirrelGenomicAssemblies"/>
-                <entry key="Pig" value-ref="pigGenomicAssemblies"/>
-                <entry key="Vervet" value-ref="vervetGenomicAssemblies"/>
-                <entry key="Molerat" value-ref="moleratGenomicAssemblies"/>
+                <entry key="human" value-ref="humanGenomicAssemblies"/>
+                <entry key="mouse" value-ref="mouseGenomicAssemblies"/>
+                <entry key="rat" value-ref="ratGenomicAssemblies"/>
+                <entry key="chinchilla" value-ref="chinchillaGenomicAssemblies"/>
+                <entry key="bonobo" value-ref="bonoboGenomicAssemblies"/>
+                <entry key="dog" value-ref="dogGenomicAssemblies"/>
+                <entry key="squirrel" value-ref="squirrelGenomicAssemblies"/>
+                <entry key="pig" value-ref="pigGenomicAssemblies"/>
+                <entry key="vervet" value-ref="vervetGenomicAssemblies"/>
+                <entry key="molerat" value-ref="moleratGenomicAssemblies"/>
             </map>
         </property>
         <!--gene location history: gene location info provided by RefSeq for non-current (previous) assemblies -->

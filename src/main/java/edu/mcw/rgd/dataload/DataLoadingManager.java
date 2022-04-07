@@ -389,7 +389,8 @@ public class DataLoadingManager {
         logger.info("Processing entrezgene file:" + fileName);
         dbLogger.log("Starting XML processing of entrezgene file", fileName, PipelineLogger.INFO);
 
-        qualityCheck.setGenomicAssemblies(getGenomicAssembliesForCurrentSpecies());
+        Map<String, String> genomicAssembliesForSpecies = getGenomicAssembliesForCurrentSpecies();
+        qualityCheck.setGenomicAssemblies(genomicAssembliesForSpecies);
         qualityCheck.setDbFlagManager(dbFlagManager);
         qualityCheck.setCounters(counters);
 
@@ -398,7 +399,7 @@ public class DataLoadingManager {
         // setup thread for concurrent xml parsing
         XomEntrezGeneAnalyzer parser = new XomEntrezGeneAnalyzer();
         parser.setFirstRecNo(getFirstRecNo());
-        parser.setGenomicAssemblies(getGenomicAssembliesForCurrentSpecies(), getScaffoldAssemblies());
+        parser.setGenomicAssemblies(genomicAssembliesForSpecies, getScaffoldAssemblies());
         parser.setGeneLocationHistory(getGeneLocationHistoryForCurrentSpecies());
         parser.setFileName(fileName);
 
@@ -619,7 +620,7 @@ public class DataLoadingManager {
     // get genomic assemblies to be imported by the pipeline for the currently chosen species
     public Map<String, String> getGenomicAssembliesForCurrentSpecies() {
 
-        String speciesName = SpeciesType.getCommonName(speciesTypeKey);
+        String speciesName = SpeciesType.getShortName(speciesTypeKey);
         return getGenomicAssemblies().get(speciesName);
     }
 
