@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- build MaApr 07, 2022" />
+        <property name="version" value="Ncbi Gene Pipeline   -- build Apr 22, 2022" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -55,6 +55,7 @@
                 <entry key="GRCh38.p7" value="38"/>
                 <entry key="GRCh38.p12" value="38"/>
                 <entry key="GRCh38.p13" value="38"/>
+                <entry key="GRCh38.p14" value="38"/>
 
                 <entry key="Mm_Celera" value="20"/>
                 <entry key="MGSCv36" value="14"/>
@@ -115,6 +116,8 @@
                 <entry key="Reference GRCh38.p7 Primary Assembly" value="38"/>
                 <entry key="Reference GRCh38.p12 Primary Assembly" value="38"/>
                 <entry key="Reference GRCh38.p13 Primary Assembly" value="38"/>
+                <entry key="Reference GRCh38.p14 Primary Assembly" value="38"/>
+
                 <entry key="Alternate CHM1_1.1" value="36"/>
 
                 <entry key="Cytomap" value="11"/>

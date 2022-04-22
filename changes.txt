@@ -1,3 +1,6 @@
+Apr 22, 2022
+   added loading of human assembly GRCh38.p14
+
 Apr 07, 2022
    fixed loading of map positions for green monkey genes
 
