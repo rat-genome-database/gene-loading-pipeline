@@ -272,7 +272,7 @@ public class EntrezGeneExtractor {
 
                     eSearch.totalFetchedCount += processedEgIds;
 
-                    logger.info("processed " + processedEgIds + " ids, total processed " + eSearch.totalFetchedCount + " ids out of " + eSearch.recordCount
+                    logger.debug("processed " + processedEgIds + " ids, total processed " + eSearch.totalFetchedCount + " ids out of " + eSearch.recordCount
                             + "\nId List Len : " + idListLen
                             + "\nFetch Action:" + eSearch.fetchQuery);
                     dbLogger.log("NCBI eFetch uri", eSearch.fetchQuery, PipelineLogger.INFO);
