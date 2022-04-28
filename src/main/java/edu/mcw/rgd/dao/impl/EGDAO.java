@@ -558,6 +558,9 @@ public class EGDAO {
         String fileContent = Utils.readFileAsString(fileName);
         for( String line: fileContent.split("[\\r\\n]") ) {
             String egId = line.trim();
+            if( Utils.isStringEmpty(egId) ) {
+                continue;
+            }
             int geneId = Integer.parseInt(egId);
             Collection<Gene> genes = dao.getGenesByEGID(egId);
             if( genes.isEmpty() ) {

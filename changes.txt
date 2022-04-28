@@ -1,3 +1,6 @@
+Apr 28, 2022
+   tuned up logging
+
 Apr 22, 2022
    added loading of human assembly GRCh38.p14
 
