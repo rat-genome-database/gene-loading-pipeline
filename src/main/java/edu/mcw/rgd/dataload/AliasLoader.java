@@ -13,7 +13,7 @@ import java.util.*;
 /**
  * @author mtutaj
  * @since 3/25/14
- * all code related to handling aliases
+ * code for handling aliases (synonyms)
  */
 public class AliasLoader {
 
@@ -38,6 +38,12 @@ public class AliasLoader {
             Utils.stringsAreEqualIgnoreCase("test", alias.getValue()) ||
             Utils.stringsAreEqualIgnoreCase("unknown", alias.getValue()) )
             return;
+
+        // strip potential prefix: 'LOW QUALITY PROTEIN:'
+        String prefix = "LOW QUALITY PROTEIN:";
+        if( alias.getValue().startsWith(prefix) ) {
+            alias.setValue( alias.getValue().substring(prefix.length()).trim() );
+        }
 
         // compress whitespace in value: replace multiple space characters with a single space
         compressWhitespace(alias);
