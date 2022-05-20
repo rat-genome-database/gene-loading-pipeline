@@ -56,6 +56,7 @@
                 <entry key="GRCh38.p12" value="38"/>
                 <entry key="GRCh38.p13" value="38"/>
                 <entry key="GRCh38.p14" value="38"/>
+                <entry key="T2T-CHM13v2.0" value="37"/>
 
                 <entry key="Mm_Celera" value="20"/>
                 <entry key="MGSCv36" value="14"/>
@@ -119,6 +120,7 @@
                 <entry key="Reference GRCh38.p14 Primary Assembly" value="38"/>
 
                 <entry key="Alternate CHM1_1.1" value="36"/>
+                <entry key="Alternate T2T-CHM13v2.0" value="37"/>
 
                 <entry key="Cytomap" value="11"/>
                 <entry key="Celera" value="16"/>
