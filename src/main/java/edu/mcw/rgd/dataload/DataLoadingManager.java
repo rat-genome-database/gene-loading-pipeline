@@ -300,7 +300,7 @@ public class DataLoadingManager {
     public int download(String dateFrom, String dateTo) throws Exception {
 
         // handle 'auto' dates
-        if( dateFrom.toLowerCase().equals("auto") ) {
+        if( dateFrom.equalsIgnoreCase("auto") ) {
             String lastSyncDate = dbLogger.getLastDataSyncDate();
             if( lastSyncDate==null ) {
                 // last data sync date not found for pipeline in the current run mode
@@ -312,13 +312,13 @@ public class DataLoadingManager {
         }
 
         String yesterdayDate = Utils.addDaysToDate((String)null, -1);
-        if( dateTo.toLowerCase().equals("auto") ) {
+        if( dateTo.equalsIgnoreCase("auto") ) {
             dateTo = yesterdayDate;
             // by default, we pull data up to yesterday
         }
 
         // handle 'fullload'
-        if( dateFrom.toLowerCase().equals("fullload") ) {
+        if( dateFrom.equalsIgnoreCase("fullload") ) {
             dateFrom = "2000/01/01";
             this.entrezGeneExtractor.setForceFullLoad(true);
         }

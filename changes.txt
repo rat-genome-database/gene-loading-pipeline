@@ -1,3 +1,6 @@
+Oct 17, 2022
+   more verbose naming of downloaded files in fullload mode
+
 May 20, 2022
    aliases: strip prefix 'LOW QUALITY PROTEIN:' from incoming aliases
    added loading of human Alternate T2T-CHM13v2.0 assembly

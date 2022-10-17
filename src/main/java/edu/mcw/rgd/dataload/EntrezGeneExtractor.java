@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
@@ -74,9 +75,11 @@ public class EntrezGeneExtractor {
             makeDir(outDir);
 
             String eSearchFile = outDir + "/" + "EntrezGene_"+speciesName;
-            if( getForceFullLoad() )
-                eSearchFile += "_fullload";
-            else
+            if( getForceFullLoad() ) {
+                SimpleDateFormat sdt = new SimpleDateFormat("yyyyMMdd");
+                String todayDate = sdt.format(new Date());
+                eSearchFile = outDir + "/fullload_"+speciesName+"_"+todayDate;
+            } else
                 eSearchFile += "_"+getDateFrom().replaceAll("/", "") +"_"+getDateTo().replaceAll("/", "");
             eSearchFile += "_eSearch.xml";
 
