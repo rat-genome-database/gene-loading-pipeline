@@ -48,6 +48,9 @@ public class EntrezGeneExtractor {
         NcbiEutils.ESearchResult eSearch = null;
         String speciesName = SpeciesType.getCommonName(SpeciesType.parse(species));
 
+        SimpleDateFormat sdt = new SimpleDateFormat("yyyyMMdd");
+        String todayDate = sdt.format(new Date());
+
         if( eSearchOverride!=null ) {
             eSearch = eSearchOverride;
         } else {
@@ -76,8 +79,6 @@ public class EntrezGeneExtractor {
 
             String eSearchFile = outDir + "/" + "EntrezGene_"+speciesName;
             if( getForceFullLoad() ) {
-                SimpleDateFormat sdt = new SimpleDateFormat("yyyyMMdd");
-                String todayDate = sdt.format(new Date());
                 eSearchFile = outDir + "/fullload_"+speciesName+"_"+todayDate;
             } else
                 eSearchFile += "_"+getDateFrom().replaceAll("/", "") +"_"+getDateTo().replaceAll("/", "");
@@ -122,7 +123,7 @@ public class EntrezGeneExtractor {
         // initialize the file for receiving all of the data
         String outFile = outDir + "/" + "EntrezGene_"+speciesName;
         if( getForceFullLoad() )
-            outFile += "_fullload";
+            outFile += "_fullload_"+todayDate;
         else if( eSearchOverride!=null )
             outFile += eSearchOverride.queryTranslation;
         else
