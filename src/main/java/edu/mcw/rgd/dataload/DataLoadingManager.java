@@ -1,7 +1,6 @@
 package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.dao.impl.EGDAO;
-import edu.mcw.rgd.dao.impl.TranscriptDAO;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.log.*;
 import edu.mcw.rgd.process.*;
