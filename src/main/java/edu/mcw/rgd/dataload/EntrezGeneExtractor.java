@@ -202,7 +202,9 @@ public class EntrezGeneExtractor {
     public String downloadAndProcessGeneList(String mode, Collection<Integer> egIds) throws Exception {
 
         int speciesTypeKey = DataLoadingManager.getInstance().getSpeciesTypeKey();
-        setOutFile("data/"+mode+"_"+SpeciesType.getCommonName(speciesTypeKey).toLowerCase()+".xml.gz");
+        SimpleDateFormat sdt = new SimpleDateFormat("yyyyMMdd");
+        String todayDate = sdt.format(new Date());
+        setOutFile("data/"+todayDate+"_"+mode+"_"+SpeciesType.getCommonName(speciesTypeKey).toLowerCase()+".xml.gz");
         initEgWriter();
 
         // download and process the data
