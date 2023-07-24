@@ -1,3 +1,6 @@
+Jul 24, 2023
+  rat: reduced nr of assemblies processed to rn7 and rat-cyto, to reduce possibility of removing transcript for older assemblies
+
 May 22, 2023
   in '-all_genes' mode download all genes into date-stamped file
 
