@@ -1,3 +1,8 @@
+TODO: remove rgd_pipelines.jar from lib
+
+Nov 17, 2023
+  upgraded to java 17
+
 Jul 24, 2023
   rat: reduced nr of assemblies processed to rn7 and rat-cyto, to reduce possibility of removing transcript for older assemblies
 
