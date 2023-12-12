@@ -1,4 +1,5 @@
-TODO: remove rgd_pipelines.jar from lib
+Dec 12, 2023
+  removed dependency rgd-pipelines-1.0.5.jar
 
 Nov 17, 2023
   upgraded to java 17
