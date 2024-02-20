@@ -62,7 +62,10 @@ public class EntrezGeneExtractor {
             if( getMitochondrialGenesLoad() ) {
                 query += "+AND+MT[Chromosome]";
             } else {
-                query += "+AND+alive[prop]";
+
+                // as of Feb 2024, we decided to process all genes, including inactive ones
+                //query += "+AND+alive[prop]";
+
                 if( !getForceFullLoad() ) {
                     query += "+AND+(%22"+dateFrom+"%22[Modification+Date]+:+%22"+dateTo+"%22[Modification+Date])";
                 }

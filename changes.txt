@@ -1,3 +1,6 @@
+Feb 20, 2024
+  logic: no longer inactive genes are excluded from weekly processing
+
 Dec 12, 2023
   removed dependency rgd-pipelines-1.0.5.jar
 
