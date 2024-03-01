@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- build Feb 20, 2024" />
+        <property name="version" value="Ncbi Gene Pipeline   -- build Mar 01, 2024" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -37,8 +37,9 @@
             <map>
                 <!--
                 <entry key="Rn_Celera" value="15"/>
-                <entry key="Rnor_5.0" value="70"/>
                 <entry key="Rnor_6.0" value="360"/>
+                <entry key="mRatBN7.2" value="372"/>
+                <entry key="GRCr8" value="380"/>
                 -->
                 <entry key="Hs_Celera" value="16"/>
                 <entry key="CHM1_1.0" value="36"/>
@@ -156,16 +157,7 @@
     <bean id="ratGenomicAssemblies" class="java.util.HashMap">
         <constructor-arg>
             <map>
-                <!--
-                <entry key="Alternate assembly (based on Celera assembly)" value="15"/>
-                <entry key="Alternate assembly (Rn_Celera)" value="15"/>
-                <entry key="Alternate Rn_Celera" value="15"/>
-                <entry key="Reference assembly" value="60"/>
-                <entry key="Reference assembly (based on RGSC_v3.4)" value="60"/>
-                <entry key="Reference Rnor_5.0 Primary Assembly" value="70" />
-                <entry key="Reference Rnor_6.0 Primary Assembly" value="360" />
-                -->
-                <entry key="Reference mRatBN7.2 Primary Assembly" value="372"/>
+                <entry key="Reference GRCr8" value="380"/>
                 <entry key="Cytomap" value="99"/>
             </map>
         </constructor-arg>

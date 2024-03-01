@@ -1,3 +1,6 @@
+Mar 01, 2024
+  genes: new rat assembly GRCr8
+
 Feb 20, 2024
   logic: no longer inactive genes are excluded from weekly processing
 
