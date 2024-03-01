@@ -46,7 +46,7 @@ public class NcbiEutils {
         url.append("&tool=").append(this.geteUtils_tool());
         url.append("&email=").append(this.geteUtils_email());
         url.append("&term=").append(term);
-        url.append("&retmax=100000&usehistory=y");
+        url.append("&retmax=1000000&usehistory=y");
 
         ESearchResult res = createESearchResult();
         res.queryOriginal = url.toString();
