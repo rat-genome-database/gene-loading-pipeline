@@ -38,11 +38,9 @@ public class TranscriptVersionManager {
             info.version = versionNr;
             map.put(acc, info);
         } else {
-            if( info.version==0 ) {
+            if( info.version < versionNr ) {
+                // update version
                 info.version = versionNr;
-            }
-            else if( info.version != versionNr ) {
-                throw new RuntimeException("transcript acc ver mismatch: "+info.version+" vs "+versionNr);
             }
         }
     }
