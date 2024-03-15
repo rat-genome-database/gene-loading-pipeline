@@ -1,3 +1,6 @@
+Mar 15, 2024
+  genes: new bonobo assembly NHGRI_mPanPan1-v2.0_pri
+
 Mar 01, 2024
   genes: new rat assembly GRCr8
   eUtils: increased maximum nr of genes to be processed from 100,000 to 1,000,000
