@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="Ncbi Gene Pipeline   -- build Mar 15, 2024" />
+        <property name="version" value="Ncbi Gene Pipeline   -- build Apr 15, 2024" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -23,6 +23,7 @@
                 <entry key="human" value-ref="humanGenomicAssemblies"/>
                 <entry key="mouse" value-ref="mouseGenomicAssemblies"/>
                 <entry key="rat" value-ref="ratGenomicAssemblies"/>
+                <entry key="blackrat" value-ref="blackratGenomicAssemblies"/>
                 <entry key="chinchilla" value-ref="chinchillaGenomicAssemblies"/>
                 <entry key="bonobo" value-ref="bonoboGenomicAssemblies"/>
                 <entry key="dog" value-ref="dogGenomicAssemblies"/>
@@ -159,6 +160,14 @@
             <map>
                 <entry key="Reference GRCr8" value="380"/>
                 <entry key="Cytomap" value="99"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="blackratGenomicAssemblies" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="Reference Rrattus_CSIRO_v1 Primary Assembly" value="1701"/>
             </map>
         </constructor-arg>
     </bean>
