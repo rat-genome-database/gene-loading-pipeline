@@ -676,7 +676,10 @@ public class BulkGeneLoaderImpl {
     TranscriptFeature matchFeature(TranscriptFeature tfIncoming, List<TranscriptFeature> rgdTFList, BulkGene bg) throws Exception {
         // lookup for features already attached to this transcript in RGD
         for( TranscriptFeature tfInRgd: rgdTFList ) {
-            if( tfIncoming.equalsByGenomicCoords(tfInRgd) && tfIncoming.getTranscriptRgdId()==tfInRgd.getTranscriptRgdId() ) {
+            if( tfIncoming.equalsByGenomicCoords(tfInRgd)
+                && tfInRgd.getFeatureType() == tfIncoming.getFeatureType()
+                && tfIncoming.getTranscriptRgdId()==tfInRgd.getTranscriptRgdId() ) {
+
                 // incoming feature matches the rgd feature: same transcript, map, chromosome, strand, start and stop position
                 tfIncoming.setRgdId(tfInRgd.getRgdId()); // reuse feature_rgd_id
                 
@@ -686,11 +689,19 @@ public class BulkGeneLoaderImpl {
 
         // lookup for features to be shared (bound to another transcript already)
         for( TranscriptFeature tfInRgd: rgdTFList ) {
-            if( tfIncoming.equalsByGenomicCoords(tfInRgd) ) {
+            if( tfIncoming.equalsByGenomicCoords(tfInRgd) && tfInRgd.getFeatureType() == tfIncoming.getFeatureType() ) {
+
                 // incoming feature matches the rgd feature: same map, chromosome, strand, start and stop position
                 tfIncoming.setRgdId(tfInRgd.getRgdId()); // reuse feature_rgd_id
                 // create a binding between the feature and the current transcript
                 bg.dao.bindFeatureToTranscript(tfIncoming.getTranscriptRgdId(), tfInRgd.getRgdId());
+
+                counters.increment(
+                        tfIncoming.getFeatureType()== TranscriptFeature.FeatureType.EXON
+                                ? "EXONS_BOUND"
+                                : "UTRS_BOUND");
+                logtf.debug("FEATURE BOUND "+tfIncoming.toString());
+
                 return tfIncoming;
             }
         }

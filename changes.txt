@@ -1,3 +1,6 @@
+May 21, 2024
+  transcripts: fixed loading of utrs
+
 Apr 15, 2024
   genes: added species 'black rat'
 
