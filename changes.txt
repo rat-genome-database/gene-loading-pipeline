@@ -1,3 +1,6 @@
+Feb 28, 2025
+  genes: added loading of EnsemblRapid xrefs
+
 May 21, 2024
   transcripts: fixed loading of utrs
 

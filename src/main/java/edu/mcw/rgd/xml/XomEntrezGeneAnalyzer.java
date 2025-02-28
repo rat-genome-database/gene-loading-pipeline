@@ -77,7 +77,8 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
     static XPath xpAssemblyMapName, xpAssemblyAccession, xpMapStartPos, xpMapStopPos, xpMapStrand, xpAnyAssemblyName;
     static XPath xpAssemblyMapLabel, xpGeneTrackStatus, xpGeneTrackCurrentId, xpXdbMgd, xpXdbHgnc, xpXdbVgnc, xpMTCommentary;
     static XPath xpXdbHomologene, xpXdbKeggReport, xpXdbKeggPathway, xpXdbKeggPathwayName, xpXdbUniProtType;
-    static XPath xpXdbUniProt, xpXdbPubMed, xpXdbGenBankN, xpXdbGenBankP, xpXdbEnsembl, xpXdbEnsemblP, xpXdbMiRBase;
+    static XPath xpXdbUniProt, xpXdbPubMed, xpXdbGenBankN, xpXdbGenBankP, xpXdbMiRBase;
+    static XPath xpXdbEnsembl, xpXdbEnsemblP, xpXdbEnsemblRapid, xpXdbEnsemblRapidP;
     static XPath xpProducts, xpGenomicCoords, xpGenomicCoords2, xpSeqInterval, xpProductType, xpProductLabel, xpAccession, xpAccessionVer;
     static XPath xpProducts2, xpPackedInterval, xpBioSourceGenome;
     static XPath xpGeneRefSeq, xpTrRefSeq, xpTrRefSeqAcc;
@@ -98,6 +99,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
             xpXdbGenBankN = new XOMXPath(".//Gene-commentary[(contains(Gene-commentary_type/@value,'RNA') or Gene-commentary_type/@value='genomic') and not(starts-with(Gene-commentary_accession,'AC_') or starts-with(Gene-commentary_accession,'NC_') or starts-with(Gene-commentary_accession,'NT_') or starts-with(Gene-commentary_accession,'NW_') or starts-with(Gene-commentary_accession,'NZ_'))]/Gene-commentary_accession");
             xpXdbGenBankP = new XOMXPath(".//Gene-commentary[contains(Gene-commentary_type/@value,'peptide')]/Gene-commentary_accession");
             xpXdbEnsembl = new XOMXPath(".//Dbtag[Dbtag_db='Ensembl']/Dbtag_tag/Object-id/Object-id_str");
+            xpXdbEnsemblRapid = new XOMXPath(".//Dbtag[Dbtag_db='EnsemblRapid']/Dbtag_tag/Object-id/Object-id_str");
             xpGeneRefSeq = new XOMXPath("Gene-commentary[Gene-commentary_heading='RefSeq Status']/Gene-commentary_label");
             xpTrRefSeq = new XOMXPath(".//Gene-commentary/Gene-commentary_comment/Gene-commentary[Gene-commentary_label='RefSeq Status']/Gene-commentary_text");
             xpTrRefSeqAcc = new XOMXPath("../../../Gene-commentary_accession");
@@ -123,6 +125,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
             xpXdbHgnc = new XOMXPath("Gene-ref/Gene-ref_db/Dbtag[Dbtag_db='HGNC']/Dbtag_tag/Object-id/Object-id_str");
             xpXdbVgnc = new XOMXPath("Gene-ref/Gene-ref_db/Dbtag[Dbtag_db='VGNC']/Dbtag_tag/Object-id/Object-id_str");
             xpXdbEnsemblP = new XOMXPath("Gene-ref/Gene-ref_db/Dbtag[Dbtag_db='Ensembl']/Dbtag_tag/Object-id/Object-id_str");
+            xpXdbEnsemblRapidP = new XOMXPath("Gene-ref/Gene-ref_db/Dbtag[Dbtag_db='EnsemblRapid']/Dbtag_tag/Object-id/Object-id_str");
             xpXdbMiRBase = new XOMXPath("Gene-ref/Gene-ref_db/Dbtag[Dbtag_db='miRBase']/Dbtag_tag/Object-id/Object-id_str");
 
             // <Entrezgene_homology>
@@ -198,6 +201,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
             parseXdb(xpXdbGenBankN, element, XdbId.XDB_KEY_GENEBANKNU);
             parseXdb(xpXdbGenBankP, element, XdbId.XDB_KEY_GENEBANKPROT);
             parseXdbEnsembl(xpXdbEnsembl, element);
+            parseXdbEnsembl(xpXdbEnsemblRapid, element);
 
             // get gene RefSeq status
             String geneRefSeqStatus = xpGeneRefSeq.stringValueOf(element);
@@ -261,6 +265,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
             parseXdb(xpXdbVgnc, element, XdbId.XDB_KEY_VGNC);
             parseXdb(xpXdbMiRBase, element, XdbId.XDB_KEY_MIRBASE);
             parseXdbEnsembl(xpXdbEnsemblP, element);
+            parseXdbEnsembl(xpXdbEnsemblRapidP, element);
         }
         catch(Exception e) {
             e.printStackTrace();
