@@ -42,7 +42,11 @@ public class BulkGene {
     //  to set Name and Symbol properties of gene object when name and symbol could not be determined
     // from incoming data; after XML parsing stage, gene.Name and .Symbol properties represent the incoming data
 
+    // only set for regulatory elements
+    public String biologicalRegionType;
+
     public Gene rgdGene; // set during quality check when EG ID could be connected to an active rgd-Gene
+    public GenomicElement rgdElement; // set during quality check when EG ID could be connected to an active genomic element in RGD
 
     // handles the aliases
     public AliasLoader aliases = new AliasLoader();

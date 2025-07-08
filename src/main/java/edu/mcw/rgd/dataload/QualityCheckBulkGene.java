@@ -71,6 +71,11 @@ public class QualityCheckBulkGene  {
             return new Flags(Flags.ERROR, Flags.ERROR);
         }
 
+        // handle BIOLOGICAL-REGIONS
+        if( bg.getEgType().equals("biological-region") && !Utils.isStringEmpty(bg.biologicalRegionType) ) {
+            return handleBiologicalRegion(bg);
+        }
+
         switch (speciesTypeKey) {
             case SpeciesType.RAT: {
                 return ratCheck(bg);
@@ -483,6 +488,11 @@ public class QualityCheckBulkGene  {
 
         Flags flag = bg.getCustomFlags();
 
+        if( bg.rgdElement!=null ) {
+            biologicalRegionAfterCheck(bg, flag);
+            return;
+        }
+
         // both the eg full name and rgd full name must be present
         // to conduct full name comparison
         String egGeneName = bg.getGene().getName();
@@ -529,7 +539,7 @@ public class QualityCheckBulkGene  {
 
             int rgdId = flag.getRgdId();
 
-            bg.aliases.qcIncomingAliases(bg.rgdGene, rgdId, counters);
+            bg.aliases.qcIncomingAliases(rgdId, bg.rgdGene.getSymbol(), bg.rgdGene.getName(), counters);
 
             //##### TRANSCRIPTS
             // load rgd transcripts
@@ -542,7 +552,7 @@ public class QualityCheckBulkGene  {
         else
         if(flag.getLoadStatus().equals(Flags.INSERT)) {
             // all aliases need to be added
-            bg.aliases.qcIncomingAliases(null, 0, counters);
+            bg.aliases.qcIncomingAliases(0,null, null, counters);
         }
 
         // none of the aliases can have a value identical to gene name or symbol
@@ -659,6 +669,112 @@ public class QualityCheckBulkGene  {
     void removeFeaturesWithInvalidMapKeys(List<TranscriptFeature> trfs) {
         // remove the feature if it s located on assembly map not processed by the pipeline
         trfs.removeIf(tf -> !validMapKeys.contains(tf.getMapKey()));
+    }
+
+    Flags handleBiologicalRegion( BulkGene bg ) throws Exception {
+
+        EGDAO dao = EGDAO.getInstance();
+        Flags flag = null;
+
+        // convert genes into biological regions first
+        List<Gene> genesByEgId = dao.getGenesByEGID(bg.getEgId()); //rgd genes matched by eg ID
+        for( Gene g: genesByEgId ) {
+
+            boolean wasConverted = dao.convertGeneToBiologicalRegion(g, bg.biologicalRegionType);
+            if( !wasConverted ) {
+                return null;
+            }
+        }
+
+        bg.removeObsoleteHgncIds(dao);
+
+        List<GenomicElement> biologicalRegionsByEgId = dao.getElementsByEGID(bg.getEgId()); //rgd genes matched by eg ID
+        List<GenomicElement> activeElementsInRgd = new ArrayList<>();
+        String info="";
+        // get matched active elements by entrezgene id
+        for (GenomicElement geInRgdTmp: biologicalRegionsByEgId) {
+            // get the rgd element status, and put the active element into a list
+            String rgdStatus = dao.getRgdId(geInRgdTmp.getRgdId()).getObjectStatus();
+            if (rgdStatus.equals("ACTIVE")) {
+                activeElementsInRgd.add(geInRgdTmp);
+                info += geInRgdTmp.getRgdId()+",";
+            }
+        }
+
+        if (activeElementsInRgd.size()>1) {
+            // Entrezgene ID matches more than one active entrezgene in RGD
+            flag = new Flags(Flags.MULTIGENES, Flags.ERROR);
+            flag.setRelatedInfo("Associated with multiple elements in RGD: "+ info);
+            dbLog.addLogProp(flag.getRelatedInfo(), "MULTIGENES", bg.getRecNo(), PipelineLogger.REC_FLAG);
+            return flag;
+        }
+        else if (activeElementsInRgd.size()== 1){
+            logger.debug("incoming EG is associated with one element in RGD");
+            flag = new Flags(Flags.EGINRGD);
+            bg.rgdElement = activeElementsInRgd.get(0);
+            dbLog.addLogProp("incoming EG is associated with one element in RGD", "EG_IN_RGD", bg.getRecNo(), PipelineLogger.REC_FLAG);
+        }
+        else {
+            flag = new Flags(Flags.NEWGENE, Flags.INSERT);
+            dbLog.addLogProp("eg id doesn't match", "NEW_GENE", bg.getRecNo(), PipelineLogger.REC_FLAG);
+            return flag;
+        }
+
+        // match by NCBI gene ID to active element in RGD
+        flag.setRgdId(bg.rgdElement.getRgdId());
+        flag.setRelatedInfo("");
+        flag.setLoadStatus(Flags.UPDATE);
+        dbLog.addLogProp("rgd record update regardless of sequences", "UPDATE", bg.getRecNo(), PipelineLogger.REC_FLAG);
+        return flag;
+    }
+
+
+    void biologicalRegionAfterCheck( BulkGene bg, Flags flag ) throws Exception {
+
+        // both the eg full name and rgd full name must be present
+        // to conduct full name comparison
+        String egElementName = bg.getGene().getName();
+        String rgdElementName = bg.rgdElement!=null ? bg.rgdElement.getName() : "";
+        if( !Utils.isStringEmpty(egElementName) && !Utils.isStringEmpty(rgdElementName)) {
+            if( !egElementName.equals(rgdElementName.trim())) {
+                String msg = "eg element name differs from rgd full name: EG-NAME="+egElementName+", RGD-NAME:"+rgdElementName;
+                dbLog.addLogProp(msg, "GENE_NAME_MISMATCH", bg.getRecNo(), PipelineLogger.REC_FLAG);
+
+                // modify flags
+                flag.setFlagValue(flag.getFlagValue()+","+ Flags.GENENAME_MISMATCH);
+                flag.setRelatedInfo(flag.getRelatedInfo()+","+msg);
+            }
+        }
+
+        if(flag.getLoadStatus().equals(Flags.UPDATE)) {
+            // get a copy of rgd map data now, so data load thread will have the data ready
+            // note: include only those map entries that are on official list of maps processed by pipeline
+            bg.genePositions.loadRgdMapData(flag.getRgdId(), validMapKeys);
+
+            bg.genePositions.qcMapData(bg, null);
+        }
+        else if( flag.getLoadStatus().equals(Flags.INSERT) ) {
+            bg.genePositions.qcMapData(bg, null);
+        }
+
+        // recreate xml representation
+        bg.setXmlString(bg.toXmlString());
+
+        // gather data for data loading
+        if(flag.getLoadStatus().equals(Flags.UPDATE)) {
+
+            int rgdId = flag.getRgdId();
+
+            bg.aliases.qcIncomingAliases(rgdId, bg.rgdElement.getSymbol(), bg.rgdElement.getName(), counters);
+        }
+        else
+        if(flag.getLoadStatus().equals(Flags.INSERT)) {
+            // all aliases need to be added
+            bg.aliases.qcIncomingAliases(0, null, null, counters);
+        }
+
+        // none of the aliases can have a value identical to gene name or symbol
+        bg.aliases.qcAliases(bg, counters);
     }
 
     public List getEgType() {

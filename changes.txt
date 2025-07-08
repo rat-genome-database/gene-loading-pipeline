@@ -1,3 +1,6 @@
+Jul 08, 2025
+  biological regions are no longer loaded as genes -- they are loaded as separated entities (object_key=25)
+
 Feb 28, 2025
   genes: added loading of EnsemblRapid xrefs
 

@@ -34,7 +34,7 @@ dependencies {
         exclude group: 'commons-logging', module: 'commons-logging'
     }
     implementation 'com.oracle.database.jdbc:ojdbc11:23.7.0.25.01'
-    implementation 'org.springframework:spring-jdbc:6.2.3'
+    implementation 'org.springframework:spring-jdbc:6.2.4'
     implementation 'com.io7m.xom:xom:1.2.10'
 
     implementation fileTree(dir: 'lib', include: '*.jar')

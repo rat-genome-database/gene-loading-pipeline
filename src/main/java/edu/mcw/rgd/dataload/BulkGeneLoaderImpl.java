@@ -35,6 +35,10 @@ public class BulkGeneLoaderImpl {
 
     public void update (BulkGene bg) throws Exception {
 
+        if( bg.rgdElement!=null ) {
+            updateElement(bg);
+            return;
+        }
         updateGeneOnly(bg);
 
         // insert xdbs
@@ -168,6 +172,11 @@ public class BulkGeneLoaderImpl {
 
     // insert new gene
     public void load (BulkGene bg) throws Exception {
+
+        if( bg.rgdElement!=null ) {
+            loadElement(bg);
+            return;
+        }
 
         Gene newGene = bg.getGene();
 
@@ -730,6 +739,88 @@ public class BulkGeneLoaderImpl {
         TranscriptVersionManager m = TranscriptVersionManager.getInstance();
         for( Transcript tr: bg.rgdTranscripts ) {
             m.addRgdId(tr.getAccId(), tr.getRgdId());
+        }
+    }
+
+
+    //// GENOMIC ELEMENTS
+    public void updateElement (BulkGene bg) throws Exception {
+
+        if( bg.rgdElement==null) {
+            logger.error("Rgd element not found: GeneId="+bg.getEgId());
+            return;
+        }
+
+        logger.debug("------Updating elements with rgd id:" + bg.rgdElement.getRgdId());
+        if( bg.rgdElement.getRgdId() <= 0) {
+            logger.error("The rgd id to be updated is not found");
+            return;
+        }
+        EGDAO dao = bg.dao;
+
+        // update element type if necessary
+
+        // check if the type is new, if it is new, insert the type first
+        String elementSoAccId = EGDAO.getSoAccIdForBiologicalRegion(bg.biologicalRegionType);
+        boolean updateElement =
+            !Utils.stringsAreEqual(bg.rgdElement.getObjectType(), bg.biologicalRegionType)  ||
+            !Utils.stringsAreEqual(bg.rgdElement.getSoAccId(), elementSoAccId)  ||
+            !Utils.stringsAreEqual(bg.rgdElement.getName(), bg.getGene().getName())  ||
+            !Utils.stringsAreEqual(bg.rgdElement.getSymbol(), bg.getGene().getSymbol())  ||
+            !Utils.stringsAreEqual(bg.rgdElement.getDescription(), bg.getGene().getDescription())  ||
+            false;
+
+        if( updateElement ) {
+
+            GenomicElement ge = new GenomicElement();
+            ge.setRgdId(bg.rgdElement.getRgdId());
+            ge.setNotes(bg.rgdElement.getNotes());
+            ge.setName(bg.rgdElement.getName());
+            ge.setSymbol(bg.rgdElement.getSymbol());
+            ge.setDescription(bg.rgdElement.getDescription());
+            ge.setObjectStatus("ACTIVE");
+            ge.setSource(bg.rgdElement.getSource());
+            ge.setSpeciesTypeKey(bg.rgdElement.getSpeciesTypeKey());
+            ge.setSoAccId(elementSoAccId);
+
+            dao.updateElement(ge);
+
+            //update RGD_IDs table, change last_modified_date
+            logger.debug("Updating the last modified date");
+            dao.updateLastModifiedDate(bg.rgdElement.getRgdId());
+        }
+
+        // insert xdbs
+        updateXdbIds(bg.rgdElement.getRgdId(), bg);
+
+        // add new aliases to database
+        counters.add("ALIASES_INSERTED", bg.dao.insertAliases(bg.aliases.forInsert));
+
+        updateMaps(bg);
+    }
+
+    public void loadElement (BulkGene bg) throws Exception {
+
+        String elementSoAccId = EGDAO.getSoAccIdForBiologicalRegion(bg.biologicalRegionType);
+        GenomicElement ge = new GenomicElement();
+
+        ge.setNotes(bg.rgdElement.getNotes());
+        ge.setName(bg.rgdElement.getName());
+        ge.setSymbol(bg.rgdElement.getSymbol());
+        ge.setDescription(bg.rgdElement.getDescription());
+        ge.setObjectStatus("ACTIVE");
+        ge.setSource(bg.rgdElement.getSource());
+        ge.setSpeciesTypeKey(bg.rgdElement.getSpeciesTypeKey());
+        ge.setSoAccId(elementSoAccId);
+        ge.setObjectKey(25);  // 'biological-region'
+
+        EGDAO dao = bg.dao;
+        if( dao.insertElement(ge) != 0 ) {
+
+            int rgdId = ge.getRgdId();
+            updateXdbIds(rgdId, bg);
+            updateAliases(rgdId, bg);
+            updateMaps(rgdId, bg);
         }
     }
 

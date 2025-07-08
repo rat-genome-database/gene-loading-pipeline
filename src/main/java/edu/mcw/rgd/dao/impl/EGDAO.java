@@ -1,5 +1,6 @@
 package edu.mcw.rgd.dao.impl;
 
+import edu.mcw.rgd.dao.spring.GenomicElementQuery;
 import edu.mcw.rgd.dao.spring.IntListQuery;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.datamodel.Map;
@@ -24,6 +25,7 @@ public class EGDAO {
     private AliasDAO aliasDAO = new AliasDAO();
     private AssociationDAO assocDAO = new AssociationDAO();
     private GeneDAO geneDAO = assocDAO.getGeneDAO();
+    private GenomicElementDAO geDAO = new GenomicElementDAO();
     private MapDAO mapDAO = new MapDAO();
     private NomenclatureDAO nomenclatureDAO = new NomenclatureDAO();
     private RGDManagementDAO rgdDAO = new RGDManagementDAO();
@@ -235,6 +237,17 @@ public class EGDAO {
         genes.removeIf(Gene::isVariant);
         return genes;
     }
+
+    public List<GenomicElement> getElementsByEGID(String egId) throws Exception {
+        String sql = """
+            SELECT ge.*,r.species_type_key,r.object_status,r.object_key
+            FROM genomic_elements ge, rgd_ids r, rgd_acc_xdb x
+            WHERE ge.rgd_id=x.rgd_id AND x.xdb_key=? AND x.acc_id=? AND ge.rgd_id=r.rgd_id
+            """;
+        GenomicElementQuery q = new GenomicElementQuery(geDAO.getDataSource(), sql);
+        return geDAO.execute(q, XdbId.XDB_KEY_ENTREZGENE, egId);
+    }
+
 
     /**
      * get all genes with given external id
@@ -707,5 +720,63 @@ public class EGDAO {
 
     public void insertTranscriptVersionInfo(String acc, String version, int rgdId) throws Exception {
         transcriptDAO.insertTranscriptVersionInfo(acc, version, rgdId);
+    }
+
+    ///// BIOLOGICAL_REGIONS
+
+    public boolean convertGeneToBiologicalRegion( Gene g, String biologicalRegionType ) throws Exception {
+
+        RgdId id = rgdDAO.getRgdId2(g.getRgdId());
+        id.setObjectKey(25); // change object type to 'BIOLOGICAL_REGIONS'
+        rgdDAO.updateRgdId(id);
+
+        GenomicElement ge = new GenomicElement();
+        ge.setObjectKey(25);
+        ge.setRgdId(id.getRgdId());
+        ge.setNotes(g.getNotes());
+        ge.setName(g.getName());
+        ge.setSymbol(g.getSymbol());
+        ge.setDescription(g.getDescription());
+        ge.setObjectStatus("ACTIVE");
+        ge.setSource(g.getGeneSource());
+        ge.setSpeciesTypeKey(g.getSpeciesTypeKey());
+        ge.setSoAccId(getSoAccIdForBiologicalRegion(biologicalRegionType));
+        geDAO.insertElement(ge);
+
+        // delete gene object
+        String sql = "DELETE FROM genes WHERE rgd_id=?";
+        int rowsDeleted = geneDAO.update(sql, g.getRgdId());
+        if( rowsDeleted==0 ) {
+            System.out.println("PROBLEM: cannot delete gene entry for RGD:"+g.getRgdId());
+        }
+        return true;
+    }
+
+    public static String getSoAccIdForBiologicalRegion( String biologicalRegionType ) {
+
+        String soAccId = null;
+        if( biologicalRegionType.equals("enhancer") ) {
+            soAccId = "SO:0000165";
+        }
+        if( soAccId==null ) {
+            System.out.println("PROBLEM: unknown SO_ACC_ID for "+biologicalRegionType);
+            return null;
+        }
+        return soAccId;
+    }
+
+    public int updateElement( GenomicElement ge ) throws Exception {
+
+        return geDAO.updateElement(ge);
+    }
+
+    public int insertElement( GenomicElement ge ) throws Exception {
+
+        RgdId id = createRgdId(ge.getObjectKey(), ge.getObjectStatus(), ge.getNotes(), ge.getSpeciesTypeKey());
+        if( id==null ) {
+            return 0;
+        }
+        ge.setRgdId(id.getRgdId());
+        return geDAO.insertElement(ge);
     }
 }

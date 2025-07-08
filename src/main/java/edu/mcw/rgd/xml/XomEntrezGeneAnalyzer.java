@@ -72,7 +72,7 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
     static XPath xpGeneOfficialSymbol, xpGeneOfficialName, xpGeneInterimSymbol, xpGeneInterimName, xpGeneSpecies;
     static XPath xpGeneLocHistoryAssembly, xpGeneLocHistoryPos, xpGeneLocHistoryPosMulti, xpGeneLocHistoryChr;
     static XPath xpEntrezgeneID, xpRgdID, xpAliasesS, xpAliasesN, xpAliasesD;
-    static XPath xpChromosome, xpChromosome2, xpcM, xpXdbProductAcc;
+    static XPath xpChromosome, xpChromosome2, xpcM, xpXdbProductAcc, xpBiologicalRegionType;
     static String sAssemblyMapChr, sAssemblyMapScaffold, sAnyAssemblyChr, sAnyAssemblyScaffold;
     static XPath xpAssemblyMapName, xpAssemblyAccession, xpMapStartPos, xpMapStopPos, xpMapStrand, xpAnyAssemblyName;
     static XPath xpAssemblyMapLabel, xpGeneTrackStatus, xpGeneTrackCurrentId, xpXdbMgd, xpXdbHgnc, xpXdbVgnc, xpMTCommentary;
@@ -156,6 +156,10 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
             xpAccession = new XOMXPath("Gene-commentary_accession");
             xpAccessionVer = new XOMXPath("Gene-commentary_version");
             xpProducts2 = new XOMXPath("Gene-commentary_products/Gene-commentary");
+
+            xpProducts2 = new XOMXPath("Gene-commentary_products/Gene-commentary");
+
+            xpBiologicalRegionType = new XOMXPath("Gene-commentary[Gene-commentary_label='Biological Region']/Gene-commentary_products/Gene-commentary/Gene-commentary_products/Gene-commentary/Gene-commentary_label");
 
             // mitochondrial gene commentaries do not have headings
             xpMTCommentary = new XOMXPath("Gene-commentary[starts-with(Gene-commentary_accession,'NC_') or starts-with(Gene-commentary_accession,'AC_')]/Gene-commentary_seqs/Seq-loc/Seq-loc_int/Seq-interval");
@@ -289,6 +293,17 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
     void analyzeEntrezgeneLocus(Element element) {
 
         try {
+            String biologicalRegionType = xpBiologicalRegionType.stringValueOf(element);
+            if( !Utils.isStringEmpty(biologicalRegionType) ) {
+
+                if( !Utils.isStringEmpty(bulkGene.biologicalRegionType) ) {
+                    if( !Utils.stringsAreEqualIgnoreCase(bulkGene.biologicalRegionType, biologicalRegionType) ) {
+                        logAnnotStatus.warn("BIOLOGICAL REGION TYPE OVERRIDE! old="+bulkGene.biologicalRegionType+",  new="+biologicalRegionType);
+                    }
+                }
+                bulkGene.biologicalRegionType = biologicalRegionType;
+            }
+
             // set of encountered assemblies (to avoid duplicate counts when hadnling multiple transcripts for a gene)
             Set<String> encounteredAssemblies = new HashSet<>();
 

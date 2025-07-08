@@ -107,13 +107,11 @@ public class AliasLoader {
     }
 
     // qc aliases if gene is to be updated
-    public void qcIncomingAliases(Gene geneInRgd, int rgdId, CounterPool counters) throws Exception {
+    public void qcIncomingAliases(int rgdId, String symbol, String name, CounterPool counters) throws Exception {
 
         // incoming aliases: removed protein-redundant aliases
-        if( geneInRgd!=null ) {
-            removeProteinRedundantAliases(incoming, geneInRgd.getSymbol(), rgdId);
-            removeProteinRedundantAliases(incoming, geneInRgd.getName(), rgdId);
-        }
+        removeProteinRedundantAliases(incoming, symbol, rgdId);
+        removeProteinRedundantAliases(incoming, name, rgdId);
 
         // update alias, keep the old alias and add new alias
         List<Alias> rgdAliases = EGDAO.getInstance().getAliases(rgdId);
@@ -132,7 +130,7 @@ public class AliasLoader {
         }
     }
 
-    // remove those aliases from the to be-inserted aliases that happen to be the same as gene name or symbol
+    // remove those aliases from the to-be-inserted aliases that happen to be the same as gene name or symbol
     public void qcAliases(BulkGene bg, CounterPool counters) {
 
         if( forInsert==null || forInsert.isEmpty() )
@@ -196,6 +194,9 @@ public class AliasLoader {
     void removeProteinRedundantAliases(List<Alias> aliases, String geneSymbol, int rgdId) {
 
         String lcGeneSymbol = Utils.defaultString(geneSymbol).toLowerCase();
+        if( lcGeneSymbol.isEmpty() ) {
+            return;
+        }
 
         // if alias is prefixed/suffixed by 'protein', the remaining part is held here
         Set<String> possibleDuplicates = new HashSet<>();
