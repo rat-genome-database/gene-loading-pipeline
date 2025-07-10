@@ -754,14 +754,12 @@ public class EGDAO {
 
     public static String getSoAccIdForBiologicalRegion( String biologicalRegionType ) {
 
-        String soAccId = null;
-        if( biologicalRegionType.equals("enhancer") ) {
-            soAccId = "SO:0000165";
-        }
-        else
-        if( biologicalRegionType.equals("conserved_region") ) {
-            soAccId = "SO:0000330";
-        }
+        String soAccId = switch (biologicalRegionType) {
+            case "enhancer" -> "SO:0000165";
+            case "conserved_region" -> "SO:0000330";
+            case "DNase_I_hypersensitive_site" -> "SO:0000685";
+            default -> null;
+        };
 
         if( soAccId==null ) {
             System.out.println("PROBLEM: unknown SO_ACC_ID for "+biologicalRegionType);
