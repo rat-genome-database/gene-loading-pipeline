@@ -744,6 +744,12 @@ public class EGDAO {
         ge.setSoAccId(getSoAccIdForBiologicalRegion(biologicalRegionType));
         geDAO.insertElement(ge);
 
+        // unbind any gene transcripts
+        List<Transcript> transcripts = getNcbiTranscriptsForGene(g.getRgdId());
+        for( Transcript tr: transcripts ) {
+            detachTranscriptFromGene(tr);
+        }
+
         // delete gene object
         String sql = "DELETE FROM genes WHERE rgd_id=?";
         int rowsDeleted = geneDAO.update(sql, g.getRgdId());
