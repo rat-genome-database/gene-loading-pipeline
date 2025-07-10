@@ -4,6 +4,7 @@ import edu.mcw.rgd.dao.spring.GenomicElementQuery;
 import edu.mcw.rgd.dao.spring.IntListQuery;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.datamodel.Map;
+import edu.mcw.rgd.datamodel.ontologyx.Term;
 import edu.mcw.rgd.process.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -752,7 +753,7 @@ public class EGDAO {
         return true;
     }
 
-    public static String getSoAccIdForBiologicalRegion( String biologicalRegionType ) {
+    public static String getSoAccIdForBiologicalRegion( String biologicalRegionType ) throws Exception {
 
         String soAccId = switch (biologicalRegionType) {
             case "enhancer" -> "SO:0000165";
@@ -763,6 +764,13 @@ public class EGDAO {
             default -> null;
         };
 
+        if( soAccId==null ) {
+            OntologyXDAO odao = new OntologyXDAO();
+            Term term = odao.getTermByTermName(biologicalRegionType, "SO");
+            if( term!=null ) {
+                soAccId = term.getAccId();
+            }
+        }
         if( soAccId==null ) {
             System.out.println("PROBLEM: unknown SO_ACC_ID for "+biologicalRegionType);
             return null;
