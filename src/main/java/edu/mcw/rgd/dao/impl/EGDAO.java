@@ -758,6 +758,11 @@ public class EGDAO {
         if( biologicalRegionType.equals("enhancer") ) {
             soAccId = "SO:0000165";
         }
+        else
+        if( biologicalRegionType.equals("conserved_region") ) {
+            soAccId = "SO:0000330";
+        }
+
         if( soAccId==null ) {
             System.out.println("PROBLEM: unknown SO_ACC_ID for "+biologicalRegionType);
             return null;
