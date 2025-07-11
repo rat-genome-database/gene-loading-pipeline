@@ -731,19 +731,22 @@ public class EGDAO {
         id.setObjectKey(25); // change object type to 'BIOLOGICAL_REGIONS'
         rgdDAO.updateRgdId(id);
 
-        GenomicElement ge = new GenomicElement();
-        ge.setObjectKey(25);
-        ge.setRgdId(id.getRgdId());
-        ge.setNotes(g.getNotes());
-        ge.setName(g.getName());
-        ge.setSymbol(g.getSymbol());
-        ge.setDescription(g.getDescription());
-        ge.setObjectStatus("ACTIVE");
-        ge.setSource(g.getGeneSource());
-        ge.setSpeciesTypeKey(g.getSpeciesTypeKey());
-        ge.setSoAccId(getSoAccIdForBiologicalRegion(biologicalRegionType));
-        geDAO.insertElement(ge);
-
+        GenomicElement ge = geDAO.getElement(id.getRgdId());
+        if( ge == null ) {
+            ge = new GenomicElement();
+            ge.setObjectKey(25);
+            ge.setRgdId(id.getRgdId());
+            ge.setNotes(g.getNotes());
+            ge.setName(g.getName());
+            ge.setSymbol(g.getSymbol());
+            ge.setDescription(g.getDescription());
+            ge.setObjectStatus("ACTIVE");
+            ge.setSource(g.getGeneSource());
+            ge.setSpeciesTypeKey(g.getSpeciesTypeKey());
+            ge.setSoAccId(getSoAccIdForBiologicalRegion(biologicalRegionType));
+            geDAO.insertElement(ge);
+        }
+        
         // unbind any gene transcripts
         List<Transcript> transcripts = getNcbiTranscriptsForGene(g.getRgdId());
         for( Transcript tr: transcripts ) {
