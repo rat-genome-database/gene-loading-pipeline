@@ -730,8 +730,10 @@ public class EGDAO {
     public boolean convertGeneToBiologicalRegion( Gene g, String biologicalRegionType ) throws Exception {
 
         RgdId id = rgdDAO.getRgdId2(g.getRgdId());
-        id.setObjectKey(25); // change object type to 'BIOLOGICAL_REGIONS'
-        rgdDAO.updateRgdId(id);
+        if( id.getObjectKey()!=25 ){
+            id.setObjectKey(25); // change object type to 'BIOLOGICAL_REGIONS'
+            rgdDAO.updateRgdId(id);
+        }
 
         GenomicElement ge = geDAO.getElement(id.getRgdId());
         if( ge == null ) {
@@ -746,6 +748,7 @@ public class EGDAO {
             ge.setSource(g.getGeneSource());
             ge.setSpeciesTypeKey(g.getSpeciesTypeKey());
             ge.setSoAccId(getSoAccIdForBiologicalRegion(biologicalRegionType));
+            ge.setObjectType(biologicalRegionType);
             geDAO.insertElement(ge);
         }
 
