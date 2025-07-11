@@ -773,7 +773,7 @@ public class EGDAO {
 
         String soAccId = switch (biologicalRegionType) {
             case "enhancer" -> "SO:0000165";
-            case "silencer" -> "SO:0000625";
+            case "matrix_attachment_region" -> "SO:0000036";
             case "transcription_start_site" -> "SO:0000315";
             case "conserved_region" -> "SO:0000330";
             case "DNase_I_hypersensitive_site" -> "SO:0000685";
