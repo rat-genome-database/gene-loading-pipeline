@@ -782,6 +782,7 @@ public class BulkGeneLoaderImpl {
             ge.setSource(bg.rgdElement.getSource());
             ge.setSpeciesTypeKey(bg.rgdElement.getSpeciesTypeKey());
             ge.setSoAccId(elementSoAccId);
+            ge.setObjectType((bg.biologicalRegionType));
 
             dao.updateElement(ge);
 
@@ -814,6 +815,7 @@ public class BulkGeneLoaderImpl {
         ge.setSpeciesTypeKey(bg.rgdElement.getSpeciesTypeKey());
         ge.setSoAccId(elementSoAccId);
         ge.setObjectKey(25);  // 'biological-region'
+        ge.setObjectType(bg.biologicalRegionType);
 
         if( dao.insertElement(ge) != 0 ) {
 
