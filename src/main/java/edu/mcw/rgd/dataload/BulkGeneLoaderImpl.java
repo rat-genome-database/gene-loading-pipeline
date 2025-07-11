@@ -761,7 +761,7 @@ public class BulkGeneLoaderImpl {
         // update element type if necessary
 
         // check if the type is new, if it is new, insert the type first
-        String elementSoAccId = EGDAO.getSoAccIdForBiologicalRegion(bg.biologicalRegionType);
+        String elementSoAccId = dao.getSoAccIdForBiologicalRegion(bg.biologicalRegionType);
         boolean updateElement =
             !Utils.stringsAreEqual(bg.rgdElement.getObjectType(), bg.biologicalRegionType)  ||
             !Utils.stringsAreEqual(bg.rgdElement.getSoAccId(), elementSoAccId)  ||
@@ -801,7 +801,8 @@ public class BulkGeneLoaderImpl {
 
     public void loadElement (BulkGene bg) throws Exception {
 
-        String elementSoAccId = EGDAO.getSoAccIdForBiologicalRegion(bg.biologicalRegionType);
+        EGDAO dao = bg.dao;
+        String elementSoAccId = dao.getSoAccIdForBiologicalRegion(bg.biologicalRegionType);
         GenomicElement ge = new GenomicElement();
 
         ge.setNotes(bg.rgdElement.getNotes());
@@ -814,7 +815,6 @@ public class BulkGeneLoaderImpl {
         ge.setSoAccId(elementSoAccId);
         ge.setObjectKey(25);  // 'biological-region'
 
-        EGDAO dao = bg.dao;
         if( dao.insertElement(ge) != 0 ) {
 
             int rgdId = ge.getRgdId();

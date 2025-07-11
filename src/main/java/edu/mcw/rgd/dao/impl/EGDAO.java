@@ -5,6 +5,7 @@ import edu.mcw.rgd.dao.spring.IntListQuery;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.datamodel.Map;
 import edu.mcw.rgd.datamodel.ontologyx.Term;
+import edu.mcw.rgd.datamodel.ontologyx.TermSynonym;
 import edu.mcw.rgd.process.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +29,7 @@ public class EGDAO {
     private GeneDAO geneDAO = assocDAO.getGeneDAO();
     private GenomicElementDAO geDAO = new GenomicElementDAO();
     private MapDAO mapDAO = new MapDAO();
+    private OntologyXDAO oDAO = new OntologyXDAO();
     private NomenclatureDAO nomenclatureDAO = new NomenclatureDAO();
     private RGDManagementDAO rgdDAO = new RGDManagementDAO();
     private TranscriptDAO transcriptDAO = new TranscriptDAO();
@@ -769,24 +771,38 @@ public class EGDAO {
         return true;
     }
 
-    public static String getSoAccIdForBiologicalRegion( String biologicalRegionType ) throws Exception {
+    public String getSoAccIdForBiologicalRegion( String biologicalRegionType ) throws Exception {
 
+        // assignments that are not available through exact matching with SO term name or synonym
         String soAccId = switch (biologicalRegionType) {
-            case "enhancer" -> "SO:0000165";
-            case "matrix_attachment_region" -> "SO:0000036";
-            case "transcription_start_site" -> "SO:0000315";
-            case "conserved_region" -> "SO:0000330";
             case "DNase_I_hypersensitive_site" -> "SO:0000685";
             default -> null;
         };
 
         if( soAccId==null ) {
-            OntologyXDAO odao = new OntologyXDAO();
-            Term term = odao.getTermByTermName(biologicalRegionType, "SO");
+            String biologicalRegionType2 = biologicalRegionType.replace("_", " ");
+            Term term = oDAO.getTermByTermName(biologicalRegionType, "SO");
+            if( term==null ) {
+                term = oDAO.getTermByTermName(biologicalRegionType2, "SO");
+            }
+
             if( term!=null ) {
                 soAccId = term.getAccId();
             }
+            else {
+                // no match by term name -- try matching synonyms
+                List<TermSynonym> synonyms = oDAO.getActiveSynonymsByName("SO", biologicalRegionType);
+                if( synonyms.size()==1 ) {
+                    soAccId = synonyms.get(0).getTermAcc();
+                } else {
+                    synonyms = oDAO.getActiveSynonymsByName("SO", biologicalRegionType2);
+                    if( synonyms.size()==1 ) {
+                        soAccId = synonyms.get(0).getTermAcc();
+                    }
+                }
+            }
         }
+
         if( soAccId==null ) {
             System.out.println("PROBLEM: unknown SO_ACC_ID for "+biologicalRegionType);
             return null;
