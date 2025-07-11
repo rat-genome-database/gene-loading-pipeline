@@ -746,7 +746,7 @@ public class EGDAO {
             ge.setSoAccId(getSoAccIdForBiologicalRegion(biologicalRegionType));
             geDAO.insertElement(ge);
         }
-        
+
         // unbind any gene transcripts
         List<Transcript> transcripts = getNcbiTranscriptsForGene(g.getRgdId());
         for( Transcript tr: transcripts ) {
@@ -755,9 +755,16 @@ public class EGDAO {
 
         // delete gene object
         String sql = "DELETE FROM genes WHERE rgd_id=?";
-        int rowsDeleted = geneDAO.update(sql, g.getRgdId());
+        int rowsDeleted = 0;
+        try {
+            rowsDeleted = geneDAO.update(sql, g.getRgdId());
+        } catch( Exception e ) {
+            Logger logger = LogManager.getLogger("process");
+            Utils.printStackTrace(e, logger);
+        }
         if( rowsDeleted==0 ) {
-            System.out.println("PROBLEM: cannot delete gene entry for RGD:"+g.getRgdId());
+            Logger logger = LogManager.getLogger("process");
+            logger.warn("PROBLEM: cannot delete gene entry for RGD:"+g.getRgdId());
         }
         return true;
     }
