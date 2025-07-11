@@ -782,29 +782,31 @@ public class EGDAO {
 
     public String getSoAccIdForBiologicalRegion( String biologicalRegionType ) throws Exception {
 
-        // assignments that are not available through exact matching with SO term name or synonym
-        String soAccId = switch (biologicalRegionType) {
-            case "DNase_I_hypersensitive_site" -> "SO:0000685";
-            default -> null;
-        };
+        String soAccId = null;
 
-        if( soAccId==null ) {
-            String biologicalRegionType2 = biologicalRegionType.replace("_", " ");
-            Term term = oDAO.getTermByTermName(biologicalRegionType, "SO");
-            if( term==null ) {
-                term = oDAO.getTermByTermName(biologicalRegionType2, "SO");
-            }
+        // find SO term by name
+        String biologicalRegionType2 = biologicalRegionType.replace("_", " ");
+        Term term = oDAO.getTermByTermName(biologicalRegionType, "SO");
+        if( term==null ) {
+            term = oDAO.getTermByTermName(biologicalRegionType2, "SO");
+        }
 
-            if( term!=null ) {
-                soAccId = term.getAccId();
-            }
-            else {
-                // no match by term name -- try matching synonyms
-                List<TermSynonym> synonyms = oDAO.getActiveSynonymsByName("SO", biologicalRegionType);
+        if( term!=null ) {
+            soAccId = term.getAccId();
+        }
+        else {
+            // no match by term name -- try matching by synonyms
+            List<TermSynonym> synonyms = oDAO.getActiveSynonymsByName("SO", biologicalRegionType);
+            if( synonyms.size()==1 ) {
+                soAccId = synonyms.get(0).getTermAcc();
+            } else {
+                synonyms = oDAO.getActiveSynonymsByName("SO", biologicalRegionType2);
                 if( synonyms.size()==1 ) {
                     soAccId = synonyms.get(0).getTermAcc();
                 } else {
-                    synonyms = oDAO.getActiveSynonymsByName("SO", biologicalRegionType2);
+                    // apparently NCBI uses INSDC-style feature names
+                    String biologicalRegionType3 = "INSDC_feature:"+biologicalRegionType;
+                    synonyms = oDAO.getActiveSynonymsByName("SO", biologicalRegionType3);
                     if( synonyms.size()==1 ) {
                         soAccId = synonyms.get(0).getTermAcc();
                     }
