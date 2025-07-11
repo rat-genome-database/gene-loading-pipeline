@@ -6,6 +6,7 @@ import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.datamodel.Map;
 import edu.mcw.rgd.datamodel.ontologyx.Term;
 import edu.mcw.rgd.datamodel.ontologyx.TermSynonym;
+import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.Utils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -727,12 +728,13 @@ public class EGDAO {
 
     ///// BIOLOGICAL_REGIONS
 
-    public boolean convertGeneToBiologicalRegion( Gene g, String biologicalRegionType ) throws Exception {
+    public boolean convertGeneToBiologicalRegion( Gene g, String biologicalRegionType, CounterPool counters ) throws Exception {
 
         RgdId id = rgdDAO.getRgdId2(g.getRgdId());
         if( id.getObjectKey()!=25 ){
             id.setObjectKey(25); // change object type to 'BIOLOGICAL_REGIONS'
             rgdDAO.updateRgdId(id);
+            counters.increment("GENE_CONVERTED_TO_BIOLOGICAL_REGION");
         }
 
         GenomicElement ge = geDAO.getElement(id.getRgdId());
@@ -750,6 +752,7 @@ public class EGDAO {
             ge.setSoAccId(getSoAccIdForBiologicalRegion(biologicalRegionType));
             ge.setObjectType(biologicalRegionType);
             geDAO.insertElement(ge);
+            counters.increment("GENOMIC_ELEMENT_OF_TYPE_BIOLOGICAL_REGION_INSERTED");
         }
 
         // unbind any gene transcripts
@@ -770,6 +773,9 @@ public class EGDAO {
         if( rowsDeleted==0 ) {
             Logger logger = LogManager.getLogger("process");
             logger.warn("PROBLEM: cannot delete gene entry for RGD:"+g.getRgdId());
+            counters.increment("GENES_NOT_DELETED_FROM_GENES_TABLE_due_to_some_problem");
+        } else {
+            counters.increment("GENES_DELETED_FROM_GENES_TABLE");
         }
         return true;
     }

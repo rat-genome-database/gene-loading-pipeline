@@ -680,7 +680,7 @@ public class QualityCheckBulkGene  {
         List<Gene> genesByEgId = dao.getGenesByEGID(bg.getEgId()); //rgd genes matched by eg ID
         for( Gene g: genesByEgId ) {
 
-            boolean wasConverted = dao.convertGeneToBiologicalRegion(g, bg.biologicalRegionType);
+            boolean wasConverted = dao.convertGeneToBiologicalRegion(g, bg.biologicalRegionType, counters);
             if( !wasConverted ) {
                 return null;
             }
