@@ -809,6 +809,12 @@ public class EGDAO {
                     synonyms = oDAO.getActiveSynonymsByName("SO", biologicalRegionType3);
                     if( synonyms.size()==1 ) {
                         soAccId = synonyms.get(0).getTermAcc();
+                    } else {
+                        String biologicalRegionType4 = "INSDC_qualifier:" + biologicalRegionType;
+                        synonyms = oDAO.getActiveSynonymsByName("SO", biologicalRegionType4);
+                        if (synonyms.size() == 1) {
+                            soAccId = synonyms.get(0).getTermAcc();
+                        }
                     }
                 }
             }
