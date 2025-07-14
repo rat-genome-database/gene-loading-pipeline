@@ -1,3 +1,6 @@
+Jul 14, 2025
+  parser: discontinued db logging of queries to eutils
+
 Jul 08, 2025
   biological regions are no longer loaded as genes -- they are loaded as separated entities (object_key=25)
 

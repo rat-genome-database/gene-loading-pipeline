@@ -284,7 +284,8 @@ public class EntrezGeneExtractor {
                     logger.debug("processed " + processedEgIds + " ids, total processed " + eSearch.totalFetchedCount + " ids out of " + eSearch.recordCount
                             + "\nId List Len : " + idListLen
                             + "\nFetch Action:" + eSearch.fetchQuery);
-                    dbLogger.log("NCBI eFetch uri", eSearch.fetchQuery, PipelineLogger.INFO);
+                    // as of July 2025, no longer log these queries to db -- they could be longer than 4000 chars
+                    //dbLogger.log("NCBI eFetch uri", eSearch.fetchQuery, PipelineLogger.INFO);
 
                     // sleep between consecutive fetches to avoid overload of NCBI server (try to be nice to them :-) )
                     sleepBetweenFetchRequests();

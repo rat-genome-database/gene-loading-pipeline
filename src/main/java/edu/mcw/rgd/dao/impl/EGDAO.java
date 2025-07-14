@@ -53,10 +53,12 @@ public class EGDAO {
     }
 
     public List<Integer> getEgIdsForGenesWithoutStrand(int speciesTypeKey, int mapKey) throws Exception {
-        String sql = "SELECT DISTINCT TO_NUMBER(acc_id) "+
-            "FROM rgd_acc_xdb x,rgd_ids r,maps_data md "+
-            "WHERE x.xdb_key=3 AND x.rgd_id=r.rgd_id AND r.object_key=1 AND r.species_type_key=? AND r.object_status='ACTIVE' "+
-            "AND md.rgd_id=r.rgd_id AND md.map_key=? AND md.strand IS NULL";
+        String sql = """
+            SELECT DISTINCT TO_NUMBER(acc_id)
+            FROM rgd_acc_xdb x,rgd_ids r,maps_data md
+            WHERE x.xdb_key=3 AND x.rgd_id=r.rgd_id AND r.object_key=1 AND r.species_type_key=? AND r.object_status='ACTIVE'
+              AND md.rgd_id=r.rgd_id AND md.map_key=? AND md.strand IS NULL
+            """;
         return IntListQuery.execute(geneDAO, sql, speciesTypeKey, mapKey);
     }
 
