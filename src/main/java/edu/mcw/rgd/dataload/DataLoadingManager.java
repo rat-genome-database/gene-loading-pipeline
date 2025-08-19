@@ -815,6 +815,10 @@ public class DataLoadingManager {
                     "or 2) its gene type is 'other'/'unknown' and it does not have any of NM_, NR_, XM_, XR_ or NG_ sequences"
         );
         dbFlagManager.registerFlag(
+            "OBSOLETE_GENE_SKIPPED",
+            "incoming gene skipped from update, because it is discontinued or secondary"
+        );
+        dbFlagManager.registerFlag(
             "NEW_GENE_INSERTED",
             "new incoming gene inserted into RGD"
         );

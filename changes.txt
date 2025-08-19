@@ -1,3 +1,6 @@
+Aug 19, 2025
+  loader: discontinued/secondary genes are no longer updated in RGD
+
 Jul 14, 2025
   parser: discontinued db logging of queries to eutils
 

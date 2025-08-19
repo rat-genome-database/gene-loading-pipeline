@@ -115,8 +115,16 @@ public class DecisionMaker {
                 }
                 break;
             case Flags.UPDATE:
-                bulkGeneLoader.update(bg);
-                updated++;
+                // do not update genes that are flagged as DISCONTINUED or SECONDARY
+                // (why? during all-genes-update, these genes could be processed *after* the current gene
+                //  and that will mess up the gene)
+                if (bg.getGeneTrackStatus().equals("DISCONTINUED") || bg.getGeneTrackStatus().equals("SECONDARY") ) {
+                    skipped++;
+                    dbFlagManager.setFlag("OBSOLETE_GENE_SKIPPED", bg.getRecNo());
+                } else {
+                    bulkGeneLoader.update(bg);
+                    updated++;
+                }
                 break;
         }
     }
