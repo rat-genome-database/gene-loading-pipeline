@@ -6,7 +6,7 @@ SERVER=`hostname -s | tr '[a-z]' '[A-Z]'`
 
 ELIST=mtutaj@mcw.edu
 if [ "$SERVER" == "REED" ]; then
-    ELIST="$ELIST,rgd.pipelines@mcw.edu"
+    ELIST="$ELIST rgd.pipelines@mcw.edu"
 fi
 
 echo  "starting $1 EntrezGene pipeline"

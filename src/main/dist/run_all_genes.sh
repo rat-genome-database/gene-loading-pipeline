@@ -6,7 +6,7 @@ SERVER=`hostname -s | tr '[a-z]' '[A-Z]'`
 
 ELIST=mtutaj@mcw.edu
 if [ "$SERVER" == "REED" ]; then
-    ELIST="$ELIST,rgd.pipelines@mcw.edu"
+    ELIST="$ELIST rgd.pipelines@mcw.edu"
 fi
 
 echo  "starting $1 EntrezGene pipeline"
@@ -19,5 +19,5 @@ java -Dspring.config=../properties/default_db2.xml \
 mailx -s "[$SERVER] $1 EntrezGene pipeline finished running" $ELIST < $1_all_genes.log
 
 #mail a file with changed gene symbols to Stan
-mailx -s "[$SERVER] $1 gene symbol conflicts" mtutaj@mcw.edu,slaulederkind@mcw.edu < logs/symbols.log
+mailx -s "[$SERVER] $1 gene symbol conflicts" mtutaj@mcw.edu slaulederkind@mcw.edu < logs/symbols.log
 
