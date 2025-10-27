@@ -6,6 +6,7 @@ import edu.mcw.rgd.datamodel.Chromosome;
 import edu.mcw.rgd.datamodel.Gene;
 import edu.mcw.rgd.datamodel.MapData;
 import edu.mcw.rgd.datamodel.Transcript;
+import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.Utils;
 
 import java.io.BufferedReader;
@@ -23,14 +24,15 @@ public class LoadTranscriptsFromGff3 {
         }
     }
 
-    final int mapKey = 1311;
-    BulkGeneLoaderImpl impl = new BulkGeneLoaderImpl();
+    final int mapKey = 306;
+    CounterPool counters = new CounterPool();
 
     Map<String, String> chrMap = new HashMap<>();
 
     void run() throws Exception {
 
         String fname = "/Users/mtutaj/Downloads/r/GCF_000409795.2_Chlorocebus_sabeus_1.1_genomic.gff";
+        fname = "/tmp/g/306.gff";
 
         MapDAO mapDAO = new MapDAO();
         List<Chromosome> chrList = mapDAO.getChromosomes(mapKey);
@@ -38,77 +40,34 @@ public class LoadTranscriptsFromGff3 {
             chrMap.put(chr.getRefseqId(), chr.getChromosome());
         }
 
-        // gene map: ncbi-gene-id -> list of TrInfo
-        Map<String, List<TrInfo>> geneMap = loadGeneMap(fname);
+        // gene map: ncbi-gene-id -> list of GeneInfo
+        Map<String, GeneInfo> geneMap = loadGeneMap(fname);
 
-        for( Map.Entry<String, List<TrInfo>> entry: geneMap.entrySet() ) {
-            processGene(entry.getKey(), entry.getValue());
-        }
-    }
+        List<GeneInfo> randomizedList = new ArrayList<>(geneMap.values());
+        Collections.shuffle(randomizedList);
 
-    void processGene(String egId, List<TrInfo> transcripts ) throws Exception {
-        // match
-        BulkGene bg = loadBulkGene(egId, transcripts);
-
-        impl.handleTranscripts(bg);
-    }
-
-    BulkGene loadBulkGene(String egId, List<TrInfo> transcripts) throws Exception {
-
-        BulkGene bg = new BulkGene();
-        bg.setEgId(egId);
-
-        // resolve bg id
-        EGDAO dao = EGDAO.getInstance();
-        List<Gene> genes = dao.getGenesByEGID(egId);
-        if( genes.isEmpty() ) {
-            System.out.println("NO GENES");
-        } else if( genes.size()>1 ) {
-            System.out.println("MULTI GENES");
-        } else {
-            int geneRgdId = genes.get(0).getRgdId();
-
-            Flags flags = new Flags();
-            flags.setRgdId(geneRgdId);
-            bg.setCustomFlags(flags);
-
-            bg.rgdTranscripts = dao.getNcbiTranscriptsForGene(geneRgdId);
-
-            // incoming transcripts
-            bg.transcripts = new LinkedList<>();
-            for( TrInfo trInfo: transcripts ) {
-                TranscriptInfo t = new TranscriptInfo();
-                t.setGeneRgdId(geneRgdId);
-                // strip tr version
-                String acc = trInfo.acc;
-                int dotPos = acc.lastIndexOf('.');
-                String accId = dotPos>0 ? acc.substring(0, dotPos) : acc;
-                t.setAccId(accId);
-                MapData md = new MapData();
-                md.setMapKey(mapKey);
-                md.setStrand(trInfo.strand);
-                md.setStartPos(trInfo.startPos);
-                md.setStopPos(trInfo.stopPos);
-                md.setChromosome(chrMap.get(trInfo.chrAcc));
-                t.getGenomicPositions().add(md);
-                bg.transcripts.add(t);
-            }
+        for( GeneInfo geneInfo: randomizedList ) {
+            processGene(geneInfo);
         }
 
-        return bg;
+        System.out.println(counters.dumpAlphabetically());
     }
 
-    Map<String, List<TrInfo>> loadGeneMap(String fname) throws IOException {
+    Map<String, GeneInfo> loadGeneMap(String fname) throws Exception {
 
         BufferedReader in = Utils.openReader(fname);
         String line;
         Map<String, Integer> objCount = new HashMap<>();
-        Map<String, Integer> objCountSkipped = new HashMap<>();
 
-        Map<String, List<TrInfo>> geneMap = new HashMap<>();
+        Map<String, GeneInfo> geneMap = new HashMap<>();
+        String chr = "", regionChrAcc = "";
+        HashSet<String> ignoredFeatures = new HashSet<>(); // we skip these features together with their exon child objects
+
+        int lineNr = 0;
 
         while( (line=in.readLine())!=null ) {
-            if( geneMap.size()==10 ) break;
+
+            lineNr++;
 
             // skip comment lines
             if( line.startsWith("#") ) {
@@ -135,99 +94,152 @@ public class LoadTranscriptsFromGff3 {
             else cnt++;
             objCount.put(obj, cnt);
 
-            if( obj.equals("mRNA") || obj.equals("lnc_RNA") || obj.equals("transcript") || obj.equals("tRNA") || obj.equals("rRNA") ) {
-                String geneId = getTokenValue(info, "Dbxref=GeneID:", ",");
-                String trAcc = getTokenValue(info, "Genbank:", ";");
-                String trId = getTokenValue(info, "ID=", ";");
+            switch (obj) {
+                case "region" -> {
+                    regionChrAcc = chrAcc;
+                    chr = getTokenValue(info, "Name=", ";");
+                    if( chr!=null ) {
+                        System.out.println("processing chromosome " + chr);
+                    }
+                }
 
-                if( geneId!=null && trAcc!=null ) {
-                    List<TrInfo> list = geneMap.get(geneId);
-                    if( list == null ) {
-                        list = new ArrayList<>();
-                        geneMap.put(geneId, list);
+                case "pseudogene", "gene" -> {
+                    String ncbiGeneId = getTokenValue(info, "Dbxref=GeneID:", ",", ";");
+                    String geneSymbol = getTokenValue(info, "Name=", ";");
+                    String geneBioType = getTokenValue(info, "gene_biotype=", ";");
+                    String pseudoStr = getTokenValue(info, "pseudo=");
+                    String geneRgdIdStr = getTokenValue(info, ",RGD:", ";");
+                    int geneRgdId = 0;
+                    if( !Utils.isStringEmpty(geneRgdIdStr) ) {
+                        geneRgdId = Integer.parseInt(geneRgdIdStr);
+                    }
+                    //gffGeneId = getTokenValue(info, "ID=", ";");
+
+                    GeneInfo geneInfo = geneMap.get(ncbiGeneId);
+                    if (geneInfo == null) {
+                        if( chr==null ) {
+                            System.out.println("NULL chr");
+                        } else {
+                            geneInfo = new GeneInfo();
+                            geneInfo.geneSymbol = geneSymbol;
+                            geneInfo.ncbiGeneId = ncbiGeneId;
+                            geneInfo.geneRgdId = geneRgdId;
+                            geneInfo.geneBioType = geneBioType;
+                            geneInfo.pseudo = pseudoStr != null && pseudoStr.equals("true");
+
+                            geneInfo.chr = chr;
+                            geneInfo.startPos = startPos;
+                            geneInfo.stopPos = stopPos;
+                            geneInfo.strand = strand;
+                            geneMap.put(ncbiGeneId, geneInfo);
+                        }
+                    } else {
+                        throw new Exception("unexpected 1: "+lineNr);
+                    }
+                }
+
+                case "mRNA", "lnc_RNA", "transcript", "primary_transcript" -> {
+                    String ncbiGeneId = getTokenValue(info, "Dbxref=GeneID:", ",");
+
+                    GeneInfo geneInfo = geneMap.get(ncbiGeneId);
+                    if (geneInfo == null) {
+                        throw new Exception("unexpected 2: "+lineNr);
+                    }
+                    String trAcc = getTokenValue(info, "Name=", ";");
+                    String trId = getTokenValue(info, "ID=", ";");
+                    // this transcript must be new in trList
+                    TrInfo trInfo = null;
+                    for( TrInfo ti: geneInfo.trInfos ) {
+                        if( ti.id.equals(trId) ) {
+                            throw new Exception("unexpected 3: "+lineNr);
+                        }
+                    }
+                    trInfo = new TrInfo();
+                    trInfo.id = trId;
+                    trInfo.acc = trAcc;
+                    trInfo.chr = chr;
+                    trInfo.strand = strand;
+                    trInfo.startPos = startPos;
+                    trInfo.stopPos = stopPos;
+                    geneInfo.trInfos.add(trInfo);
+                }
+
+                case "exon" -> {
+                    String ncbiGeneId = getTokenValue(info, "Dbxref=GeneID:", ",");
+                    String trId = getTokenValue(info, "Parent=", ";");
+
+                    GeneInfo geneInfo = geneMap.get(ncbiGeneId);
+                    if (geneInfo == null) {
+                        throw new Exception("unexpected 4: "+lineNr);
                     }
                     TrInfo trInfo = null;
-                    for( TrInfo i: list ) {
-                        if( i.id.equals(trId) ) {
-                            trInfo = i;
+                    for( TrInfo ti: geneInfo.trInfos ) {
+                        if( ti.id.equals(trId) ) {
+                            ExonInfo exon = new ExonInfo();
+                            exon.startPos = startPos;
+                            exon.stopPos = stopPos;
+                            ti.exons.add(exon);
+                            trInfo = ti;
                             break;
                         }
                     }
-                    if( trInfo == null ) {
-                        trInfo = new TrInfo();
-                        trInfo.id = trId;
-                        trInfo.acc = trAcc;
-                        trInfo.chrAcc = chrAcc;
-                        trInfo.strand = strand;
-                        trInfo.startPos = startPos;
-                        trInfo.stopPos = stopPos;
-                        list.add(trInfo);
+                    if( trInfo==null ) {
+                        if( !ignoredFeatures.contains(trId) ) {
+                            // exons without NCBI transcript accessions -- we skip them
+                            System.out.println("*** EXON skipped: " + lineNr);
+                        }
                     }
                 }
-                continue;
-            }
 
-            if( obj.equals("exon") ) {
-                String geneId = getTokenValue(info, "Dbxref=GeneID:", ",");
-                String trId = getTokenValue(info, "Parent=", ";");
+                case "CDS" -> {
+                    String ncbiGeneId = getTokenValue(info, "Dbxref=GeneID:", ",");
+                    String trId = getTokenValue(info, "Parent=", ";");
+                    String proteinId = getTokenValue(info, "Name=", ";");
 
-                if( geneId!=null && trId!=null ) {
-                    List<TrInfo> list = geneMap.get(geneId);
-                    if( list != null ) {
-                        TrInfo trInfo = null;
-                        for( TrInfo i: list ) {
-                            if( i.id.equals(trId) ) {
-                                trInfo = i;
-                                break;
+                    GeneInfo geneInfo = geneMap.get(ncbiGeneId);
+                    if (geneInfo == null) {
+                        throw new Exception("unexpected 6: "+lineNr);
+                    }
+                    TrInfo trInfo = null;
+                    for( TrInfo ti: geneInfo.trInfos ) {
+                        if( ti.id.equals(trId) ) {
+                            trInfo = ti;
+
+                            if( ti.cdsStart==0 ) {
+                                ti.cdsStart = startPos;
+                            } else if( startPos < ti.cdsStart ) {
+                                ti.cdsStart = startPos;
                             }
-                        }
 
-                        ExonInfo e = new ExonInfo();
-                        e.startPos = startPos;
-                        e.stopPos = stopPos;
-                        e.strand = strand;
-                        trInfo.exons.add(e);
-                    }
-                }
-                continue;
-            }
+                            if( ti.cdsStop==0 ) {
+                                ti.cdsStop = stopPos;
+                            } else if( stopPos > ti.cdsStop ) {
+                                ti.cdsStop = stopPos;
+                            }
 
-            if( obj.equals("CDS") ) {
-                String geneId = getTokenValue(info, "Dbxref=GeneID:", ",");
-                String trId = getTokenValue(info, "Parent=", ";");
-
-                if( geneId!=null && trId!=null ) {
-                    List<TrInfo> list = geneMap.get(geneId);
-                    if( list == null ) {
-                        System.out.println("unexpected 2");
-                    }
-                    TrInfo trInfo = null;
-                    for( TrInfo i: list ) {
-                        if( i.id.equals(trId) ) {
-                            trInfo = i;
+                            if( ti.proteinId==null ) {
+                                ti.proteinId = proteinId;
+                            }
                             break;
                         }
                     }
-
-                    if( trInfo.cdsStart==0 ) {
-                        trInfo.cdsStart = startPos;
-                    } else if( startPos < trInfo.cdsStart ) {
-                        trInfo.cdsStart = startPos;
-                    }
-
-                    if( trInfo.cdsStop==0 ) {
-                        trInfo.cdsStop = stopPos;
-                    } else if( stopPos > trInfo.cdsStop ) {
-                        trInfo.cdsStop = stopPos;
+                    if( trInfo==null ) {
+                        throw new Exception("unexpected 7: "+lineNr);
                     }
                 }
-                continue;
-            }
 
-            cnt = objCountSkipped.get(obj);
-            if (cnt == null) cnt = 1;
-            else cnt++;
-            objCountSkipped.put(obj, cnt);
+                case "miRNA", "antisense_RNA", "snRNA", "rRNA", "telomerase_RNA", "SRP_RNA", "RNase_MRP_RNA" -> {
+                    String id = getTokenValue(info, "ID=", ";");
+                    ignoredFeatures.add(id);
+                }
+
+                case "match", "cDNA_match" -> { // ignore
+                }
+
+                default -> {
+                    System.out.println("unknown object: " + obj);
+                }
+            }
         }
         in.close();
 
@@ -235,12 +247,75 @@ public class LoadTranscriptsFromGff3 {
         for( Map.Entry<String, Integer> entry: objCount.entrySet() ) {
             System.out.println("    "+entry.getKey()+": "+entry.getValue());
         }
+        System.out.println("ignored features skipped (miRNA, snRNA, rRNA, antisense_RNA, telomerase_RNA, SRP_RNA): "+ignoredFeatures.size());
 
-        System.out.println("objCountSkipped: ");
-        for( Map.Entry<String, Integer> entry: objCountSkipped.entrySet() ) {
-            System.out.println("    "+entry.getKey()+": "+entry.getValue());
-        }
         return geneMap;
+    }
+
+
+    void processGene( GeneInfo geneInfo ) throws Exception {
+
+        CounterPool counters = new CounterPool();
+
+        updateGene(geneInfo, counters);
+
+        updateGenePositions(geneInfo, counters);
+
+        updateTranscripts(geneInfo, counters);
+
+        updateTranscriptPositions(geneInfo, counters);
+
+        updateTranscriptsFeatures(geneInfo, counters);
+
+        updateTranscriptVersion(geneInfo, counters);
+    }
+
+    void updateGene( GeneInfo geneInfo, CounterPool counters ) throws Exception {
+        throw new Exception("todo");
+    }
+
+    void updateGenePositions( GeneInfo geneInfo, CounterPool counters ) throws Exception {
+        throw new Exception("todo");
+    }
+
+    void updateTranscripts( GeneInfo geneInfo, CounterPool counters ) throws Exception {
+        throw new Exception("todo");
+    }
+
+    void updateTranscriptPositions( GeneInfo geneInfo, CounterPool counters ) throws Exception {
+        throw new Exception("todo");
+    }
+
+    void updateTranscriptsFeatures( GeneInfo geneInfo, CounterPool counters ) throws Exception {
+        throw new Exception("todo");
+    }
+
+    void updateTranscriptVersion( GeneInfo geneInfo, CounterPool counters ) throws Exception {
+        throw new Exception("todo");
+    }
+
+
+    String getTokenValue(String info, String startToken, String endToken1, String endToken2) {
+        String result = null;
+        int p1 = info.indexOf(startToken);
+        if( p1>=0 ) {
+            int p2 = info.indexOf(endToken1, p1);
+            int p3 = info.indexOf(endToken2, p1);
+            if( p2>=0 && p3>=0 ) {
+                int p4 = Math.min(p2, p3);
+                result = info.substring(p1 + startToken.length(), p4);
+            }
+            else if( p2>=0 && p3<0 ) {
+                result = info.substring(p1 + startToken.length(), p2);
+            }
+            else if( p3>=0 && p2<0 ) {
+                result = info.substring(p1 + startToken.length(), p3);
+            }
+            else {
+                result = info.substring(p1 + startToken.length());
+            }
+        }
+        return result;
     }
 
     String getTokenValue(String info, String startToken, String endToken) {
@@ -250,26 +325,53 @@ public class LoadTranscriptsFromGff3 {
             int p2 = info.indexOf(endToken, p1);
             if( p2>=0 ) {
                 result = info.substring(p1 + startToken.length(), p2);
+            } else {
+                result = info.substring(p1 + startToken.length());
             }
         }
         return result;
     }
 
+    String getTokenValue(String info, String startToken) {
+        String result = null;
+        int p1 = info.indexOf(startToken);
+        if( p1>=0 ) {
+            result = info.substring(p1 + startToken.length());
+        }
+        return result;
+    }
+
+    static public class GeneInfo {
+        String geneSymbol;
+        String ncbiGeneId;
+        int geneRgdId;
+        String geneBioType;
+        boolean pseudo;
+
+        String chr;
+        int startPos;
+        int stopPos;
+        String strand;
+
+        List<TrInfo> trInfos = new ArrayList<>();
+    }
+
     static public class TrInfo {
         String id;  // rna-XM_008004389.1, etc
         String acc; // XM_xxx etc
-        String chrAcc;
+        String chr;
         String strand; // '+' or '-'
         int startPos;
         int stopPos;
 
         int cdsStart;
         int cdsStop;
+        String proteinId;
+
         List<ExonInfo> exons = new ArrayList<>();
     }
 
     static public class ExonInfo {
-        String strand; // '+' or '-'
         int startPos;
         int stopPos;
     }
