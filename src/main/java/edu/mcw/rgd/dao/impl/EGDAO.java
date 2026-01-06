@@ -106,6 +106,10 @@ public class EGDAO {
        return mapDAO.getMapData(rgdId);
     }
 
+    public List<MapData> getMapData(int rgdId, int mapKey) throws Exception {
+        return mapDAO.getMapData(rgdId, mapKey);
+    }
+
     /**
      * get positional information for object identified by rgd id and map_key
      * @param egId Ncbi GeneId
@@ -132,8 +136,9 @@ public class EGDAO {
         for( MapData md: mdList ) {
             md.setSrcPipeline("NCBI");
             // throw exception if map_key or rgd_id is not set
-            if( md.getMapKey()==null || md.getMapKey()==0 || md.getRgdId()<=0 )
+            if( md.getMapKey()==null || md.getMapKey()==0 || md.getRgdId()<=0 ) {
                 throw new Exception("insert map data: no map key or no rgd id");
+            }
         }
 
         return mapDAO.insertMapData(mdList);
@@ -706,6 +711,10 @@ public class EGDAO {
 
     public List<TranscriptFeature> getFeaturesForGene(int geneRgdId) throws Exception {
         return transcriptDAO.getFeaturesForGene(geneRgdId);
+    }
+
+    public List<TranscriptFeature> getFeaturesForTr(int trRgdId, int mapKey) throws Exception {
+        return transcriptDAO.getFeatures(trRgdId, mapKey);
     }
 
     public boolean isObsoleteHgncId(String hgncId) throws Exception {

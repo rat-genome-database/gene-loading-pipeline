@@ -1,17 +1,15 @@
 package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.dao.impl.EGDAO;
-import edu.mcw.rgd.dao.impl.MapDAO;
-import edu.mcw.rgd.datamodel.Chromosome;
-import edu.mcw.rgd.datamodel.Gene;
-import edu.mcw.rgd.datamodel.MapData;
-import edu.mcw.rgd.datamodel.Transcript;
+import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.Utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class LoadTranscriptsFromGff3 {
 
@@ -24,21 +22,16 @@ public class LoadTranscriptsFromGff3 {
         }
     }
 
-    final int mapKey = 306;
+    final int MAP_KEY = 304;
+    final String SRC_PIPELINE = "NCBI";
     CounterPool counters = new CounterPool();
 
-    Map<String, String> chrMap = new HashMap<>();
+    EGDAO dao = EGDAO.getInstance();
 
     void run() throws Exception {
 
         String fname = "/Users/mtutaj/Downloads/r/GCF_000409795.2_Chlorocebus_sabeus_1.1_genomic.gff";
-        fname = "/tmp/g/306.gff";
-
-        MapDAO mapDAO = new MapDAO();
-        List<Chromosome> chrList = mapDAO.getChromosomes(mapKey);
-        for( Chromosome chr: chrList ) {
-            chrMap.put(chr.getRefseqId(), chr.getChromosome());
-        }
+        fname = "/tmp/g/304.gff";
 
         // gene map: ncbi-gene-id -> list of GeneInfo
         Map<String, GeneInfo> geneMap = loadGeneMap(fname);
@@ -46,10 +39,25 @@ public class LoadTranscriptsFromGff3 {
         List<GeneInfo> randomizedList = new ArrayList<>(geneMap.values());
         Collections.shuffle(randomizedList);
 
-        for( GeneInfo geneInfo: randomizedList ) {
-            processGene(geneInfo);
-        }
+        AtomicInteger i = new AtomicInteger(0);
+        randomizedList.stream().parallel().forEach( geneInfo -> {
 
+            i.incrementAndGet();
+            System.out.println(i+". "+geneInfo.geneSymbol+"   RGD:"+geneInfo.geneRgdId);
+
+            try {
+                processGene(geneInfo);
+            } catch( Exception e ) {
+                throw new RuntimeException(e);
+            }
+
+            // dump counters every 100 genes
+            if( i.get()%100==0 ) {
+                System.out.println(counters.dumpAlphabetically());
+            }
+        });
+
+        System.out.println(counters.dumpAlphabetically());
         System.out.println(counters.dumpAlphabetically());
     }
 
@@ -228,7 +236,7 @@ public class LoadTranscriptsFromGff3 {
                     }
                 }
 
-                case "miRNA", "antisense_RNA", "snRNA", "rRNA", "telomerase_RNA", "SRP_RNA", "RNase_MRP_RNA" -> {
+                case "antisense_RNA", "miRNA", "snRNA", "rRNA", "telomerase_RNA", "SRP_RNA", "RNase_MRP_RNA" -> {
                     String id = getTokenValue(info, "ID=", ";");
                     ignoredFeatures.add(id);
                 }
@@ -255,43 +263,290 @@ public class LoadTranscriptsFromGff3 {
 
     void processGene( GeneInfo geneInfo ) throws Exception {
 
-        CounterPool counters = new CounterPool();
+        if( !geneInfo.geneBioType.equals("protein_coding")
+         && !geneInfo.geneBioType.equals("pseudogene")
+         && !geneInfo.geneBioType.equals("transcribed_pseudogene")
+         && !geneInfo.geneBioType.equals("lncRNA")
+         && !geneInfo.geneBioType.equals("rRNA")
+         && !geneInfo.geneBioType.equals("telomerase_RNA")
+         && !geneInfo.geneBioType.equals("misc_RNA")
+         && !geneInfo.geneBioType.equals("miRNA"))
+        {
+            System.out.println(" not protein coding");
+        }
 
-        updateGene(geneInfo, counters);
+        Gene gene = updateGene(geneInfo);
 
-        updateGenePositions(geneInfo, counters);
+        if( gene!=null ) {
+            updateGenePositions(geneInfo, gene);
 
-        updateTranscripts(geneInfo, counters);
+            updateTranscripts(geneInfo, gene);
 
-        updateTranscriptPositions(geneInfo, counters);
+            updateTranscriptPositions(geneInfo);
 
-        updateTranscriptsFeatures(geneInfo, counters);
+            updateTranscriptsFeatures(geneInfo);
 
-        updateTranscriptVersion(geneInfo, counters);
+            //updateTranscriptVersion(geneInfo);
+        }
     }
 
-    void updateGene( GeneInfo geneInfo, CounterPool counters ) throws Exception {
-        throw new Exception("todo");
+    Gene updateGene( GeneInfo geneInfo ) throws Exception {
+
+        Gene gene = null;
+        List<Gene> genes = dao.getGenesByEGID(geneInfo.ncbiGeneId);
+
+        // multi genes: remove inactive genes
+        if( genes.size()>1 ) {
+            Iterator<Gene> it = genes.iterator();
+            while( it.hasNext() ) {
+                Gene g = it.next();
+                RgdId id = dao.getRgdId(g.getRgdId());
+                if( !id.getObjectStatus().equals("ACTIVE") ) {
+                    it.remove();
+                }
+            }
+        }
+        // multigenes: remove genes with non-matching RGD ID
+        if( genes.size()>1 ) {
+            genes.removeIf(g -> g.getRgdId() != geneInfo.geneRgdId);
+        }
+
+        // no gene matching by EG ID: try to match by RGD ID
+        if( genes.isEmpty() ) {
+            Gene g = dao.getGene(geneInfo.geneRgdId);
+            genes.add(g);
+        }
+
+        if( genes.isEmpty() ) {
+            counters.increment("GENES: no match by EG ID");
+        }
+        else if( genes.size()>1 ) {
+            counters.increment("GENES: multimatch by EG ID");
+        }
+        else {
+            counters.increment("GENES: single match by EG ID");
+
+            if( genes.get(0).getRgdId() == geneInfo.geneRgdId ) {
+                gene = genes.get(0);
+                counters.increment("GENES: single match by RGD ID");
+            }
+            else if( genes.get(0).getSymbol().equals(geneInfo.geneSymbol) ) {
+                gene = genes.get(0);
+                counters.increment("GENES: single match by symbol");
+            }
+            else {
+                gene = genes.get(0);
+                counters.increment("GENES: match by EG ID, but mismatch by RGD ID and symbol");
+            }
+        }
+
+        return gene;
     }
 
-    void updateGenePositions( GeneInfo geneInfo, CounterPool counters ) throws Exception {
-        throw new Exception("todo");
+    void updateGenePositions( GeneInfo geneInfo, Gene gene ) throws Exception {
+
+        MapData mdIncoming = new MapData();
+        mdIncoming.setMapKey(MAP_KEY);
+        mdIncoming.setSrcPipeline(SRC_PIPELINE);
+        mdIncoming.setRgdId(gene.getRgdId());
+        mdIncoming.setChromosome(geneInfo.chr);
+        mdIncoming.setStrand(geneInfo.strand);
+        mdIncoming.setStartPos(geneInfo.startPos);
+        mdIncoming.setStopPos(geneInfo.stopPos);
+
+        List<MapData> mds = dao.getMapData(gene.getRgdId(), MAP_KEY);
+        for( MapData md: mds ) {
+            if( md.equalsByGenomicCoords(mdIncoming) ) {
+                counters.increment("GENE POS: matches incoming");
+                return;
+            }
+        }
+
+        // no match: we insert the new pos
+        List<MapData> list = new ArrayList<>();
+        list.add(mdIncoming);
+        if( dao.insertMapData(list) !=0 ) {
+            counters.increment("GENE POS: inserted");
+        }
     }
 
-    void updateTranscripts( GeneInfo geneInfo, CounterPool counters ) throws Exception {
-        throw new Exception("todo");
+    void updateTranscripts( GeneInfo geneInfo, Gene gene ) throws Exception {
+
+        List<Transcript> trsInRgd = dao.getNcbiTranscriptsForGene(gene.getRgdId());
+
+        // find incoming transcript among transcripts in RGD
+        for( TrInfo trInfo: geneInfo.trInfos ) {
+
+            boolean trIsInRgd = false;
+
+            int dotPos = trInfo.acc.indexOf(".");
+            String trAcc = trInfo.acc.substring(0, dotPos);
+
+            for( Transcript tr: trsInRgd ) {
+                if( tr.getAccId().equals(trAcc) ) {
+                    counters.increment("TRANSCRIPTS: already in RGD");
+                    trInfo.rgdId = tr.getRgdId();
+                    trIsInRgd = true;
+                    break;
+                }
+            }
+            if( !trIsInRgd ) {
+                String proteinAcc = null;
+                if( trInfo.proteinId!=null ) {
+                    dotPos = trInfo.proteinId.indexOf(".");
+                    proteinAcc = trInfo.proteinId.substring(0, dotPos);
+                }
+
+                Transcript tr = new Transcript();
+                tr.setAccId(trAcc);
+                tr.setGeneRgdId(gene.getRgdId());
+                tr.setProteinAccId(proteinAcc);
+                dao.createTranscript(tr, SpeciesType.RAT);
+                trInfo.rgdId = tr.getRgdId();
+                counters.increment("TRANSCRIPTS: inserted");
+            }
+        }
     }
 
-    void updateTranscriptPositions( GeneInfo geneInfo, CounterPool counters ) throws Exception {
-        throw new Exception("todo");
+    void updateTranscriptPositions( GeneInfo geneInfo ) throws Exception {
+
+        for( TrInfo trInfo: geneInfo.trInfos ) {
+
+            MapData mdIncoming = new MapData();
+            mdIncoming.setMapKey(MAP_KEY);
+            mdIncoming.setSrcPipeline(SRC_PIPELINE);
+            mdIncoming.setRgdId(trInfo.rgdId);
+            mdIncoming.setChromosome(trInfo.chr);
+            mdIncoming.setStrand(trInfo.strand);
+            mdIncoming.setStartPos(trInfo.startPos);
+            mdIncoming.setStopPos(trInfo.stopPos);
+
+            List<MapData> mds = dao.getMapData(trInfo.rgdId, MAP_KEY);
+            boolean posIsAlreadyInRgd = false;
+            for( MapData md: mds ) {
+                if( md.equalsByGenomicCoords(mdIncoming) ) {
+                    counters.increment("TR POS: matches incoming");
+                    posIsAlreadyInRgd = true;
+                    break;
+                }
+            }
+
+            // no match: we insert the new pos
+            if( !posIsAlreadyInRgd ) {
+                List<MapData> list = new ArrayList<>();
+                list.add(mdIncoming);
+                if (dao.insertMapData(list) != 0) {
+                    counters.increment("TR POS: inserted");
+                }
+            }
+        }
     }
 
-    void updateTranscriptsFeatures( GeneInfo geneInfo, CounterPool counters ) throws Exception {
-        throw new Exception("todo");
+    void updateTranscriptsFeatures( GeneInfo geneInfo ) throws Exception {
+
+        if( geneInfo.geneBioType.equals("miRNA") ) {
+            return;
+        }
+
+        // build incoming features: exons and utrs
+        for( TrInfo trInfo: geneInfo.trInfos ) {
+
+            int trStart = 0;
+            int trStop = 0;
+
+            List<TranscriptFeature> features = new ArrayList<>();
+            for( ExonInfo exonInfo: trInfo.exons ) {
+
+                MapData md = new MapData();
+                md.setMapKey(MAP_KEY);
+                md.setChromosome(trInfo.chr);
+                md.setStrand(trInfo.strand);
+                md.setStartPos(exonInfo.startPos);
+                md.setStopPos(exonInfo.stopPos);
+
+                if( trStart==0 || exonInfo.startPos < trStart ) {
+                    trStart = exonInfo.startPos;
+                }
+                if( trStop==0 || exonInfo.stopPos > trStop ) {
+                    trStop = exonInfo.stopPos;
+                }
+
+                TranscriptFeature ft = new TranscriptFeature(md);
+                ft.setFeatureType(TranscriptFeature.FeatureType.EXON);
+                features.add(ft);
+            }
+
+            // 1st utr, if available
+            if( trInfo.cdsStart!=0 && trStart < trInfo.cdsStart ) {
+
+                MapData md = new MapData();
+                md.setMapKey(MAP_KEY);
+                md.setChromosome(trInfo.chr);
+                md.setStrand(trInfo.strand);
+                md.setStartPos(trStart);
+                md.setStopPos(trInfo.cdsStart-1);
+
+                TranscriptFeature ft = new TranscriptFeature(md);
+                if( trInfo.strand.equals("+") ) {
+                    ft.setFeatureType(TranscriptFeature.FeatureType.UTR5);
+                } else {
+                    ft.setFeatureType(TranscriptFeature.FeatureType.UTR3);
+                }
+                features.add(ft);
+            }
+
+            // 2nd utr, if available
+            if( trInfo.cdsStop!=0 && trInfo.cdsStop < trStop ) {
+
+                MapData md = new MapData();
+                md.setMapKey(MAP_KEY);
+                md.setChromosome(trInfo.chr);
+                md.setStrand(trInfo.strand);
+                md.setStartPos(trInfo.cdsStop+1);
+                md.setStopPos(trStop);
+
+                TranscriptFeature ft = new TranscriptFeature(md);
+                if( trInfo.strand.equals("+") ) {
+                    ft.setFeatureType(TranscriptFeature.FeatureType.UTR3);
+                } else {
+                    ft.setFeatureType(TranscriptFeature.FeatureType.UTR5);
+                }
+                features.add(ft);
+            }
+
+            // qc features
+            List<TranscriptFeature> ftsInRgd = dao.getFeaturesForTr(trInfo.rgdId, MAP_KEY);
+
+            for( TranscriptFeature ft: features ) {
+
+                // find matching feature in rgd
+                TranscriptFeature ftInRgd = null;
+                for( TranscriptFeature r: ftsInRgd ) {
+                    if (ft.getFeatureType() ==r.getFeatureType()
+                    && Utils.intsAreEqual(ft.getStartPos(), r.getStartPos())
+                    && Utils.intsAreEqual(ft.getStopPos(), r.getStopPos()) ) {
+
+                        ftInRgd = r;
+                        break;
+                    }
+                }
+
+                if( ftInRgd==null ) {
+                    ft.setTranscriptRgdId(trInfo.rgdId);
+                    ft.setSrcPipeline(SRC_PIPELINE);
+                    dao.createFeature( ft, SpeciesType.RAT );
+                    counters.increment("TR "+ft.getCanonicalName().toUpperCase()+": inserted");
+                } else {
+                    counters.increment("TR "+ft.getCanonicalName().toUpperCase()+": matched");
+                }
+            }
+        }
+
     }
 
-    void updateTranscriptVersion( GeneInfo geneInfo, CounterPool counters ) throws Exception {
-        throw new Exception("todo");
+    void updateTranscriptVersion( GeneInfo geneInfo ) throws Exception {
+
+        System.out.println("todo");
     }
 
 
@@ -367,6 +622,7 @@ public class LoadTranscriptsFromGff3 {
         int cdsStart;
         int cdsStop;
         String proteinId;
+        int rgdId;
 
         List<ExonInfo> exons = new ArrayList<>();
     }
