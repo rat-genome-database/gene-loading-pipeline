@@ -1,3 +1,6 @@
+Jan 09, 2026
+  fully implemented loading NCBI gene models from gff3 files (for rat assemblies Dahl, Lyon, F344)
+
 Aug 19, 2025
   loader: discontinued/secondary genes are no longer updated in RGD
   scripts: added blackrat

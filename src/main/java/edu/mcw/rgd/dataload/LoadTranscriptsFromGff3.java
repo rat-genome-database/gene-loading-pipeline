@@ -51,8 +51,8 @@ public class LoadTranscriptsFromGff3 {
                 throw new RuntimeException(e);
             }
 
-            // dump counters every 100 genes
-            if( i.get()%100==0 ) {
+            // dump counters every 1000 genes
+            if( i.get()%1000==0 ) {
                 System.out.println(counters.dumpAlphabetically());
             }
         });
@@ -268,8 +268,12 @@ public class LoadTranscriptsFromGff3 {
          && !geneInfo.geneBioType.equals("transcribed_pseudogene")
          && !geneInfo.geneBioType.equals("lncRNA")
          && !geneInfo.geneBioType.equals("rRNA")
+         && !geneInfo.geneBioType.equals("snRNA")
          && !geneInfo.geneBioType.equals("telomerase_RNA")
          && !geneInfo.geneBioType.equals("misc_RNA")
+         && !geneInfo.geneBioType.equals("SRP_RNA")
+         && !geneInfo.geneBioType.equals("antisense_RNA")
+         && !geneInfo.geneBioType.equals("RNase_MRP_RNA")
          && !geneInfo.geneBioType.equals("miRNA"))
         {
             System.out.println(" not protein coding");
