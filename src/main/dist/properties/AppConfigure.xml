@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="NCBI Gene Pipeline   -- build Jan 09, 2026" />
+        <property name="version" value="NCBI Gene Pipeline   -- build Jan 27, 2026" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -83,12 +83,17 @@
                 <entry key="UNSW_CanFamBas_1.0" value="636"/>
                 <entry key="UU_Cfam_GSD_1.0" value="637"/>
 
+                <!--
                 <entry key="SpeTri2.0" value="720"/>
                 <entry key="HiC_Itri_2" value="722"/>
+                -->
 
                 <entry key="Sscrofa10.2" value="910"/>
+
+                <!--
                 <entry key="Chlorocebus_sabeus 1.1" value="1311"/>
                 <entry key="Vero_WHO_p1.0" value="1313"/>
+                -->
                 <entry key="HetGla_female_1.0" value="1410"/>
 
             </map>
@@ -208,9 +213,10 @@
 
     <bean id="squirrelGenomicAssemblies" class="java.util.HashMap">
         <constructor-arg>
-            <map>
+            <map><!--
                 <entry key="Reference SpeTri2.0" value="720"/>
-                <entry key="Reference HiC_Itri_2 Primary Assembly" value="722"/>
+                <entry key="Reference HiC_Itri_2 Primary Assembly" value="722"/>-->
+                <entry key="Reference mIctTri1.hap1" value="724"/>
             </map>
         </constructor-arg>
     </bean>
@@ -228,8 +234,9 @@
     <bean id="vervetGenomicAssemblies" class="java.util.HashMap">
         <constructor-arg>
             <map>
+                <entry key="Reference mChlSab1.0.hap1 Primary Assembly" value="1315" /><!--
                 <entry key="Reference Vero_WHO_p1.0" value="1313" />
-                <entry key="Reference Chlorocebus_sabeus 1.1 Primary Assembly" value="1311" />
+                <entry key="Reference Chlorocebus_sabeus 1.1 Primary Assembly" value="1311" />-->
                 <entry key="Cytomap" value="1300"/>
             </map>
         </constructor-arg>

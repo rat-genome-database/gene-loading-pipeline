@@ -1,3 +1,6 @@
+Jan 27, 2026
+  new assemblies: [green monkey, mChlSab1.0.hap1]  [squirrel, mIctTri1.hap1]
+
 Jan 09, 2026
   fully implemented loading NCBI gene models from gff3 files (for rat assemblies Dahl, Lyon, F344)
 
