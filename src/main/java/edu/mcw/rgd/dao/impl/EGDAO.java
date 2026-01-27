@@ -23,7 +23,7 @@ import java.util.*;
  */
 public class EGDAO {
 
-    boolean skipDeletesForTranscripts = false;
+    boolean skipDeletesForTranscripts = true;
 
     private AliasDAO aliasDAO = new AliasDAO();
     private AssociationDAO assocDAO = new AssociationDAO();
