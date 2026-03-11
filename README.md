@@ -12,7 +12,12 @@ Matching logic for non-rat genes (to determine if an incoming gene matches a gen
     1. match by NCBI Gene Id (there could be only one active gene with a given NCBI Gene id)
     2. if not found, match by HGNC/MGI id -- only for human/mouse genes
     3. if not found, match by Ensembl Gene Id
-    
+
+## New gene insertion logic
+
+New genes of type "gene" are skipped if they lack RefSeq nucleotides (NM_, XM_, NR_, XR_, NG_) and curated RefSeq status,
+with the exception of human genes that have an HGNC ID — those are always loaded.
+
 ## Nomenclature changes for non-rat genes.
     
     1. If the gene nomenclature source authority is 'NCBI', if there are any changes to gene name or symbol,

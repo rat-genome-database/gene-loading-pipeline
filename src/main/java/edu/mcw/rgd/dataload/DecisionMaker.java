@@ -103,9 +103,11 @@ public class DecisionMaker {
                 }
                 // also do not insert genes with wrong type: 'other' or 'unknown'
                 //   unless they have at least one RefSeq nucleotide: NM_, XM_, NR_, XR_, NG_
+                //   or they have an HGNC ID (human genes with HGNC should always be loaded)
                 else if( Utils.stringsAreEqualIgnoreCase(bg.getEgType(), "gene")
                         && !bg.hasRefSeqNucleotide()
-                        && !bg.hasRefSeqCuratedStatus() ){
+                        && !bg.hasRefSeqCuratedStatus()
+                        && !bg.hasHgncId() ){
                     skipped++;
                     dbFlagManager.setFlag("NEW_GENE_SKIPPED", bg.getRecNo());
                 } else {

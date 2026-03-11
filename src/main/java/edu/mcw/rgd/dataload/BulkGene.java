@@ -153,6 +153,10 @@ public class BulkGene {
         return false;
     }
 
+    public boolean hasHgncId() {
+        return !getXdbIdsByXdbKey(XdbId.XDB_KEY_HGNC).isEmpty();
+    }
+
     public boolean hasRefSeqCuratedStatus() {
 
         return Utils.stringsAreEqualIgnoreCase(this.gene.getRefSeqStatus(), "REVIEWED") ||
