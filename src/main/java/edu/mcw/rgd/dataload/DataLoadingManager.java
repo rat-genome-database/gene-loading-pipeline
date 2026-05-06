@@ -67,6 +67,9 @@ public class DataLoadingManager {
         System.out.println(manager.getVersion());
         System.out.println(manager.rgdLogger.getConnectionInfo());
 
+        MemoryMonitor memoryMonitor = new MemoryMonitor();
+        memoryMonitor.start();
+
         if (args.length>=1) {
             try {
 
@@ -249,12 +252,15 @@ public class DataLoadingManager {
                     ignored.printStackTrace();
                 }
                 return;
+            } finally {
+                memoryMonitor.stop();
+                manager.getLogger().info(memoryMonitor.getSummary());
             }
         }
         else {
             manager.printHelp();
             return;
-        }   
+        }
         manager.getLogger().info("--------------------------------------------------------------------------");
     }
    

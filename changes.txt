@@ -1,3 +1,6 @@
+May 06, 2026
+  added MemoryMonitor reporting
+
 Mar 11, 2026
   new human genes with HGNC ID are always loaded (no longer skipped for lacking RefSeq nucleotides)
   updated dependencies
