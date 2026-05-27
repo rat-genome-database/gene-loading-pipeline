@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="NCBI Gene Pipeline   -- build May 06, 2026" />
+        <property name="version" value="NCBI Gene Pipeline   -- build May 27, 2026" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -251,8 +251,8 @@
     </bean>
 
     <bean id="geneRelationships" class="edu.mcw.rgd.dataload.GeneRelationships">
-        <property name="version" value="GeneRelationships module v. 2.0.0 as of May 10, 2019" />
-        <property name="geneGroupFile" value="ftp://ftp.ncbi.nih.gov/gene/DATA/gene_group.gz" />
+        <property name="version" value="GeneRelationships module v. 2.0.0 as of May 27, 2026" />
+        <property name="geneGroupFile" value="https://ftp.ncbi.nlm.nih.gov/gene/DATA/gene_group.gz" />
     </bean>
 
 	<bean id="rgdLogger" class="edu.mcw.rgd.log.RGDSpringLogger">
@@ -307,30 +307,6 @@
 		</property>
 	</bean>
 
-    <bean id="refSeqValidator" class="edu.mcw.rgd.dataload.RefSeqValidator">
-        <property name="removedRecordsDir" value="ftp://ftp.ncbi.nih.gov/refseq/removed" />
-        <property name="ncbiFiles">
-            <list>
-                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/R_norvegicus/mRNA_Prot/rat.rna.gbff.gz</value>
-                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/R_norvegicus/mRNA_Prot/rat.protein.gpff.gz</value>
-                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/M_musculus/mRNA_Prot/mouse.protein.gpff.gz</value>
-                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/M_musculus/mRNA_Prot/mouse.rna.gbff.gz</value>
-                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.protein.gpff.gz</value>
-                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.rna.gbff.gz</value>
-                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/RefSeqGene/refseqgene1.genomic.gbff.gz</value>
-                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/RefSeqGene/refseqgene2.genomic.gbff.gz</value>
-                <value>ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/RefSeqGene/refseqgene3.genomic.gbff.gz</value>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="refSeqRemoved" class="edu.mcw.rgd.dataload.RefSeqRemoved">
-        <property name="version" value="RefSeq Analyzer for removed accession ids  v.1.0 - Oct 3, 2014" />
-        <property name="dataDir" value="ftp://ftp.ncbi.nlm.nih.gov/refseq/removed"/>
-        <property name="dataDirAr" value="ftp://ftp.ncbi.nlm.nih.gov/refseq/removed/archive"/>
-        <property name="fileMask" value="removed-records.*"/>
-        <property name="reportFile" value="data/refseq_removed.txt"/>
-    </bean>
 </beans>
 
 

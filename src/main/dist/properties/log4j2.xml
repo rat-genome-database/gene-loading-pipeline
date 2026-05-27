@@ -128,7 +128,7 @@
         </Logger>
 
         <!-- monthly -->
-        <Logger name="edu.mcw.rgd.process.FileDownloader" level="debug" additivity="false">
+        <Logger name="edu.mcw.rgd.process.FileDownloader2" level="debug" additivity="false">
             <AppenderRef ref="file_download"/>
         </Logger>
         <Logger name="annot_status" level="debug" additivity="false">

@@ -1,3 +1,7 @@
+May 27, 2026
+  switched to FileDownloader2 (JDK HttpClient); dropped commons-net and apache httpclient deps; updated dependencies
+  removed unused RefSeqRemoved and RefSeqValidator (and their refseq_removed/refseq CLI subcommands)
+
 May 06, 2026
   added MemoryMonitor reporting
 

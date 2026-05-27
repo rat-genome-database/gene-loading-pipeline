@@ -171,14 +171,6 @@ public class DataLoadingManager {
                 manager.transform(args[1], args[2]);
                 runSec = (System.currentTimeMillis()-startMilisec)/1000;
             }
-            // compare list of removed RefSeq acc ids against RGD
-            else if (args[0].contains("refseq_removed")) {
-
-                RefSeqRemoved validator = (RefSeqRemoved) (bf.getBean("refSeqRemoved"));
-                validator.run();
-                runSec = (System.currentTimeMillis()-startMilisec)/1000;
-            }
-            //
             else if (args[0].contains("refseq_qc_protein")) {
 
                 RefSeqQcProtein qc = new RefSeqQcProtein();
@@ -187,13 +179,6 @@ public class DataLoadingManager {
                     mapKey = Integer.parseInt(args[1].substring(8));
                 }
                 qc.run(mapKey);
-                runSec = (System.currentTimeMillis()-startMilisec)/1000;
-            }
-            // parse refseq files from NCBI ftp site
-            else if (args[0].contains("refseq")) {
-
-                RefSeqValidator validator = (RefSeqValidator) (bf.getBean("refSeqValidator"));
-                validator.run();
                 runSec = (System.currentTimeMillis()-startMilisec)/1000;
             }
             // load gene-to-gene associations into RGD_ASSOCIATIONS table

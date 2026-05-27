@@ -279,7 +279,7 @@ public class NcbiEutils {
     public File downloadFile(int maxRetryCount, ESearchResult eSearchResult) throws Exception {
 
         // download the file to a tmp file
-        FileDownloader downloader = new FileDownloader();
+        FileDownloader2 downloader = new FileDownloader2();
         downloader.setMaxRetryCount(maxRetryCount);
         downloader.setDownloadRetryInterval(20); // set timeout between next download attempt to 20s
 
