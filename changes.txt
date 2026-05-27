@@ -1,6 +1,7 @@
 May 27, 2026
   switched to FileDownloader2 (JDK HttpClient); dropped commons-net and apache httpclient deps; updated dependencies
   removed unused RefSeqRemoved and RefSeqValidator (and their refseq_removed/refseq CLI subcommands)
+  gene relationships: split misleading INCOMING_DATA_FOR_<SPECIES> counter into INCOMING_FILE_ROWS (whole file) and INCOMING_FOR_<SPECIES> (rows where master gene is the current species); dropped now-redundant LOAD_DIFF_SPECIES
 
 May 06, 2026
   added MemoryMonitor reporting

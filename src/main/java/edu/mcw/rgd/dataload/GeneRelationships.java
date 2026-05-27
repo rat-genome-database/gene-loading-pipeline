@@ -105,15 +105,21 @@ public class GeneRelationships {
 
         CounterPool counters = new CounterPool();
         String speciesName = SpeciesType.getCommonName(speciesTypeKey).toUpperCase();
-        counters.add("INCOMING_DATA_FOR_"+speciesName, incomingAssocs.size());
+        counters.add("INCOMING_FILE_ROWS", incomingAssocs.size());
 
         incomingAssocs.parallelStream().forEach( rec -> {
+
+            // count rows where the master gene belongs to the current species
+            // (regardless of whether the partner species is supported)
+            if( rec.taxId1==taxId ) {
+                counters.increment("INCOMING_FOR_"+speciesName);
+            }
 
             // matches eg ids against rgd
             // if association species for master rgd id is different from the current species, skip it
             // the second species must be among the supported species
+            // (skipped count is derivable: INCOMING_FILE_ROWS - INCOMING_FOR_<SPECIES>)
             if( rec.taxId1!=taxId || !supportedSpeciesTaxIds.contains(rec.taxId2) ) {
-                counters.increment("LOAD_DIFF_SPECIES"); // different species: skip this record during loading
                 return;
             }
 
