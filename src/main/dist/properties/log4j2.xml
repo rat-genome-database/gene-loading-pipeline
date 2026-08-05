@@ -95,12 +95,6 @@
                 <TimeBasedTriggeringPolicy interval="1"/>
             </Policies>
         </RollingFile>
-        <RollingFile name="refseq_loader" append="true" fileName="logs/refseq_loader.log" filePattern="logs/refseq_loader.log.%d{yyyy-MM}">
-            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] - %m%n"/>
-            <Policies>
-                <TimeBasedTriggeringPolicy interval="1"/>
-            </Policies>
-        </RollingFile>
         <RollingFile name="aliases" append="true" fileName="logs/aliases.log" filePattern="logs/aliases.log.%d{yyyy-MM}">
             <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] - %m%n"/>
             <Policies>
@@ -175,8 +169,10 @@
             <AppenderRef ref="gene_track_status"/>
             <AppenderRef ref="Console" level="info"/>
         </Logger>
-        <Logger name="refSeqLoader" level="debug" additivity="false">
-            <AppenderRef ref="refseq_loader"/>
+        <!-- BulkGeneLoaderImpl. Its own messages are all logger.debug(), so raise this to 'debug'
+             to get the per-gene trace in detail.log; at 'info' it stays as quiet as it is today. -->
+        <Logger name="info" level="info" additivity="false">
+            <AppenderRef ref="detail"/>
             <AppenderRef ref="Console" level="info"/>
         </Logger>
         <Logger name="aliases" level="debug" additivity="false">

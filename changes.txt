@@ -1,3 +1,12 @@
+Aug 5, 2026
+  fixed gene symbol conflicts never reaching logs/symbols.log: the code logged to "symbol" but log4j2.xml
+    declares "symbols", so the file mailed out by run_all_genes.sh was always empty
+  log config: declared the previously undeclared "info" logger; dropped the refSeqLoader logger and its
+    appender, orphaned since the refseq subcommands were removed
+  run scripts: quoted the species argument and log file names, so species names containing a space work;
+    updated notification recipients
+  updated dependencies
+
 May 27, 2026
   switched to FileDownloader2 (JDK HttpClient); dropped commons-net and apache httpclient deps; updated dependencies
   removed unused RefSeqRemoved and RefSeqValidator (and their refseq_removed/refseq CLI subcommands)

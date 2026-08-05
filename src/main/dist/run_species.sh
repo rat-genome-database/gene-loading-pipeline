@@ -15,7 +15,7 @@ java -Dspring.config=../properties/default_db2.xml \
     -Dlog4j.configurationFile=file://$HOMEDIR/properties/log4j2.xml \
     -jar lib/EntrezGeneLoading.jar \
     -download+process auto auto \
-    -species $1 > $1.log
-mailx -s "[$SERVER] $1 EntrezGene pipeline finished running" $ELIST < $1.log
+    -species "$1" > "$1.log"
+mailx -s "[$SERVER] $1 EntrezGene pipeline finished running" $ELIST < "$1.log"
 
 

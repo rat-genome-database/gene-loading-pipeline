@@ -15,9 +15,9 @@ java -Dspring.config=../properties/default_db2.xml \
     -Dlog4j.configurationFile=file://$HOMEDIR/properties/log4j2.xml \
     -jar lib/EntrezGeneLoading.jar \
     -all_genes \
-    -species $1 > $1_all_genes.log
-mailx -s "[$SERVER] $1 EntrezGene pipeline finished running" $ELIST < $1_all_genes.log
+    -species "$1" > "$1_all_genes.log"
+mailx -s "[$SERVER] $1 EntrezGene pipeline finished running" $ELIST < "$1_all_genes.log"
 
-#mail a file with changed gene symbols to Stan
-mailx -s "[$SERVER] $1 gene symbol conflicts" mtutaj@mcw.edu slaulederkind@mcw.edu < logs/symbols.log
+#mail a file with changed gene symbols
+mailx -s "[$SERVER] $1 gene symbol conflicts" mtutaj@mcw.edu < logs/symbols.log
 

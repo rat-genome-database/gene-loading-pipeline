@@ -38,7 +38,10 @@ public class QualityCheckBulkGene  {
     protected final Logger logger = LogManager.getLogger("process");
     protected final Logger logInactive = LogManager.getLogger("inactive");
     protected final Logger logNomen = LogManager.getLogger("nomen"); // tracks changes in gene names, symbols and descriptions
-    protected final Logger logSymbol = LogManager.getLogger("symbol"); // tracks changes in gene symbols, user friendly
+    // must match the 'symbols' logger in log4j2.xml, which writes logs/symbols.log -- the file
+    // run_all_genes.sh mails out. It used to be "symbol", which matches no logger, so log4j sent
+    // this to the console and symbols.log stayed empty.
+    protected final Logger logSymbol = LogManager.getLogger("symbols"); // tracks changes in gene symbols, user friendly
 
     public void process(BulkGene bulkGene) throws Exception {
 

@@ -14,5 +14,5 @@ java -Dspring.config=../properties/default_db2.xml \
     -Dlog4j.configurationFile=file://$HOMEDIR/properties/log4j2.xml \
     -jar lib/EntrezGeneLoading.jar \
     -no_strand $2 \
-    -species $1 > no_strand_$1_$2.log
-mailx -s "[$SERVER] $1 EntrezGene pipeline finished running" $ELIST < no_strand_$1_$2.log
+    -species "$1" > "no_strand_$1_$2.log"
+mailx -s "[$SERVER] $1 EntrezGene pipeline finished running" $ELIST < "no_strand_$1_$2.log"
