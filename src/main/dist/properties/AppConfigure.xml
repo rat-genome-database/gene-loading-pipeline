@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="NCBI Gene Pipeline   -- build Aug 5, 2026" />
+        <property name="version" value="NCBI Gene Pipeline   -- build Sep 8, 2026" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -36,12 +36,6 @@
         <!--gene location history: gene location info provided by RefSeq for non-current (previous) assemblies -->
         <property name="geneLocationHistory">
             <map>
-                <!--
-                <entry key="Rn_Celera" value="15"/>
-                <entry key="Rnor_6.0" value="360"/>
-                <entry key="mRatBN7.2" value="372"/>
-                <entry key="GRCr8" value="380"/>
-                -->
                 <entry key="Hs_Celera" value="16"/>
                 <entry key="CHM1_1.0" value="36"/>
                 <entry key="CHM1_1.1" value="36"/>
@@ -164,6 +158,7 @@
         <constructor-arg>
             <map>
                 <entry key="Reference GRCr8" value="380"/>
+                <entry key="Alternate SHRSP_T2T Primary Assembly" value="308"/>
                 <entry key="Cytomap" value="99"/>
             </map>
         </constructor-arg>
