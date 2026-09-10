@@ -22,16 +22,31 @@ public class LoadTranscriptsFromGff3 {
         }
     }
 
-    final int MAP_KEY = 304;
     final String SRC_PIPELINE = "NCBI";
-    CounterPool counters = new CounterPool();
+    int mapKey;
+    CounterPool counters;
 
     EGDAO dao = EGDAO.getInstance();
 
     void run() throws Exception {
 
-        String fname = "/Users/mtutaj/Downloads/r/GCF_000409795.2_Chlorocebus_sabeus_1.1_genomic.gff";
-        fname = "/tmp/g/304.gff";
+        // map_key -> gff file with NCBI pilot annotation, per MAPS.GENBANK_ASSEMBLY_ACC
+        Map<Integer, String> gffFiles = new LinkedHashMap<>();
+        gffFiles.put(301, "H:/rat_gff3/GCA_023515785.1_UTH_Rnor_SHR_Utx_genomic.gff.gz");
+        gffFiles.put(302, "H:/rat_gff3/GCA_021556685.1_UTH_Rnor_SHRSP_BbbUtx_1.0_genomic.gff.gz");
+        gffFiles.put(303, "H:/rat_gff3/GCA_023515805.1_UTH_Rnor_WKY_Bbb_1.0_genomic.gff.gz");
+
+        for( Map.Entry<Integer, String> entry: gffFiles.entrySet() ) {
+            run(entry.getKey(), entry.getValue());
+        }
+    }
+
+    void run(int mapKey, String fname) throws Exception {
+
+        this.mapKey = mapKey;
+        counters = new CounterPool();
+
+        System.out.println("=== processing mapKey=" + mapKey + ", file " + fname);
 
         // gene map: ncbi-gene-id -> list of GeneInfo
         Map<String, GeneInfo> geneMap = loadGeneMap(fname);
@@ -58,7 +73,6 @@ public class LoadTranscriptsFromGff3 {
         });
 
         System.out.println(counters.dumpAlphabetically());
-        System.out.println(counters.dumpAlphabetically());
     }
 
     Map<String, GeneInfo> loadGeneMap(String fname) throws Exception {
@@ -70,6 +84,7 @@ public class LoadTranscriptsFromGff3 {
         Map<String, GeneInfo> geneMap = new HashMap<>();
         String chr = "", regionChrAcc = "";
         HashSet<String> ignoredFeatures = new HashSet<>(); // we skip these features together with their exon child objects
+        HashSet<String> skippedGenes = new HashSet<>(); // NCBI gene ids of genes on unplaced scaffolds (no chromosome) -- skipped with their child features
 
         int lineNr = 0;
 
@@ -126,7 +141,9 @@ public class LoadTranscriptsFromGff3 {
                     GeneInfo geneInfo = geneMap.get(ncbiGeneId);
                     if (geneInfo == null) {
                         if( chr==null ) {
-                            System.out.println("NULL chr");
+                            // gene on an unplaced scaffold (region without a chromosome name): skip it with its child features
+                            skippedGenes.add(ncbiGeneId);
+                            counters.increment("GENES: skipped (unplaced scaffold)");
                         } else {
                             geneInfo = new GeneInfo();
                             geneInfo.geneSymbol = geneSymbol;
@@ -151,6 +168,10 @@ public class LoadTranscriptsFromGff3 {
 
                     GeneInfo geneInfo = geneMap.get(ncbiGeneId);
                     if (geneInfo == null) {
+                        if( skippedGenes.contains(ncbiGeneId) ) {
+                            ignoredFeatures.add(getTokenValue(info, "ID=", ";"));
+                            break;
+                        }
                         throw new Exception("unexpected 2: "+lineNr);
                     }
                     String trAcc = getTokenValue(info, "Name=", ";");
@@ -178,6 +199,9 @@ public class LoadTranscriptsFromGff3 {
 
                     GeneInfo geneInfo = geneMap.get(ncbiGeneId);
                     if (geneInfo == null) {
+                        if( skippedGenes.contains(ncbiGeneId) ) {
+                            break;
+                        }
                         throw new Exception("unexpected 4: "+lineNr);
                     }
                     TrInfo trInfo = null;
@@ -206,6 +230,9 @@ public class LoadTranscriptsFromGff3 {
 
                     GeneInfo geneInfo = geneMap.get(ncbiGeneId);
                     if (geneInfo == null) {
+                        if( skippedGenes.contains(ncbiGeneId) ) {
+                            break;
+                        }
                         throw new Exception("unexpected 6: "+lineNr);
                     }
                     TrInfo trInfo = null;
@@ -350,7 +377,7 @@ public class LoadTranscriptsFromGff3 {
     void updateGenePositions( GeneInfo geneInfo, Gene gene ) throws Exception {
 
         MapData mdIncoming = new MapData();
-        mdIncoming.setMapKey(MAP_KEY);
+        mdIncoming.setMapKey(mapKey);
         mdIncoming.setSrcPipeline(SRC_PIPELINE);
         mdIncoming.setRgdId(gene.getRgdId());
         mdIncoming.setChromosome(geneInfo.chr);
@@ -358,7 +385,7 @@ public class LoadTranscriptsFromGff3 {
         mdIncoming.setStartPos(geneInfo.startPos);
         mdIncoming.setStopPos(geneInfo.stopPos);
 
-        List<MapData> mds = dao.getMapData(gene.getRgdId(), MAP_KEY);
+        List<MapData> mds = dao.getMapData(gene.getRgdId(), mapKey);
         for( MapData md: mds ) {
             if( md.equalsByGenomicCoords(mdIncoming) ) {
                 counters.increment("GENE POS: matches incoming");
@@ -417,7 +444,7 @@ public class LoadTranscriptsFromGff3 {
         for( TrInfo trInfo: geneInfo.trInfos ) {
 
             MapData mdIncoming = new MapData();
-            mdIncoming.setMapKey(MAP_KEY);
+            mdIncoming.setMapKey(mapKey);
             mdIncoming.setSrcPipeline(SRC_PIPELINE);
             mdIncoming.setRgdId(trInfo.rgdId);
             mdIncoming.setChromosome(trInfo.chr);
@@ -425,7 +452,7 @@ public class LoadTranscriptsFromGff3 {
             mdIncoming.setStartPos(trInfo.startPos);
             mdIncoming.setStopPos(trInfo.stopPos);
 
-            List<MapData> mds = dao.getMapData(trInfo.rgdId, MAP_KEY);
+            List<MapData> mds = dao.getMapData(trInfo.rgdId, mapKey);
             boolean posIsAlreadyInRgd = false;
             for( MapData md: mds ) {
                 if( md.equalsByGenomicCoords(mdIncoming) ) {
@@ -462,7 +489,7 @@ public class LoadTranscriptsFromGff3 {
             for( ExonInfo exonInfo: trInfo.exons ) {
 
                 MapData md = new MapData();
-                md.setMapKey(MAP_KEY);
+                md.setMapKey(mapKey);
                 md.setChromosome(trInfo.chr);
                 md.setStrand(trInfo.strand);
                 md.setStartPos(exonInfo.startPos);
@@ -484,7 +511,7 @@ public class LoadTranscriptsFromGff3 {
             if( trInfo.cdsStart!=0 && trStart < trInfo.cdsStart ) {
 
                 MapData md = new MapData();
-                md.setMapKey(MAP_KEY);
+                md.setMapKey(mapKey);
                 md.setChromosome(trInfo.chr);
                 md.setStrand(trInfo.strand);
                 md.setStartPos(trStart);
@@ -503,7 +530,7 @@ public class LoadTranscriptsFromGff3 {
             if( trInfo.cdsStop!=0 && trInfo.cdsStop < trStop ) {
 
                 MapData md = new MapData();
-                md.setMapKey(MAP_KEY);
+                md.setMapKey(mapKey);
                 md.setChromosome(trInfo.chr);
                 md.setStrand(trInfo.strand);
                 md.setStartPos(trInfo.cdsStop+1);
@@ -519,7 +546,7 @@ public class LoadTranscriptsFromGff3 {
             }
 
             // qc features
-            List<TranscriptFeature> ftsInRgd = dao.getFeaturesForTr(trInfo.rgdId, MAP_KEY);
+            List<TranscriptFeature> ftsInRgd = dao.getFeaturesForTr(trInfo.rgdId, mapKey);
 
             for( TranscriptFeature ft: features ) {
 

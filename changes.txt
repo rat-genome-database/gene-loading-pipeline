@@ -1,3 +1,7 @@
+Sep 10, 2026
+  LoadTranscriptsFromGff3: load transcripts for the three UTH strain assemblies (map keys 301, 302, 303)
+    in one run; genes on unplaced scaffolds are skipped instead of aborting the parse
+
 Sep 8, 2026
   rat: added loading of 'Alternate SHRSP_T2T Primary Assembly'
 
