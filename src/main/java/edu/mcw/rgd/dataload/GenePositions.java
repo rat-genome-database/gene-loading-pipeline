@@ -70,10 +70,6 @@ public class GenePositions {
         return mdForDelete;
     }
 
-    public List<MapData> getMdMatching() {
-        return mdMatching;
-    }
-
     /**
      * add a new map data; a gene can have multiple positions on a map;
      * pseudoautosomal gens have positions on both chromosome X and Y;

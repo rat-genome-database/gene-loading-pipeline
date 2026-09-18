@@ -1,7 +1,9 @@
 Sep 18, 2026
-  transcript sync: stale transcript positions, feature links and transcripts are deleted again (globally
-    suppressed since Jan 27, 2026); guarded so data is only removed when NCBI sent a replacement locus on the
-    same assembly; new switch deleteStaleTranscriptData in AppConfigure.xml; updated dependencies
+  transcript sync: stale transcript positions and feature links on the assemblies present in the incoming
+    data are deleted again (globally suppressed since Jan 27, 2026); TRANSCRIPTS rows are never deleted and
+    assemblies absent from the incoming data (f.e. mRatBN7.2) are never touched, so transcript history is
+    preserved; keepOnePos dropped for transcripts; detach-from-gene code removed from the sync;
+    new switch deleteStaleTranscriptData in AppConfigure.xml; updated dependencies
 
 Sep 10, 2026
   LoadTranscriptsFromGff3: load transcripts for the three UTH strain assemblies (map keys 301, 302, 303)

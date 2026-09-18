@@ -23,9 +23,9 @@ import java.util.*;
  */
 public class EGDAO {
 
-    /// when false, stale transcript positions, transcript-feature links and transcripts are never deleted;
-    /// normally true: the safeguards in BulkGeneLoaderImpl and GenePositions only remove data
-    /// for which NCBI sent a replacement locus on the same assembly
+    /// when false, stale transcript positions and transcript-feature links are never deleted;
+    /// normally true: only assemblies present in the incoming data are synchronized, so transcript
+    /// history on other assemblies (f.e. mRatBN7.2) is never touched; TRANSCRIPTS rows are never deleted by the sync
     private boolean deleteStaleTranscriptData = true;
 
     public boolean isDeleteStaleTranscriptData() {
@@ -666,16 +666,14 @@ public class EGDAO {
     }
 
     /**
-     * detach a transcript from gene, by removing a row from TRANSCRIPTS table
+     * detach a transcript from gene, by removing its feature links and its row from TRANSCRIPTS table;
+     * used only when a gene is converted to a biological region -- the transcript sync never deletes
+     * TRANSCRIPTS rows, because they carry the transcript history on older assemblies
      * @param tr Transcript object
      * @return number of rows affected
      * @throws Exception on error in framework
      */
     public int detachTranscriptFromGene(Transcript tr) throws Exception {
-        if( !deleteStaleTranscriptData ) {
-            return 0;
-        }
-
         return transcriptDAO.detachTranscriptFromGene(tr.getRgdId(), tr.getGeneRgdId());
     }
 

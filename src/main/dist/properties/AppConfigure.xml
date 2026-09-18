@@ -7,7 +7,7 @@
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
 	    <property name="rgdLogger" ref="rgdLogger"/>
         <property name="eUtils" ref="ncbiEutils"/>
-        <!-- when false, stale transcript positions, transcript-feature links and transcripts are never deleted -->
+        <!-- when false, stale transcript positions and transcript-feature links are never deleted -->
         <property name="deleteStaleTranscriptData" value="true"/>
 
         <property name="scaffoldAssemblies">

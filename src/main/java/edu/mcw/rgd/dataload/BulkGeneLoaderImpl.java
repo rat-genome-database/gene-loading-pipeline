@@ -488,54 +488,16 @@ public class BulkGeneLoaderImpl {
             }
         }
 
-        // detach in-rgd transcripts that are no longer in the incoming list
+        // in-rgd transcripts that are no longer in the incoming NCBI record are KEPT:
+        // the TRANSCRIPTS row and the positions and features on assemblies absent from the incoming data
+        // (f.e. mRatBN7.2 models superseded on GRCr8) are historical data; only the positions and features
+        // on the assemblies present in the incoming data are removed, by the position and feature sync below
         if( !obsoleteInRgdTranscripts.isEmpty() ) {
-
-            // but only if there are incoming transcripts available
-            // we want to avoid detaching all transcript for given gene when
-            // f.e. the gene is no longer on the current assembly
-            if( bg.transcripts.isEmpty() ) {
-                counters.increment("TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED");
-                getDbFlagManager().setFlag("TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED", bg.getRecNo());
-            } else {
-                // assemblies for which the incoming gene record has transcript loci
-                Set<Integer> incomingMapKeys = new HashSet<>();
-                for( TranscriptInfo ti: bg.transcripts ) {
-                    for( TranscriptLocus locus: ti.getLoci() ) {
-                        incomingMapKeys.add(locus.getTranscriptCoords().getMapKey());
-                    }
-                }
-
-                for( Transcript tr: obsoleteInRgdTranscripts ) {
-                    // safeguard: detach only a transcript positioned on an assembly for which NCBI sent
-                    // replacement loci for this gene; transcripts loaded from other sources (f.e. strain
-                    // assemblies loaded from gff3 files) have no positions on the incoming assemblies and are kept
-                    boolean replacementAvailable = false;
-                    for( MapData md: tr.getGenomicPositions() ) {
-                        if( incomingMapKeys.contains(md.getMapKey()) ) {
-                            replacementAvailable = true;
-                            break;
-                        }
-                    }
-                    if( !replacementAvailable ) {
-                        logtr.debug("TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED (no replacement locus): " + tr.dump("|"));
-                        counters.increment("TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED");
-                        getDbFlagManager().setFlag("TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED", bg.getRecNo());
-                        continue;
-                    }
-
-                    if( bg.dao.detachTranscriptFromGene(tr) != 0 ) {
-                        logtr.debug("TRANSCRIPT_DETACHED_FROM_GENE: " + tr.dump("|"));
-                    } else {
-                        counters.increment("TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED");
-                        getDbFlagManager().setFlag("TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED", bg.getRecNo());
-                    }
-
-                    // increment counter of transcripts detached
-                    counters.increment("TRANSCRIPTS_DETACHED");
-                }
-                getDbFlagManager().setFlag("TRANSCRIPT_DETACHED_FROM_GENE", bg.getRecNo());
+            for( Transcript tr: obsoleteInRgdTranscripts ) {
+                logtr.debug("TRANSCRIPT_ABSENT_FROM_INCOMING_DATA (kept): " + tr.dump("|"));
             }
+            counters.add("TRANSCRIPTS_ABSENT_FROM_INCOMING_DATA", obsoleteInRgdTranscripts.size());
+            getDbFlagManager().setFlag("TRANSCRIPT_ABSENT_FROM_INCOMING_DATA", bg.getRecNo());
         }
     }
 
@@ -562,13 +524,13 @@ public class BulkGeneLoaderImpl {
         positions.setRgdMapData(trPosInRgd, null);
 
 
-        // now synchronize transcript positions between incoming data and RGD
+        // now synchronize transcript positions between incoming data and RGD;
+        // only assemblies present in the incoming data are synchronized: on those, every position
+        // not confirmed by NCBI is removed (keepOnePos=false), so a transcript no longer placed on a
+        // re-annotated assembly loses its stale position there, while its positions on assemblies
+        // absent from the incoming data (f.e. mRatBN7.2) are never touched
         positions.qcMapData(bg, logger);
-        positions.syncMapData(bg, logger, getDbFlagManager(), "TRANSCRIPT", true, counters);
-
-        // keep the sync result: the feature sync unlinks only features of transcripts
-        // that have a matched or newly inserted position on the same assembly
-        bg.transcriptPositions = positions;
+        positions.syncMapData(bg, logger, getDbFlagManager(), "TRANSCRIPT", false, counters);
     }
 
     void updateTranscriptFeatures(BulkGene bg) throws Exception {
@@ -644,31 +606,13 @@ public class BulkGeneLoaderImpl {
             return;
         }
 
-        // safeguard: unlink a feature only if its transcript has a matched or newly inserted position
-        // on the same assembly in this run, i.e. replacement locus data is available
-        Set<String> trMapsWithReplacement = new HashSet<>();
-        if( bg.transcriptPositions!=null ) {
-            for( MapData md: bg.transcriptPositions.getMdMatching() ) {
-                trMapsWithReplacement.add(md.getRgdId()+"|"+md.getMapKey());
-            }
-            for( MapData md: bg.transcriptPositions.getMdForInsert() ) {
-                trMapsWithReplacement.add(md.getRgdId()+"|"+md.getMapKey());
-            }
-        }
-
+        // note: rgdFeatures holds only features on assemblies present in the incoming data
+        // (see getFeaturesMatchingLocus), so features on other assemblies are never unlinked
         List<TranscriptFeature> rgdFeaturesToUnlink = new ArrayList<TranscriptFeature>();
         for( TranscriptFeature f: rgdFeatures ) {
-            if( !trMapsWithReplacement.contains(f.getTranscriptRgdId()+"|"+f.getMapKey()) ) {
-                logtf.debug("Feature unlink suppressed (no replacement locus): GeneId="+bg.getEgId()+" RgdId="+bg.gene.getRgdId()+" Gene="+bg.gene.getSymbol()+", "+f);
-                counters.increment(
-                        f.getFeatureType() == TranscriptFeature.FeatureType.EXON
-                                ? "EXONS_UNLINK_SUPPRESSED"
-                                : "UTRS_UNLINK_SUPPRESSED");
-                continue;
-            }
             logtf.debug("Feature to unlink: GeneId="+bg.getEgId()+" RgdId="+bg.gene.getRgdId()+" Gene="+bg.gene.getSymbol()+", "+f);
-            rgdFeaturesToUnlink.add(f);
         }
+        rgdFeaturesToUnlink.addAll(rgdFeatures);
 
         // determine which transcript features have not been matched and remove them from database
         int rowsAffected = 0;
