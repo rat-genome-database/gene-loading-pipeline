@@ -4,6 +4,8 @@ import edu.mcw.rgd.dao.impl.EGDAO;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.Utils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,10 +15,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class LoadTranscriptsFromGff3 {
 
+    /**
+     * usage: LoadTranscriptsFromGff3 [mapKey gff3File]
+     * <p>
+     * with arguments: loads, or restores, the transcripts of one assembly from an NCBI GFF3 file;
+     * f.e. transcripts of mRatBN7.2 from the archived annotation release GCF_015227675.2-RS_2023_06:
+     * <pre>LoadTranscriptsFromGff3 372 /data/GCF_015227675.2_mRatBN7.2_genomic.gff.gz</pre>
+     * transcripts already in RGD are matched by accession; transcripts detached in the past are restored
+     * under their old rgd id (per STABLE_TRANSCRIPTS); existing feature objects are bound, not duplicated
+     * <p>
+     * without arguments: loads the strain assemblies listed in run()
+     */
     public static void main(String[] args) throws IOException {
 
         try {
-            new LoadTranscriptsFromGff3().run();
+            LoadTranscriptsFromGff3 loader = new LoadTranscriptsFromGff3();
+            if( args.length>=2 ) {
+                loader.run(Integer.parseInt(args[0]), args[1]);
+            } else {
+                loader.run();
+            }
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -27,6 +45,7 @@ public class LoadTranscriptsFromGff3 {
     CounterPool counters;
 
     EGDAO dao = EGDAO.getInstance();
+    Logger log = LogManager.getLogger("transcripts");
 
     void run() throws Exception {
 
@@ -120,14 +139,17 @@ public class LoadTranscriptsFromGff3 {
             switch (obj) {
                 case "region" -> {
                     regionChrAcc = chrAcc;
-                    chr = getTokenValue(info, "Name=", ";");
+                    // only chromosome-level sequences carry usable coordinates: unplaced scaffolds (genome=genomic)
+                    // are labelled with the chromosome they belong to, but their coordinates are scaffold-local
+                    String genome = getTokenValue(info, "genome=", ";");
+                    chr = genome!=null && genome.equals("genomic") ? null : getTokenValue(info, "Name=", ";");
                     if( chr!=null ) {
                         System.out.println("processing chromosome " + chr);
                     }
                 }
 
                 case "pseudogene", "gene" -> {
-                    String ncbiGeneId = getTokenValue(info, "Dbxref=GeneID:", ",", ";");
+                    String ncbiGeneId = getGeneId(info);
                     String geneSymbol = getTokenValue(info, "Name=", ";");
                     String geneBioType = getTokenValue(info, "gene_biotype=", ";");
                     String pseudoStr = getTokenValue(info, "pseudo=");
@@ -163,8 +185,10 @@ public class LoadTranscriptsFromGff3 {
                     }
                 }
 
-                case "mRNA", "lnc_RNA", "transcript", "primary_transcript" -> {
-                    String ncbiGeneId = getTokenValue(info, "Dbxref=GeneID:", ",");
+                case "mRNA", "lnc_RNA", "transcript", "primary_transcript", "ncRNA", "snoRNA", "snRNA", "rRNA", "tRNA",
+                     "miRNA", "antisense_RNA", "telomerase_RNA", "SRP_RNA", "RNase_MRP_RNA", "scRNA", "Y_RNA",
+                     "vault_RNA", "guide_RNA" -> {
+                    String ncbiGeneId = getGeneId(info);
 
                     GeneInfo geneInfo = geneMap.get(ncbiGeneId);
                     if (geneInfo == null) {
@@ -176,6 +200,14 @@ public class LoadTranscriptsFromGff3 {
                     }
                     String trAcc = getTokenValue(info, "Name=", ";");
                     String trId = getTokenValue(info, "ID=", ";");
+
+                    // only RefSeq transcripts (NM_, NR_, XM_, XR_) are loaded; records without an accession
+                    // (tRNA genes, mature miRNA products) are ignored together with their exons
+                    if( trAcc==null || !trAcc.matches("[NX][MR]_[0-9]+(\\.[0-9]+)?") ) {
+                        ignoredFeatures.add(trId);
+                        counters.increment("TRANSCRIPTS: skipped (no RefSeq accession): "+obj);
+                        break;
+                    }
                     // this transcript must be new in trList
                     TrInfo trInfo = null;
                     for( TrInfo ti: geneInfo.trInfos ) {
@@ -194,7 +226,7 @@ public class LoadTranscriptsFromGff3 {
                 }
 
                 case "exon" -> {
-                    String ncbiGeneId = getTokenValue(info, "Dbxref=GeneID:", ",");
+                    String ncbiGeneId = getGeneId(info);
                     String trId = getTokenValue(info, "Parent=", ";");
 
                     GeneInfo geneInfo = geneMap.get(ncbiGeneId);
@@ -216,7 +248,12 @@ public class LoadTranscriptsFromGff3 {
                         }
                     }
                     if( trInfo==null ) {
-                        if( !ignoredFeatures.contains(trId) ) {
+                        if( ignoredFeatures.contains(trId) ) {
+                            // exon of an ignored feature (tRNA, mature miRNA, gene segment)
+                        } else if( trId!=null && trId.startsWith("gene-") ) {
+                            // exon directly under a gene without transcripts (f.e. pseudogene)
+                            counters.increment("EXONS: skipped (gene without transcripts)");
+                        } else {
                             // exons without NCBI transcript accessions -- we skip them
                             System.out.println("*** EXON skipped: " + lineNr);
                         }
@@ -224,7 +261,7 @@ public class LoadTranscriptsFromGff3 {
                 }
 
                 case "CDS" -> {
-                    String ncbiGeneId = getTokenValue(info, "Dbxref=GeneID:", ",");
+                    String ncbiGeneId = getGeneId(info);
                     String trId = getTokenValue(info, "Parent=", ";");
                     String proteinId = getTokenValue(info, "Name=", ";");
 
@@ -259,16 +296,23 @@ public class LoadTranscriptsFromGff3 {
                         }
                     }
                     if( trInfo==null ) {
-                        throw new Exception("unexpected 7: "+lineNr);
+                        if( ignoredFeatures.contains(trId) ) {
+                            // CDS of an ignored feature (f.e. V_gene_segment)
+                            counters.increment("CDS: skipped (ignored parent feature)");
+                        } else {
+                            throw new Exception("unexpected 7: "+lineNr);
+                        }
                     }
                 }
 
-                case "antisense_RNA", "miRNA", "snRNA", "rRNA", "telomerase_RNA", "SRP_RNA", "RNase_MRP_RNA" -> {
-                    String id = getTokenValue(info, "ID=", ";");
-                    ignoredFeatures.add(id);
+
+                case "V_gene_segment", "C_gene_segment", "D_gene_segment", "J_gene_segment" -> {
+                    // immunoglobulin / T-cell receptor gene segments: no transcripts; skipped with their exons and CDS
+                    ignoredFeatures.add(getTokenValue(info, "ID=", ";"));
+                    counters.increment("GENE SEGMENTS: skipped");
                 }
 
-                case "match", "cDNA_match" -> { // ignore
+                case "match", "cDNA_match", "D_loop", "origin_of_replication" -> { // ignore
                 }
 
                 default -> {
@@ -282,7 +326,7 @@ public class LoadTranscriptsFromGff3 {
         for( Map.Entry<String, Integer> entry: objCount.entrySet() ) {
             System.out.println("    "+entry.getKey()+": "+entry.getValue());
         }
-        System.out.println("ignored features skipped (miRNA, snRNA, rRNA, antisense_RNA, telomerase_RNA, SRP_RNA): "+ignoredFeatures.size());
+        System.out.println("ignored features skipped (tRNA, mature miRNA, gene segments, RNAs without a RefSeq accession): "+ignoredFeatures.size());
 
         return geneMap;
     }
@@ -315,7 +359,7 @@ public class LoadTranscriptsFromGff3 {
 
             updateTranscriptPositions(geneInfo);
 
-            updateTranscriptsFeatures(geneInfo);
+            updateTranscriptsFeatures(geneInfo, gene);
 
             //updateTranscriptVersion(geneInfo);
         }
@@ -369,6 +413,12 @@ public class LoadTranscriptsFromGff3 {
                 gene = genes.get(0);
                 counters.increment("GENES: match by EG ID, but mismatch by RGD ID and symbol");
             }
+        }
+
+        // transcripts are attached to active genes only; a transcript of an inactive gene would be withdrawn by TranscriptQC
+        if( gene!=null && !dao.getRgdId(gene.getRgdId()).getObjectStatus().equals("ACTIVE") ) {
+            counters.increment("GENES: inactive in RGD, skipped");
+            gene = null;
         }
 
         return gene;
@@ -432,6 +482,27 @@ public class LoadTranscriptsFromGff3 {
                 tr.setAccId(trAcc);
                 tr.setGeneRgdId(gene.getRgdId());
                 tr.setProteinAccId(proteinAcc);
+                tr.setNonCoding(trInfo.cdsStart==0);
+
+                // accession attached to another gene: not touched, only reported
+                List<Transcript> trsByAcc = dao.getTranscriptsByAccId(trAcc);
+                if( !trsByAcc.isEmpty() ) {
+                    log.warn("mapKey="+mapKey+" "+trAcc+" is attached to gene RGD:"+trsByAcc.get(0).getGeneRgdId()
+                            +", not to RGD:"+gene.getRgdId()+" ("+geneInfo.geneSymbol+"): skipped");
+                    counters.increment("TRANSCRIPTS: skipped (accession attached to another gene)");
+                    trInfo.rgdId = 0;
+                    continue;
+                }
+
+                // a transcript detached from its gene in the past (row in TRANSCRIPTS deleted, rgd id withdrawn)
+                // keeps its rgd id in STABLE_TRANSCRIPTS: that rgd id is reused, so the positions and features
+                // it still has on other assemblies are reconnected instead of a new transcript object being created
+                int restoredRgdId = restoreWithdrawnTranscript(tr, trAcc);
+                if( restoredRgdId!=0 ) {
+                    trInfo.rgdId = restoredRgdId;
+                    continue;
+                }
+
                 dao.createTranscript(tr, SpeciesType.RAT);
                 trInfo.rgdId = tr.getRgdId();
                 counters.increment("TRANSCRIPTS: inserted");
@@ -439,9 +510,42 @@ public class LoadTranscriptsFromGff3 {
         }
     }
 
+    /**
+     * re-attach a withdrawn transcript: reuse its rgd id from STABLE_TRANSCRIPTS, re-activate the rgd id
+     * and insert its row into TRANSCRIPTS
+     * @return the reused rgd id, or 0 if the accession has no reusable rgd id
+     */
+    int restoreWithdrawnTranscript( Transcript tr, String trAcc ) throws Exception {
+
+        for( int rgdId: dao.getTranscriptRgdIdsByAccession(trAcc) ) {
+            if( dao.getTranscript(rgdId)!=null ) {
+                continue; // rgd id in use by another transcript row
+            }
+            RgdId id = dao.getRgdId(rgdId);
+            if( id==null || id.getObjectKey()!=RgdId.OBJECT_KEY_TRANSCRIPTS || id.getSpeciesTypeKey()!=SpeciesType.RAT ) {
+                continue;
+            }
+            if( !id.getObjectStatus().equals("ACTIVE") ) {
+                id.setObjectStatus("ACTIVE");
+                id.setLastModifiedDate(new Date());
+                dao.updateRgdId(id);
+                counters.increment("TRANSCRIPT RGD IDS: re-activated");
+            }
+            tr.setRgdId(rgdId);
+            dao.insertTranscript(tr);
+            log.info("mapKey="+mapKey+" restored transcript "+trAcc+" RGD:"+rgdId+" for gene RGD:"+tr.getGeneRgdId());
+            counters.increment("TRANSCRIPTS: restored (withdrawn transcript re-attached)");
+            return rgdId;
+        }
+        return 0;
+    }
+
     void updateTranscriptPositions( GeneInfo geneInfo ) throws Exception {
 
         for( TrInfo trInfo: geneInfo.trInfos ) {
+            if( trInfo.rgdId==0 ) {
+                continue; // transcript skipped
+            }
 
             MapData mdIncoming = new MapData();
             mdIncoming.setMapKey(mapKey);
@@ -473,14 +577,27 @@ public class LoadTranscriptsFromGff3 {
         }
     }
 
-    void updateTranscriptsFeatures( GeneInfo geneInfo ) throws Exception {
+    void updateTranscriptsFeatures( GeneInfo geneInfo, Gene gene ) throws Exception {
 
         if( geneInfo.geneBioType.equals("miRNA") ) {
             return;
         }
 
+        // feature objects already in RGD for this gene on this assembly, by type and position;
+        // an incoming feature matching one of them (f.e. an exon shared with a sibling transcript)
+        // is bound to the transcript instead of being created again
+        Map<String, Integer> geneFeatureIds = new HashMap<>();
+        for( TranscriptFeature f: dao.getFeaturesForGene(gene.getRgdId()) ) {
+            if( Integer.valueOf(mapKey).equals(f.getMapKey()) ) {
+                geneFeatureIds.putIfAbsent(featureKey(f), f.getRgdId());
+            }
+        }
+
         // build incoming features: exons and utrs
         for( TrInfo trInfo: geneInfo.trInfos ) {
+            if( trInfo.rgdId==0 ) {
+                continue; // transcript skipped
+            }
 
             int trStart = 0;
             int trStop = 0;
@@ -562,17 +679,38 @@ public class LoadTranscriptsFromGff3 {
                     }
                 }
 
-                if( ftInRgd==null ) {
+                if( ftInRgd!=null ) {
+                    counters.increment("TR "+ft.getCanonicalName().toUpperCase()+": matched");
+                    continue;
+                }
+
+                // reuse an existing feature object: one of this gene, or an orphaned one whose transcript
+                // was detached in the past (looked up by type and exact position)
+                Integer featureRgdId = geneFeatureIds.get(featureKey(ft));
+                if( featureRgdId==null ) {
+                    List<Integer> ids = dao.getFeatureRgdIdsByPosition(ft);
+                    if( !ids.isEmpty() ) {
+                        featureRgdId = ids.get(0);
+                    }
+                }
+                if( featureRgdId!=null ) {
+                    dao.bindFeatureToTranscript(trInfo.rgdId, featureRgdId);
+                    geneFeatureIds.putIfAbsent(featureKey(ft), featureRgdId);
+                    counters.increment("TR "+ft.getCanonicalName().toUpperCase()+": bound to existing feature object");
+                } else {
                     ft.setTranscriptRgdId(trInfo.rgdId);
                     ft.setSrcPipeline(SRC_PIPELINE);
                     dao.createFeature( ft, SpeciesType.RAT );
+                    geneFeatureIds.put(featureKey(ft), ft.getRgdId());
                     counters.increment("TR "+ft.getCanonicalName().toUpperCase()+": inserted");
-                } else {
-                    counters.increment("TR "+ft.getCanonicalName().toUpperCase()+": matched");
                 }
             }
         }
 
+    }
+
+    String featureKey( TranscriptFeature f ) {
+        return f.getFeatureType()+"|"+f.getChromosome()+"|"+f.getStartPos()+"|"+f.getStopPos()+"|"+f.getStrand();
     }
 
     void updateTranscriptVersion( GeneInfo geneInfo ) throws Exception {
@@ -580,6 +718,12 @@ public class LoadTranscriptsFromGff3 {
         System.out.println("todo");
     }
 
+
+    // NCBI gene id from the Dbxref attribute, wherever it is in the Dbxref list (f.e. Dbxref=GenBank:YP_665629.1,GeneID:26193)
+    String getGeneId(String info) {
+        String dbxref = getTokenValue(info, "Dbxref=", ";");
+        return dbxref==null ? null : getTokenValue(dbxref, "GeneID:", ",");
+    }
 
     String getTokenValue(String info, String startToken, String endToken1, String endToken2) {
         String result = null;

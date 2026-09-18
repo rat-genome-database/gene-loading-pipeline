@@ -4,6 +4,11 @@ Sep 18, 2026
     assemblies absent from the incoming data (f.e. mRatBN7.2) are never touched, so transcript history is
     preserved; keepOnePos dropped for transcripts; detach-from-gene code removed from the sync;
     new switch deleteStaleTranscriptData in AppConfigure.xml; updated dependencies
+  LoadTranscriptsFromGff3: can restore the transcripts of an older assembly from an archived NCBI annotation
+    release (f.e. mRatBN7.2, GCF_015227675.2-RS_2023_06): withdrawn transcript rgd ids are reused via
+    STABLE_TRANSCRIPTS and re-activated, existing feature objects are bound instead of duplicated, all RefSeq
+    ncRNA transcript types accepted, genes on unplaced scaffolds and inactive genes skipped; usage: <mapKey> <gff3>
+    parser fixes: GeneID taken from anywhere in the Dbxref list, gene segments and pseudogene exons skipped quietly
 
 Sep 10, 2026
   LoadTranscriptsFromGff3: load transcripts for the three UTH strain assemblies (map keys 301, 302, 303)

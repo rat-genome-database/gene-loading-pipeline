@@ -726,6 +726,57 @@ public class EGDAO {
         return transcriptDAO.getFeatures(trRgdId, mapKey);
     }
 
+    public Transcript getTranscript(int transcriptRgdId) throws Exception {
+        return transcriptDAO.getTranscript(transcriptRgdId);
+    }
+
+    public List<Transcript> getTranscriptsByAccId(String accId) throws Exception {
+        return transcriptDAO.getTranscriptsByAccId(accId);
+    }
+
+    /**
+     * rgd ids ever assigned to a transcript accession, per STABLE_TRANSCRIPTS;
+     * a withdrawn transcript (no row in TRANSCRIPTS) can be restored under its old rgd id
+     * @param accId transcript accession without version, f.e. XR_005489716
+     */
+    public List<Integer> getTranscriptRgdIdsByAccession(String accId) throws Exception {
+        String sql = "SELECT rgd_id FROM stable_transcripts WHERE accession=? ORDER BY rgd_id";
+        return IntListQuery.execute(transcriptDAO, sql, accId);
+    }
+
+    /**
+     * insert a row into TRANSCRIPTS for an existing transcript rgd id (f.e. a previously withdrawn one);
+     * unlike createTranscript, no new rgd id is created
+     */
+    public int insertTranscript(Transcript tr) throws Exception {
+        String sql = """
+            INSERT INTO transcripts (transcript_rgd_id, gene_rgd_id, acc_id, is_non_coding_ind, refseq_status,
+                protein_acc_id, peptide_label, biotype)
+            VALUES (?,?,?,?,?,?,?,?)
+            """;
+        return transcriptDAO.update(sql, tr.getRgdId(), tr.getGeneRgdId(), tr.getAccId(), tr.isNonCoding() ? "Y" : "N",
+                tr.getRefSeqStatus(), tr.getProteinAccId(), tr.getPeptideLabel(), tr.getType());
+    }
+
+    public void updateRgdId(RgdId id) throws Exception {
+        rgdDAO.updateRgdId(id);
+    }
+
+    /**
+     * rgd ids of feature objects (exons, utrs) of the given type at the exact genomic position,
+     * whether linked to a transcript or orphaned
+     */
+    public List<Integer> getFeatureRgdIdsByPosition(TranscriptFeature ft) throws Exception {
+        String sql = """
+            SELECT md.rgd_id FROM maps_data md, rgd_ids r
+            WHERE r.rgd_id=md.rgd_id AND r.object_key=? AND md.map_key=? AND md.chromosome=?
+              AND md.start_pos=? AND md.stop_pos=? AND md.strand=?
+            ORDER BY md.rgd_id
+            """;
+        return IntListQuery.execute(transcriptDAO, sql, TranscriptFeature.getObjectKey(ft.getFeatureType()),
+                ft.getMapKey(), ft.getChromosome(), ft.getStartPos(), ft.getStopPos(), ft.getStrand());
+    }
+
     public boolean isObsoleteHgncId(String hgncId) throws Exception {
 
         String sql = "SELECT COUNT(hgnc_id) FROM obsolete_hgnc_ids WHERE hgnc_id=?";
