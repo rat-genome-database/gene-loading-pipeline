@@ -58,6 +58,10 @@ public class BulkGene {
 
     public GenePositions genePositions;
 
+    // result of the transcript position sync of the current run (matched, inserted, deleted positions);
+    // the feature sync consults it to unlink only features of transcripts that received a replacement locus
+    public GenePositions transcriptPositions;
+
     // transcript data in rgd;
     // rgd transcripts
     public List<Transcript> rgdTranscripts;

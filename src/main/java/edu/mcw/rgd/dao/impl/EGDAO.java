@@ -23,7 +23,18 @@ import java.util.*;
  */
 public class EGDAO {
 
-    boolean skipDeletesForTranscripts = true;
+    /// when false, stale transcript positions, transcript-feature links and transcripts are never deleted;
+    /// normally true: the safeguards in BulkGeneLoaderImpl and GenePositions only remove data
+    /// for which NCBI sent a replacement locus on the same assembly
+    private boolean deleteStaleTranscriptData = true;
+
+    public boolean isDeleteStaleTranscriptData() {
+        return deleteStaleTranscriptData;
+    }
+
+    public void setDeleteStaleTranscriptData(boolean deleteStaleTranscriptData) {
+        this.deleteStaleTranscriptData = deleteStaleTranscriptData;
+    }
 
     private AliasDAO aliasDAO = new AliasDAO();
     private AssociationDAO assocDAO = new AssociationDAO();
@@ -153,7 +164,7 @@ public class EGDAO {
      * @throws Exception if something wrong happens in spring framework
      */
     public int deleteMapData(List<MapData> mapDataList, boolean isGene) throws Exception{
-        if( !isGene && skipDeletesForTranscripts ) {
+        if( !isGene && !deleteStaleTranscriptData ) {
             return 0;
         }
         return mapDAO.deleteMapData(mapDataList);
@@ -219,7 +230,7 @@ public class EGDAO {
      */
     public int unlinkFeature(int featureRgdId, int transcriptRgdId) throws Exception {
 
-        if( skipDeletesForTranscripts ) {
+        if( !deleteStaleTranscriptData ) {
             return 0;
         }
 
@@ -661,7 +672,7 @@ public class EGDAO {
      * @throws Exception on error in framework
      */
     public int detachTranscriptFromGene(Transcript tr) throws Exception {
-        if( skipDeletesForTranscripts ) {
+        if( !deleteStaleTranscriptData ) {
             return 0;
         }
 
