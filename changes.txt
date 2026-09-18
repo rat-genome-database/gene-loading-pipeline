@@ -9,6 +9,7 @@ Sep 18, 2026
     STABLE_TRANSCRIPTS and re-activated, existing feature objects are bound instead of duplicated, all RefSeq
     ncRNA transcript types accepted, genes on unplaced scaffolds and inactive genes skipped; usage: <mapKey> <gff3>
     parser fixes: GeneID taken from anywhere in the Dbxref list, gene segments and pseudogene exons skipped quietly
+    new script load_transcripts_from_gff3.sh <map_key> <gff3_file>
 
 Sep 10, 2026
   LoadTranscriptsFromGff3: load transcripts for the three UTH strain assemblies (map keys 301, 302, 303)
