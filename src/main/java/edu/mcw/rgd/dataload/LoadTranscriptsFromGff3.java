@@ -1,6 +1,7 @@
 package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.dao.impl.EGDAO;
+import edu.mcw.rgd.dao.impl.GeneDAO;
 import edu.mcw.rgd.datamodel.*;
 import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.Utils;
@@ -74,6 +75,7 @@ public class LoadTranscriptsFromGff3 {
         Collections.shuffle(randomizedList);
 
         AtomicInteger i = new AtomicInteger(0);
+        AtomicInteger failures = new AtomicInteger(0);
         randomizedList.stream().parallel().forEach( geneInfo -> {
 
             i.incrementAndGet();
@@ -82,7 +84,12 @@ public class LoadTranscriptsFromGff3 {
             try {
                 processGene(geneInfo);
             } catch( Exception e ) {
-                throw new RuntimeException(e);
+                // one gene must not abort the whole run: the failure is reported and counted, the run continues
+                failures.incrementAndGet();
+                counters.increment("GENES: failed with exception");
+                log.error("mapKey="+mapKey+" gene "+geneInfo.geneSymbol+" GeneID:"+geneInfo.ncbiGeneId
+                        +" RGD:"+geneInfo.geneRgdId+" failed", e);
+                e.printStackTrace();
             }
 
             // dump counters every 1000 genes
@@ -92,6 +99,9 @@ public class LoadTranscriptsFromGff3 {
         });
 
         System.out.println(counters.dumpAlphabetically());
+        if( failures.get()>0 ) {
+            System.out.println("WARNING: "+failures.get()+" genes failed with an exception -- see the transcripts log");
+        }
     }
 
     Map<String, GeneInfo> loadGeneMap(String fname) throws Exception {
@@ -386,14 +396,19 @@ public class LoadTranscriptsFromGff3 {
             genes.removeIf(g -> g.getRgdId() != geneInfo.geneRgdId);
         }
 
-        // no gene matching by EG ID: try to match by RGD ID
-        if( genes.isEmpty() ) {
-            Gene g = dao.getGene(geneInfo.geneRgdId);
-            genes.add(g);
+        // no gene matching by EG ID: try to match by the RGD ID given in the gff file, if any
+        if( genes.isEmpty() && geneInfo.geneRgdId!=0 ) {
+            try {
+                genes.add(dao.getGene(geneInfo.geneRgdId));
+            } catch( GeneDAO.GeneDAOException e ) {
+                // no gene with that rgd id in RGD
+            }
         }
 
         if( genes.isEmpty() ) {
             counters.increment("GENES: no match by EG ID");
+            log.info("mapKey="+mapKey+" gene not in RGD, skipped: GeneID:"+geneInfo.ncbiGeneId+" "+geneInfo.geneSymbol
+                    +" RGD:"+geneInfo.geneRgdId+" "+geneInfo.geneBioType);
         }
         else if( genes.size()>1 ) {
             counters.increment("GENES: multimatch by EG ID");
