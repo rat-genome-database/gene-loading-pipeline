@@ -80,28 +80,39 @@ public class LoadTranscriptsFromGff3 {
 
         System.out.println("=== processing mapKey=" + mapKey + ", file " + fname);
 
-        // gene map: ncbi-gene-id -> list of GeneInfo
+        // gene map: gff gene record id -> GeneInfo; a gene annotated at two loci has two records with the same NCBI gene id
         Map<String, GeneInfo> geneMap = loadGeneMap(fname);
 
-        List<GeneInfo> randomizedList = new ArrayList<>(geneMap.values());
+        // the records of one gene are processed sequentially, so no two threads work on the same gene at once
+        Map<String, List<GeneInfo>> recordsByGeneId = new LinkedHashMap<>();
+        for( GeneInfo geneInfo: geneMap.values() ) {
+            recordsByGeneId.computeIfAbsent(geneInfo.ncbiGeneId, k -> new ArrayList<>()).add(geneInfo);
+        }
+        List<List<GeneInfo>> randomizedList = new ArrayList<>(recordsByGeneId.values());
         Collections.shuffle(randomizedList);
 
         AtomicInteger i = new AtomicInteger(0);
         AtomicInteger failures = new AtomicInteger(0);
-        randomizedList.stream().parallel().forEach( geneInfo -> {
+        randomizedList.stream().parallel().forEach( geneRecords -> {
 
             i.incrementAndGet();
-            System.out.println(i+". "+geneInfo.geneSymbol+"   RGD:"+geneInfo.geneRgdId);
+            if( geneRecords.size()>1 ) {
+                counters.increment("GENES: annotated at several loci (several gff records)");
+            }
 
-            try {
-                processGene(geneInfo);
-            } catch( Exception e ) {
-                // one gene must not abort the whole run: the failure is reported and counted, the run continues
-                failures.incrementAndGet();
-                counters.increment("GENES: failed with exception");
-                log.error("mapKey="+mapKey+" gene "+geneInfo.geneSymbol+" GeneID:"+geneInfo.ncbiGeneId
-                        +" RGD:"+geneInfo.geneRgdId+" failed", e);
-                e.printStackTrace();
+            for( GeneInfo geneInfo: geneRecords ) {
+                System.out.println(i+". "+geneInfo.geneSymbol+"   RGD:"+geneInfo.geneRgdId);
+
+                try {
+                    processGene(geneInfo);
+                } catch( Exception e ) {
+                    // one gene must not abort the whole run: the failure is reported and counted, the run continues
+                    failures.incrementAndGet();
+                    counters.increment("GENES: failed with exception");
+                    log.error("mapKey="+mapKey+" gene "+geneInfo.geneSymbol+" GeneID:"+geneInfo.ncbiGeneId
+                            +" RGD:"+geneInfo.geneRgdId+" failed", e);
+                    e.printStackTrace();
+                }
             }
 
             // dump counters every 1000 genes
@@ -122,10 +133,11 @@ public class LoadTranscriptsFromGff3 {
         String line;
         Map<String, Integer> objCount = new HashMap<>();
 
-        Map<String, GeneInfo> geneMap = new HashMap<>();
+        Map<String, GeneInfo> geneMap = new LinkedHashMap<>(); // gff gene record id (f.e. gene-Syne1, gene-Syne1-2) -> gene, in file order
+        Map<String, TrInfo> trMap = new HashMap<>();           // gff transcript record id (f.e. rna-XM_006245927.4) -> transcript
         String chr = "", regionChrAcc = "";
         HashSet<String> ignoredFeatures = new HashSet<>(); // we skip these features together with their exon child objects
-        HashSet<String> skippedGenes = new HashSet<>(); // NCBI gene ids of genes on unplaced scaffolds (no chromosome) -- skipped with their child features
+        HashSet<String> skippedGenes = new HashSet<>(); // gff record ids of genes on unplaced scaffolds (no chromosome) -- skipped with their child features
 
         int lineNr = 0;
 
@@ -180,48 +192,50 @@ public class LoadTranscriptsFromGff3 {
                     if( !Utils.isStringEmpty(geneRgdIdStr) ) {
                         geneRgdId = Integer.parseInt(geneRgdIdStr);
                     }
-                    //gffGeneId = getTokenValue(info, "ID=", ";");
-
-                    GeneInfo geneInfo = geneMap.get(ncbiGeneId);
-                    if (geneInfo == null) {
-                        if( chr==null ) {
-                            // gene on an unplaced scaffold (region without a chromosome name): skip it with its child features
-                            skippedGenes.add(ncbiGeneId);
-                            counters.increment("GENES: skipped (unplaced scaffold)");
-                        } else {
-                            geneInfo = new GeneInfo();
-                            geneInfo.geneSymbol = geneSymbol;
-                            geneInfo.ncbiGeneId = ncbiGeneId;
-                            geneInfo.geneRgdId = geneRgdId;
-                            geneInfo.geneBioType = geneBioType;
-                            geneInfo.pseudo = pseudoStr != null && pseudoStr.equals("true");
-
-                            geneInfo.chr = chr;
-                            geneInfo.startPos = startPos;
-                            geneInfo.stopPos = stopPos;
-                            geneInfo.strand = strand;
-                            geneMap.put(ncbiGeneId, geneInfo);
-                        }
-                    } else {
+                    // the record id is the key: a gene annotated at two loci has two records, f.e. gene-Syne1 and gene-Syne1-2,
+                    // with the same NCBI gene id; each record becomes its own GeneInfo, with its own locus and transcripts
+                    String geneRecId = getTokenValue(info, "ID=", ";");
+                    if( geneRecId==null || geneMap.containsKey(geneRecId) ) {
                         throw new Exception("unexpected 1: "+lineNr);
+                    }
+
+                    if( chr==null ) {
+                        // gene on an unplaced scaffold (region without a chromosome name): skip it with its child features
+                        skippedGenes.add(geneRecId);
+                        counters.increment("GENES: skipped (unplaced scaffold)");
+                    } else {
+                        GeneInfo geneInfo = new GeneInfo();
+                        geneInfo.geneSymbol = geneSymbol;
+                        geneInfo.ncbiGeneId = ncbiGeneId;
+                        geneInfo.geneRgdId = geneRgdId;
+                        geneInfo.geneBioType = geneBioType;
+                        geneInfo.pseudo = pseudoStr != null && pseudoStr.equals("true");
+
+                        geneInfo.chr = chr;
+                        geneInfo.startPos = startPos;
+                        geneInfo.stopPos = stopPos;
+                        geneInfo.strand = strand;
+                        geneMap.put(geneRecId, geneInfo);
                     }
                 }
 
                 case "mRNA", "lnc_RNA", "transcript", "primary_transcript", "ncRNA", "snoRNA", "snRNA", "rRNA", "tRNA",
                      "miRNA", "antisense_RNA", "telomerase_RNA", "SRP_RNA", "RNase_MRP_RNA", "scRNA", "Y_RNA",
                      "vault_RNA", "guide_RNA" -> {
-                    String ncbiGeneId = getGeneId(info);
+                    String parent = getTokenValue(info, "Parent=", ";");
+                    String trAcc = getTokenValue(info, "Name=", ";");
+                    String trId = getTokenValue(info, "ID=", ";");
 
-                    GeneInfo geneInfo = geneMap.get(ncbiGeneId);
+                    // the transcript belongs to the gene record named by Parent (the right locus of a gene annotated twice)
+                    GeneInfo geneInfo = parent==null ? null : geneMap.get(parent);
                     if (geneInfo == null) {
-                        if( skippedGenes.contains(ncbiGeneId) ) {
-                            ignoredFeatures.add(getTokenValue(info, "ID=", ";"));
+                        if( parent!=null && (skippedGenes.contains(parent) || parent.startsWith("rna-")) ) {
+                            // transcript of a skipped gene, or a product nested in another transcript (f.e. a mature miRNA)
+                            ignoredFeatures.add(trId);
                             break;
                         }
                         throw new Exception("unexpected 2: "+lineNr);
                     }
-                    String trAcc = getTokenValue(info, "Name=", ";");
-                    String trId = getTokenValue(info, "ID=", ";");
 
                     // only RefSeq transcripts (NM_, NR_, XM_, XR_) are loaded; records without an accession
                     // (tRNA genes, mature miRNA products) are ignored together with their exons
@@ -230,14 +244,11 @@ public class LoadTranscriptsFromGff3 {
                         counters.increment("TRANSCRIPTS: skipped (no RefSeq accession): "+obj);
                         break;
                     }
-                    // this transcript must be new in trList
-                    TrInfo trInfo = null;
-                    for( TrInfo ti: geneInfo.trInfos ) {
-                        if( ti.id.equals(trId) ) {
-                            throw new Exception("unexpected 3: "+lineNr);
-                        }
+                    // this transcript must be new
+                    if( trId==null || trMap.containsKey(trId) ) {
+                        throw new Exception("unexpected 3: "+lineNr);
                     }
-                    trInfo = new TrInfo();
+                    TrInfo trInfo = new TrInfo();
                     trInfo.id = trId;
                     trInfo.acc = trAcc;
                     trInfo.chr = chr;
@@ -245,29 +256,18 @@ public class LoadTranscriptsFromGff3 {
                     trInfo.startPos = startPos;
                     trInfo.stopPos = stopPos;
                     geneInfo.trInfos.add(trInfo);
+                    trMap.put(trId, trInfo);
                 }
 
                 case "exon" -> {
-                    String ncbiGeneId = getGeneId(info);
                     String trId = getTokenValue(info, "Parent=", ";");
 
-                    GeneInfo geneInfo = geneMap.get(ncbiGeneId);
-                    if (geneInfo == null) {
-                        if( skippedGenes.contains(ncbiGeneId) ) {
-                            break;
-                        }
-                        throw new Exception("unexpected 4: "+lineNr);
-                    }
-                    TrInfo trInfo = null;
-                    for( TrInfo ti: geneInfo.trInfos ) {
-                        if( ti.id.equals(trId) ) {
-                            ExonInfo exon = new ExonInfo();
-                            exon.startPos = startPos;
-                            exon.stopPos = stopPos;
-                            ti.exons.add(exon);
-                            trInfo = ti;
-                            break;
-                        }
+                    TrInfo trInfo = trId==null ? null : trMap.get(trId);
+                    if( trInfo!=null ) {
+                        ExonInfo exon = new ExonInfo();
+                        exon.startPos = startPos;
+                        exon.stopPos = stopPos;
+                        trInfo.exons.add(exon);
                     }
                     if( trInfo==null ) {
                         if( ignoredFeatures.contains(trId) ) {
@@ -283,47 +283,27 @@ public class LoadTranscriptsFromGff3 {
                 }
 
                 case "CDS" -> {
-                    String ncbiGeneId = getGeneId(info);
                     String trId = getTokenValue(info, "Parent=", ";");
                     String proteinId = getTokenValue(info, "Name=", ";");
 
-                    GeneInfo geneInfo = geneMap.get(ncbiGeneId);
-                    if (geneInfo == null) {
-                        if( skippedGenes.contains(ncbiGeneId) ) {
-                            break;
+                    TrInfo trInfo = trId==null ? null : trMap.get(trId);
+                    if( trInfo!=null ) {
+                        if( trInfo.cdsStart==0 || startPos < trInfo.cdsStart ) {
+                            trInfo.cdsStart = startPos;
                         }
-                        throw new Exception("unexpected 6: "+lineNr);
-                    }
-                    TrInfo trInfo = null;
-                    for( TrInfo ti: geneInfo.trInfos ) {
-                        if( ti.id.equals(trId) ) {
-                            trInfo = ti;
-
-                            if( ti.cdsStart==0 ) {
-                                ti.cdsStart = startPos;
-                            } else if( startPos < ti.cdsStart ) {
-                                ti.cdsStart = startPos;
-                            }
-
-                            if( ti.cdsStop==0 ) {
-                                ti.cdsStop = stopPos;
-                            } else if( stopPos > ti.cdsStop ) {
-                                ti.cdsStop = stopPos;
-                            }
-
-                            if( ti.proteinId==null ) {
-                                ti.proteinId = proteinId;
-                            }
-                            break;
+                        if( trInfo.cdsStop==0 || stopPos > trInfo.cdsStop ) {
+                            trInfo.cdsStop = stopPos;
+                        }
+                        if( trInfo.proteinId==null ) {
+                            trInfo.proteinId = proteinId;
                         }
                     }
-                    if( trInfo==null ) {
-                        if( ignoredFeatures.contains(trId) ) {
-                            // CDS of an ignored feature (f.e. V_gene_segment)
-                            counters.increment("CDS: skipped (ignored parent feature)");
-                        } else {
-                            throw new Exception("unexpected 7: "+lineNr);
-                        }
+                    else if( ignoredFeatures.contains(trId) || (trId!=null && trId.startsWith("gene-")) ) {
+                        // CDS of an ignored feature (f.e. V_gene_segment) or directly under a gene without transcripts
+                        counters.increment("CDS: skipped (ignored parent feature)");
+                    }
+                    else {
+                        throw new Exception("unexpected 7: "+lineNr);
                     }
                 }
 

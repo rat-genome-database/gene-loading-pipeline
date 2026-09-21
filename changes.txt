@@ -5,6 +5,9 @@ Sep 21, 2026
   gff3 loader: option -unlink_stale_features (script: optional 3rd argument) unlinks, for a transcript matched in the
     gff file, its features on the loaded assembly that the gff model does not contain (leftover exons and UTRs of a
     superseded annotation); feature objects are kept; every unlink is logged
+  gff3 loader: a gene annotated at several loci (several gene records with one NCBI gene id, f.e. Syne1 in the Rnor_6.0
+    release 106) is handled: records keyed by gff id, transcripts resolved through Parent, records of one gene processed
+    in sequence; previously the second record aborted the parse
 
 Sep 18, 2026
   transcript sync: stale transcript positions and feature links on the assemblies present in the incoming
