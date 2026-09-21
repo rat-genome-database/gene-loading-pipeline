@@ -17,15 +17,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class LoadTranscriptsFromGff3 {
 
     /**
-     * usage: LoadTranscriptsFromGff3 [mapKey gff3File]
+     * usage: LoadTranscriptsFromGff3 [mapKey gff3File [-unlink_stale_features]]
      * <p>
      * with arguments: loads, or restores, the transcripts of one assembly from an NCBI GFF3 file;
      * f.e. transcripts of mRatBN7.2 from the archived annotation release GCF_015227675.2-RS_2023_06:
      * <pre>LoadTranscriptsFromGff3 372 /data/GCF_015227675.2_mRatBN7.2_genomic.gff.gz</pre>
      * from the pipeline jar, as load_transcripts_from_gff3.sh does:
-     * <pre>-jar lib/EntrezGeneLoading.jar -transcripts_from_gff3 372 /data/GCF_...gff.gz -species rat</pre>
+     * <pre>-jar lib/EntrezGeneLoading.jar -transcripts_from_gff3 372 /data/GCF_...gff.gz [-unlink_stale_features] -species rat</pre>
      * transcripts already in RGD are matched by accession; transcripts detached in the past are restored
-     * under their old rgd id (per STABLE_TRANSCRIPTS); existing feature objects are bound, not duplicated
+     * under their old rgd id (per STABLE_TRANSCRIPTS); existing feature objects are bound, not duplicated;
+     * with -unlink_stale_features, features of a matched transcript that the gff model does not contain are unlinked
      * <p>
      * without arguments: loads the strain assemblies listed in run()
      */
@@ -34,6 +35,7 @@ public class LoadTranscriptsFromGff3 {
         try {
             LoadTranscriptsFromGff3 loader = new LoadTranscriptsFromGff3();
             if( args.length>=2 ) {
+                loader.setUnlinkStaleFeatures(Arrays.asList(args).contains("-unlink_stale_features"));
                 loader.run(Integer.parseInt(args[0]), args[1]);
             } else {
                 loader.run();
@@ -46,6 +48,14 @@ public class LoadTranscriptsFromGff3 {
     final String SRC_PIPELINE = "NCBI";
     int mapKey;
     CounterPool counters;
+
+    /// option -unlink_stale_features: for a transcript matched in the gff file, its features on the loaded assembly
+    /// that the gff model does not contain are unlinked (f.e. exons of a superseded annotation); off by default
+    boolean unlinkStaleFeatures = false;
+
+    public void setUnlinkStaleFeatures(boolean unlinkStaleFeatures) {
+        this.unlinkStaleFeatures = unlinkStaleFeatures;
+    }
 
     EGDAO dao = EGDAO.getInstance();
     Logger log = LogManager.getLogger("transcripts");
@@ -681,6 +691,7 @@ public class LoadTranscriptsFromGff3 {
 
             // qc features
             List<TranscriptFeature> ftsInRgd = dao.getFeaturesForTr(trInfo.rgdId, mapKey);
+            Set<Integer> matchedFeatureIds = new HashSet<>(); // rgd features confirmed by the gff model
 
             for( TranscriptFeature ft: features ) {
 
@@ -697,6 +708,7 @@ public class LoadTranscriptsFromGff3 {
                 }
 
                 if( ftInRgd!=null ) {
+                    matchedFeatureIds.add(ftInRgd.getRgdId());
                     counters.increment("TR "+ft.getCanonicalName().toUpperCase()+": matched");
                     continue;
                 }
@@ -720,6 +732,22 @@ public class LoadTranscriptsFromGff3 {
                     dao.createFeature( ft, SpeciesType.RAT );
                     geneFeatureIds.put(featureKey(ft), ft.getRgdId());
                     counters.increment("TR "+ft.getCanonicalName().toUpperCase()+": inserted");
+                }
+            }
+
+            // optional cleanup: features linked to this transcript on this assembly that are not part of the
+            // gff model (f.e. an exon of a superseded annotation kept next to the current one) are unlinked;
+            // the feature objects themselves are kept, they may be shared with other transcripts
+            if( unlinkStaleFeatures ) {
+                for( TranscriptFeature r: ftsInRgd ) {
+                    if( matchedFeatureIds.contains(r.getRgdId()) ) {
+                        continue;
+                    }
+                    if( dao.unlinkFeature(r.getRgdId(), trInfo.rgdId)!=0 ) {
+                        log.info("mapKey="+mapKey+" "+trInfo.acc+" RGD:"+trInfo.rgdId+": unlinked stale "+r.getCanonicalName()
+                                +" "+r.getChromosome()+":"+r.getStartPos()+"-"+r.getStopPos()+" (feature RGD:"+r.getRgdId()+")");
+                        counters.increment("TR "+r.getCanonicalName().toUpperCase()+": unlinked (not in gff)");
+                    }
                 }
             }
         }

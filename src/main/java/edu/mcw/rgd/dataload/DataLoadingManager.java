@@ -218,11 +218,14 @@ public class DataLoadingManager {
                 manager.geneStatusIssueTracker.writeIssuesToFile();
             }
             // load, or restore, the transcripts of one assembly from an NCBI gff3 file
-            // f.e. -transcripts_from_gff3 372 /ref/gff3/GCF_015227675.2_mRatBN7.2_genomic.gff.gz -species rat
+            // f.e. -transcripts_from_gff3 372 /ref/gff3/GCF_015227675.2_mRatBN7.2_genomic.gff.gz [-unlink_stale_features] -species rat
             else if (args[0].contains("transcripts_from_gff3") && args.length>=5) {
-                manager.initDbLog(manager.getSpecies(args, 3), "transcripts_from_gff3", args[1]+"-"+args[2]);
+                List<String> argList = Arrays.asList(args);
+                manager.initDbLog(manager.getSpecies(args, argList.indexOf("-species")), "transcripts_from_gff3", args[1]+"-"+args[2]);
 
-                new LoadTranscriptsFromGff3().run(Integer.parseInt(args[1]), args[2]);
+                LoadTranscriptsFromGff3 loader = new LoadTranscriptsFromGff3();
+                loader.setUnlinkStaleFeatures(argList.contains("-unlink_stale_features"));
+                loader.run(Integer.parseInt(args[1]), args[2]);
                 runSec = (System.currentTimeMillis()-startMilisec)/1000;
             }
             else {
@@ -579,8 +582,9 @@ public class DataLoadingManager {
             "      download and process all mitochondrial genes from NCBI\n" +
             "-microRNA\n" +
             "      download and process all microRNA genes found in RGD\n" +
-            "-transcripts_from_gff3 mapKey gff3File\n" +
-            "      load, or restore, the transcripts of one assembly from an NCBI gff3 file (f.e. an archived annotation release)\n" +
+            "-transcripts_from_gff3 mapKey gff3File [-unlink_stale_features]\n" +
+            "      load, or restore, the transcripts of one assembly from an NCBI gff3 file (f.e. an archived annotation release);\n" +
+            "      with -unlink_stale_features, features of a matched transcript that the gff model does not contain are unlinked\n" +
             "\n"+
             "     'dateFrom' and 'dateTo' must be formatted as 'yyyy/mm/dd'\n" +
             "     if 'dateFrom' is 'auto', it is set to the 'dateTo' date of latest successful pipeline run\n" +
