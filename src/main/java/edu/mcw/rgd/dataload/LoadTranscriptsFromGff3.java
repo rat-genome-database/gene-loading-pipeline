@@ -22,8 +22,11 @@ public class LoadTranscriptsFromGff3 {
      * with arguments: loads, or restores, the transcripts of one assembly from an NCBI GFF3 file;
      * f.e. transcripts of mRatBN7.2 from the archived annotation release GCF_015227675.2-RS_2023_06:
      * <pre>LoadTranscriptsFromGff3 372 /data/GCF_015227675.2_mRatBN7.2_genomic.gff.gz</pre>
+     * or transcripts of human GRCh37 from the release GCF_000001405.25-RS_2024_09:
+     * <pre>LoadTranscriptsFromGff3 17 /data/GCF_000001405.25_GRCh37.p13_genomic.gff.gz</pre>
      * from the pipeline jar, as load_transcripts_from_gff3.sh does:
-     * <pre>-jar lib/EntrezGeneLoading.jar -transcripts_from_gff3 372 /data/GCF_...gff.gz [-unlink_stale_features] -species rat</pre>
+     * <pre>-jar lib/EntrezGeneLoading.jar -transcripts_from_gff3 372 /data/GCF_...gff.gz [-unlink_stale_features]</pre>
+     * the species is that of the assembly (MAPS); any species with NCBI RefSeq annotation can be loaded;
      * transcripts already in RGD are matched by accession; transcripts detached in the past are restored
      * under their old rgd id (per STABLE_TRANSCRIPTS); existing feature objects are bound, not duplicated;
      * with -unlink_stale_features, features of a matched transcript that the gff model does not contain are unlinked
@@ -47,6 +50,7 @@ public class LoadTranscriptsFromGff3 {
 
     final String SRC_PIPELINE = "NCBI";
     int mapKey;
+    int speciesTypeKey; // species of the assembly: rgd ids of new transcripts and features are created for it
     CounterPool counters;
 
     /// option -unlink_stale_features: for a transcript matched in the gff file, its features on the loaded assembly
@@ -76,9 +80,13 @@ public class LoadTranscriptsFromGff3 {
     void run(int mapKey, String fname) throws Exception {
 
         this.mapKey = mapKey;
+        speciesTypeKey = dao.getSpeciesTypeKeyForMap(mapKey);
+        if( speciesTypeKey<=0 ) {
+            throw new Exception("map key "+mapKey+" is not a known assembly");
+        }
         counters = new CounterPool();
 
-        System.out.println("=== processing mapKey=" + mapKey + ", file " + fname);
+        System.out.println("=== processing mapKey=" + mapKey + " (" + SpeciesType.getCommonName(speciesTypeKey) + "), file " + fname);
 
         // gene map: gff gene record id -> GeneInfo; a gene annotated at two loci has two records with the same NCBI gene id
         Map<String, GeneInfo> geneMap = loadGeneMap(fname);
@@ -172,11 +180,20 @@ public class LoadTranscriptsFromGff3 {
 
             switch (obj) {
                 case "region" -> {
-                    regionChrAcc = chrAcc;
-                    // only chromosome-level sequences carry usable coordinates: unplaced scaffolds (genome=genomic)
-                    // are labelled with the chromosome they belong to, but their coordinates are scaffold-local
+                    // a sequence region (genome=chromosome|mitochondrion|genomic) starts a new sequence; the human gff
+                    // also has feature-level 'region' records (source RefSeqFE, f.e. a minisatellite, no genome= attribute)
+                    // that must not reset the current chromosome
                     String genome = getTokenValue(info, "genome=", ";");
-                    chr = genome!=null && genome.equals("genomic") ? null : getTokenValue(info, "Name=", ";");
+                    if( genome==null ) {
+                        ignoredFeatures.add(getTokenValue(info, "ID=", ";"));
+                        counters.increment("IGNORED FEATURES: region (not a sequence region)");
+                        break;
+                    }
+                    regionChrAcc = chrAcc;
+                    // only chromosome-level sequences carry usable coordinates: unplaced and unlocalized scaffolds and
+                    // alternate loci (genome=genomic) are labelled with the chromosome they belong to, but their
+                    // coordinates are local to the scaffold
+                    chr = genome.equals("chromosome") || genome.equals("mitochondrion") ? getTokenValue(info, "Name=", ";") : null;
                     if( chr!=null ) {
                         System.out.println("processing chromosome " + chr);
                     }
@@ -220,7 +237,7 @@ public class LoadTranscriptsFromGff3 {
                 }
 
                 case "mRNA", "lnc_RNA", "transcript", "primary_transcript", "ncRNA", "snoRNA", "snRNA", "rRNA", "tRNA",
-                     "miRNA", "antisense_RNA", "telomerase_RNA", "SRP_RNA", "RNase_MRP_RNA", "scRNA", "Y_RNA",
+                     "miRNA", "antisense_RNA", "telomerase_RNA", "SRP_RNA", "RNase_MRP_RNA", "RNase_P_RNA", "scRNA", "Y_RNA",
                      "vault_RNA", "guide_RNA" -> {
                     String parent = getTokenValue(info, "Parent=", ";");
                     String trAcc = getTokenValue(info, "Name=", ";");
@@ -318,7 +335,10 @@ public class LoadTranscriptsFromGff3 {
                 }
 
                 default -> {
-                    System.out.println("unknown object: " + obj);
+                    // f.e. the RefSeqFE functional elements of the human annotation (enhancer, silencer, biological_region, ...):
+                    // not loaded; their ids are remembered so that their child records (exons) are recognized as ignored
+                    ignoredFeatures.add(getTokenValue(info, "ID=", ";"));
+                    counters.increment("IGNORED FEATURES: "+obj);
                 }
             }
         }
@@ -510,7 +530,7 @@ public class LoadTranscriptsFromGff3 {
                     continue;
                 }
 
-                dao.createTranscript(tr, SpeciesType.RAT);
+                dao.createTranscript(tr, speciesTypeKey);
                 trInfo.rgdId = tr.getRgdId();
                 counters.increment("TRANSCRIPTS: inserted");
             }
@@ -529,7 +549,7 @@ public class LoadTranscriptsFromGff3 {
                 continue; // rgd id in use by another transcript row
             }
             RgdId id = dao.getRgdId(rgdId);
-            if( id==null || id.getObjectKey()!=RgdId.OBJECT_KEY_TRANSCRIPTS || id.getSpeciesTypeKey()!=SpeciesType.RAT ) {
+            if( id==null || id.getObjectKey()!=RgdId.OBJECT_KEY_TRANSCRIPTS || id.getSpeciesTypeKey()!=speciesTypeKey ) {
                 continue;
             }
             if( !id.getObjectStatus().equals("ACTIVE") ) {
@@ -709,7 +729,7 @@ public class LoadTranscriptsFromGff3 {
                 } else {
                     ft.setTranscriptRgdId(trInfo.rgdId);
                     ft.setSrcPipeline(SRC_PIPELINE);
-                    dao.createFeature( ft, SpeciesType.RAT );
+                    dao.createFeature( ft, speciesTypeKey );
                     geneFeatureIds.put(featureKey(ft), ft.getRgdId());
                     counters.increment("TR "+ft.getCanonicalName().toUpperCase()+": inserted");
                 }

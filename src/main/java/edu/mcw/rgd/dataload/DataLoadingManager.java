@@ -218,10 +218,20 @@ public class DataLoadingManager {
                 manager.geneStatusIssueTracker.writeIssuesToFile();
             }
             // load, or restore, the transcripts of one assembly from an NCBI gff3 file
-            // f.e. -transcripts_from_gff3 372 /ref/gff3/GCF_015227675.2_mRatBN7.2_genomic.gff.gz [-unlink_stale_features] -species rat
-            else if (args[0].contains("transcripts_from_gff3") && args.length>=5) {
+            // f.e. -transcripts_from_gff3 372 /ref/gff3/GCF_015227675.2_mRatBN7.2_genomic.gff.gz [-unlink_stale_features]
+            // the species is that of the assembly given by map key; '-species' is optional and must agree with it
+            else if (args[0].contains("transcripts_from_gff3") && args.length>=3) {
                 List<String> argList = Arrays.asList(args);
-                manager.initDbLog(manager.getSpecies(args, argList.indexOf("-species")), "transcripts_from_gff3", args[1]+"-"+args[2]);
+                int mapKey = Integer.parseInt(args[1]);
+                int speciesTypeKey = EGDAO.getInstance().getSpeciesTypeKeyForMap(mapKey);
+                if( speciesTypeKey<=0 ) {
+                    throw new Exception("map key "+mapKey+" is not a known assembly");
+                }
+                int speciesArgIndex = argList.indexOf("-species");
+                if( speciesArgIndex>=0 && manager.getSpecies(args, speciesArgIndex)!=speciesTypeKey ) {
+                    throw new Exception("'-species' argument does not match the species of map key "+mapKey);
+                }
+                manager.initDbLog(speciesTypeKey, "transcripts_from_gff3", args[1]+"-"+args[2]);
 
                 LoadTranscriptsFromGff3 loader = new LoadTranscriptsFromGff3();
                 loader.setUnlinkStaleFeatures(argList.contains("-unlink_stale_features"));
@@ -582,7 +592,7 @@ public class DataLoadingManager {
             "      download and process all mitochondrial genes from NCBI\n" +
             "-microRNA\n" +
             "      download and process all microRNA genes found in RGD\n" +
-            "-transcripts_from_gff3 mapKey gff3File [-unlink_stale_features]\n" +
+            "-transcripts_from_gff3 mapKey gff3File [-unlink_stale_features]   (species: that of the assembly)\n" +
             "      load, or restore, the transcripts of one assembly from an NCBI gff3 file (f.e. an archived annotation release);\n" +
             "      with -unlink_stale_features, features of a matched transcript that the gff model does not contain are unlinked\n" +
             "\n"+

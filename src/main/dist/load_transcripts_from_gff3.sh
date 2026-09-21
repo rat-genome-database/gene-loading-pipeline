@@ -3,7 +3,10 @@
 # f.e. from an archived annotation release of an older assembly:
 #
 #   load_transcripts_from_gff3.sh <map_key> <gff3_file> [-unlink_stale_features]
-#   load_transcripts_from_gff3.sh 372 /data/GCF_015227675.2_mRatBN7.2_genomic.gff.gz
+#   load_transcripts_from_gff3.sh 372 /data/GCF_015227675.2_mRatBN7.2_genomic.gff.gz        (rat mRatBN7.2)
+#   load_transcripts_from_gff3.sh 17 /data/GCF_000001405.25_GRCh37.p13_genomic.gff.gz        (human GRCh37)
+#
+# the species is that of the assembly (map_key); any species with NCBI RefSeq annotation can be loaded
 #
 # transcripts already in RGD are matched by accession; transcripts detached in the past are restored
 # under their old rgd id (per STABLE_TRANSCRIPTS); existing feature objects are bound, not duplicated;
@@ -52,8 +55,7 @@ cd $HOMEDIR
 java -Dspring.config=../properties/default_db2.xml \
     -Dlog4j.configurationFile=file://$HOMEDIR/properties/log4j2.xml \
     -jar lib/EntrezGeneLoading.jar \
-    -transcripts_from_gff3 "$MAP_KEY" "$GFF3_FILE" $UNLINK_OPT \
-    -species rat > "$LOG" 2>&1
+    -transcripts_from_gff3 "$MAP_KEY" "$GFF3_FILE" $UNLINK_OPT > "$LOG" 2>&1
 
 # the log lists every gene processed; the final counters are at its end
 tail -100 "$LOG" | mailx -s "[$SERVER] transcript gff3 loader for map_key $MAP_KEY finished running" $ELIST

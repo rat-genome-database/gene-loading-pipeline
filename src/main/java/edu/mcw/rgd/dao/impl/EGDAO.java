@@ -395,6 +395,17 @@ public class EGDAO {
     }
 
     /**
+     * get the species of an assembly
+     * @param mapKey map key
+     * @return species type key of the assembly, or 0 if the map key is not known
+     * @throws Exception
+     */
+    public int getSpeciesTypeKeyForMap(int mapKey) throws Exception {
+
+        return mapDAO.getSpeciesTypeKeyForMap(mapKey);
+    }
+
+    /**
      * Returns a Gene based on an rgd id
      * @param rgdId rgd id
      * @return Gene object for given rgd id
