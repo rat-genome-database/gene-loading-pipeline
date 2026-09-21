@@ -22,6 +22,8 @@ public class LoadTranscriptsFromGff3 {
      * with arguments: loads, or restores, the transcripts of one assembly from an NCBI GFF3 file;
      * f.e. transcripts of mRatBN7.2 from the archived annotation release GCF_015227675.2-RS_2023_06:
      * <pre>LoadTranscriptsFromGff3 372 /data/GCF_015227675.2_mRatBN7.2_genomic.gff.gz</pre>
+     * from the pipeline jar, as load_transcripts_from_gff3.sh does:
+     * <pre>-jar lib/EntrezGeneLoading.jar -transcripts_from_gff3 372 /data/GCF_...gff.gz -species rat</pre>
      * transcripts already in RGD are matched by accession; transcripts detached in the past are restored
      * under their old rgd id (per STABLE_TRANSCRIPTS); existing feature objects are bound, not duplicated
      * <p>

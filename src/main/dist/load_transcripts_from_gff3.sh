@@ -41,7 +41,9 @@ echo "starting transcript gff3 loader: map_key=$MAP_KEY file=$GFF3_FILE"
 cd $HOMEDIR
 java -Dspring.config=../properties/default_db2.xml \
     -Dlog4j.configurationFile=file://$HOMEDIR/properties/log4j2.xml \
-    -cp "lib/*" edu.mcw.rgd.dataload.LoadTranscriptsFromGff3 "$MAP_KEY" "$GFF3_FILE" > "$LOG" 2>&1
+    -jar lib/EntrezGeneLoading.jar \
+    -transcripts_from_gff3 "$MAP_KEY" "$GFF3_FILE" \
+    -species rat > "$LOG" 2>&1
 
 # the log lists every gene processed; the final counters are at its end
 tail -100 "$LOG" | mailx -s "[$SERVER] transcript gff3 loader for map_key $MAP_KEY finished running" $ELIST
