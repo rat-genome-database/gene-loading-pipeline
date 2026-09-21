@@ -730,20 +730,8 @@ public class DataLoadingManager {
             "suppressed deletion of transcript position"
             );
         dbFlagManager.registerFlag(
-            "TRANSCRIPT_OVERLAPPING_MAPPOS_DELETED",
-            "deletion of suppressed transcript position that overlaps other transcript position"
-            );
-        dbFlagManager.registerFlag(
-                "TRANSCRIPT_OVERLAPPING_MAPPOS_DELETE_SUPPRESSED",
-                "suppressed deletion of suppressed transcript position that overlaps other transcript position"
-        );
-        dbFlagManager.registerFlag(
-            "TRANSCRIPT_DETACHED_FROM_GENE",
-            "transcript detached from gene because it is no longer present in the incoming data"
-        );
-        dbFlagManager.registerFlag(
-            "TRANSCRIPT_DETACH_FROM_GENE_SUPPRESSED",
-            "old transcripts have been preserved even if there are no transcripts available for the current assembly"
+            "TRANSCRIPT_ABSENT_FROM_INCOMING_DATA",
+            "transcript no longer present in the incoming data; kept with its history on other assemblies"
         );
 
         dbFlagManager.registerFlag(
@@ -860,5 +848,14 @@ public class DataLoadingManager {
 
     public Map<Integer, String> getScaffoldAssemblies() {
         return scaffoldAssemblies;
+    }
+
+    /// when false, stale transcript positions and transcript-feature links are never deleted
+    public void setDeleteStaleTranscriptData(boolean deleteStaleTranscriptData) {
+        EGDAO.getInstance().setDeleteStaleTranscriptData(deleteStaleTranscriptData);
+    }
+
+    public boolean isDeleteStaleTranscriptData() {
+        return EGDAO.getInstance().isDeleteStaleTranscriptData();
     }
 }

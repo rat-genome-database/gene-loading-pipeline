@@ -345,43 +345,6 @@ public class GenePositions {
         return results;
     }
 
-    public void deleteOverlappingPositionsMarkedForDelete(BulkGene bg, PipelineLogFlagManager dbFlagManager, CounterPool counters) throws Exception {
-
-        List<MapData> mdsOverlapping = new ArrayList<MapData>();
-
-        for( MapData mdForDelete: this.getMdForDelete() ) {
-
-            // find a matching overlapping position in-rgd
-            for( MapData mdInRgd: this.getMapDataInRgd() ) {
-                // skip self-matches
-                if( mdForDelete.getKey()==mdInRgd.getKey() )
-                    continue;
-                if( positionsOverlap(mdForDelete, mdInRgd) ) {
-                    // for-delete position overlaps with another in-rgd position
-                    // this is most likely a legitimate update of transcript position
-                    // so delete the old position
-                    mdsOverlapping.add(mdForDelete);
-                    break;
-                }
-            }
-        }
-
-        if( !mdsOverlapping.isEmpty() ) {
-            if( egDAO.deleteMapData(mdsOverlapping, false)!=0 ) {
-                for( MapData md: mdsOverlapping ) {
-                    logger.debug("OVERLAPPING MAPS_DATA DELETE >"+dumpMapPosition(md));
-                }
-
-                dbFlagManager.setFlag("TRANSCRIPT_OVERLAPPING_MAPPOS_DELETED", bg.getRecNo());
-                counters.add("TRANSCRIPT_OVERLAPPING_MAPPOS_DELETED", mdsOverlapping.size());
-            } else {
-                dbFlagManager.setFlag("TRANSCRIPT_OVERLAPPING_MAPPOS_DELETE_SUPPRESSED", bg.getRecNo());
-                counters.add("TRANSCRIPT_OVERLAPPING_MAPPOS_DELETE_SUPPRESSED", mdsOverlapping.size());
-            }
-
-        }
-    }
-
     public static boolean positionsOverlap(MapData md1, MapData md2) {
 
         if(!md1.getMapKey().equals(md2.getMapKey()))

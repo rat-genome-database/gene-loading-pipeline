@@ -23,7 +23,18 @@ import java.util.*;
  */
 public class EGDAO {
 
-    boolean skipDeletesForTranscripts = true;
+    /// when false, stale transcript positions and transcript-feature links are never deleted;
+    /// normally true: only assemblies present in the incoming data are synchronized, so transcript
+    /// history on other assemblies (f.e. mRatBN7.2) is never touched; TRANSCRIPTS rows are never deleted by the sync
+    private boolean deleteStaleTranscriptData = true;
+
+    public boolean isDeleteStaleTranscriptData() {
+        return deleteStaleTranscriptData;
+    }
+
+    public void setDeleteStaleTranscriptData(boolean deleteStaleTranscriptData) {
+        this.deleteStaleTranscriptData = deleteStaleTranscriptData;
+    }
 
     private AliasDAO aliasDAO = new AliasDAO();
     private AssociationDAO assocDAO = new AssociationDAO();
@@ -153,7 +164,7 @@ public class EGDAO {
      * @throws Exception if something wrong happens in spring framework
      */
     public int deleteMapData(List<MapData> mapDataList, boolean isGene) throws Exception{
-        if( !isGene && skipDeletesForTranscripts ) {
+        if( !isGene && !deleteStaleTranscriptData ) {
             return 0;
         }
         return mapDAO.deleteMapData(mapDataList);
@@ -219,7 +230,7 @@ public class EGDAO {
      */
     public int unlinkFeature(int featureRgdId, int transcriptRgdId) throws Exception {
 
-        if( skipDeletesForTranscripts ) {
+        if( !deleteStaleTranscriptData ) {
             return 0;
         }
 
@@ -655,16 +666,14 @@ public class EGDAO {
     }
 
     /**
-     * detach a transcript from gene, by removing a row from TRANSCRIPTS table
+     * detach a transcript from gene, by removing its feature links and its row from TRANSCRIPTS table;
+     * used only when a gene is converted to a biological region -- the transcript sync never deletes
+     * TRANSCRIPTS rows, because they carry the transcript history on older assemblies
      * @param tr Transcript object
      * @return number of rows affected
      * @throws Exception on error in framework
      */
     public int detachTranscriptFromGene(Transcript tr) throws Exception {
-        if( skipDeletesForTranscripts ) {
-            return 0;
-        }
-
         return transcriptDAO.detachTranscriptFromGene(tr.getRgdId(), tr.getGeneRgdId());
     }
 
@@ -715,6 +724,57 @@ public class EGDAO {
 
     public List<TranscriptFeature> getFeaturesForTr(int trRgdId, int mapKey) throws Exception {
         return transcriptDAO.getFeatures(trRgdId, mapKey);
+    }
+
+    public Transcript getTranscript(int transcriptRgdId) throws Exception {
+        return transcriptDAO.getTranscript(transcriptRgdId);
+    }
+
+    public List<Transcript> getTranscriptsByAccId(String accId) throws Exception {
+        return transcriptDAO.getTranscriptsByAccId(accId);
+    }
+
+    /**
+     * rgd ids ever assigned to a transcript accession, per STABLE_TRANSCRIPTS;
+     * a withdrawn transcript (no row in TRANSCRIPTS) can be restored under its old rgd id
+     * @param accId transcript accession without version, f.e. XR_005489716
+     */
+    public List<Integer> getTranscriptRgdIdsByAccession(String accId) throws Exception {
+        String sql = "SELECT rgd_id FROM stable_transcripts WHERE accession=? ORDER BY rgd_id";
+        return IntListQuery.execute(transcriptDAO, sql, accId);
+    }
+
+    /**
+     * insert a row into TRANSCRIPTS for an existing transcript rgd id (f.e. a previously withdrawn one);
+     * unlike createTranscript, no new rgd id is created
+     */
+    public int insertTranscript(Transcript tr) throws Exception {
+        String sql = """
+            INSERT INTO transcripts (transcript_rgd_id, gene_rgd_id, acc_id, is_non_coding_ind, refseq_status,
+                protein_acc_id, peptide_label, biotype)
+            VALUES (?,?,?,?,?,?,?,?)
+            """;
+        return transcriptDAO.update(sql, tr.getRgdId(), tr.getGeneRgdId(), tr.getAccId(), tr.isNonCoding() ? "Y" : "N",
+                tr.getRefSeqStatus(), tr.getProteinAccId(), tr.getPeptideLabel(), tr.getType());
+    }
+
+    public void updateRgdId(RgdId id) throws Exception {
+        rgdDAO.updateRgdId(id);
+    }
+
+    /**
+     * rgd ids of feature objects (exons, utrs) of the given type at the exact genomic position,
+     * whether linked to a transcript or orphaned
+     */
+    public List<Integer> getFeatureRgdIdsByPosition(TranscriptFeature ft) throws Exception {
+        String sql = """
+            SELECT md.rgd_id FROM maps_data md, rgd_ids r
+            WHERE r.rgd_id=md.rgd_id AND r.object_key=? AND md.map_key=? AND md.chromosome=?
+              AND md.start_pos=? AND md.stop_pos=? AND md.strand=?
+            ORDER BY md.rgd_id
+            """;
+        return IntListQuery.execute(transcriptDAO, sql, TranscriptFeature.getObjectKey(ft.getFeatureType()),
+                ft.getMapKey(), ft.getChromosome(), ft.getStartPos(), ft.getStopPos(), ft.getStrand());
     }
 
     public boolean isObsoleteHgncId(String hgncId) throws Exception {
