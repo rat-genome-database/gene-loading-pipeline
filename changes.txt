@@ -1,3 +1,8 @@
+Sep 21, 2026
+  load_transcripts_from_gff3.sh runs the loader through the pipeline jar like the other scripts:
+    -transcripts_from_gff3 <map_key> <gff3_file> -species rat (new option of DataLoadingManager);
+    with the previous "-cp lib/*" a stale commons-pool2 jar in the deployed lib/ broke the data source
+
 Sep 18, 2026
   transcript sync: stale transcript positions and feature links on the assemblies present in the incoming
     data are deleted again (globally suppressed since Jan 27, 2026); TRANSCRIPTS rows are never deleted and
