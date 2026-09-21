@@ -2,6 +2,9 @@ Sep 21, 2026
   load_transcripts_from_gff3.sh runs the loader through the pipeline jar like the other scripts:
     -transcripts_from_gff3 <map_key> <gff3_file> -species rat (new option of DataLoadingManager);
     with the previous "-cp lib/*" a stale commons-pool2 jar in the deployed lib/ broke the data source
+  gff3 loader: option -unlink_stale_features (script: optional 3rd argument) unlinks, for a transcript matched in the
+    gff file, its features on the loaded assembly that the gff model does not contain (leftover exons and UTRs of a
+    superseded annotation); feature objects are kept; every unlink is logged
 
 Sep 18, 2026
   transcript sync: stale transcript positions and feature links on the assemblies present in the incoming

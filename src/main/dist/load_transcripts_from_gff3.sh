@@ -2,19 +2,29 @@
 # loads, or restores, the transcripts of one assembly from an NCBI GFF3 file,
 # f.e. from an archived annotation release of an older assembly:
 #
-#   load_transcripts_from_gff3.sh <map_key> <gff3_file>
+#   load_transcripts_from_gff3.sh <map_key> <gff3_file> [-unlink_stale_features]
 #   load_transcripts_from_gff3.sh 372 /data/GCF_015227675.2_mRatBN7.2_genomic.gff.gz
 #
 # transcripts already in RGD are matched by accession; transcripts detached in the past are restored
 # under their old rgd id (per STABLE_TRANSCRIPTS); existing feature objects are bound, not duplicated;
 # genes on unplaced scaffolds and genes inactive in RGD are skipped
+# with -unlink_stale_features, features of a matched transcript on this assembly that the gff model
+# does not contain (f.e. exons of a superseded annotation) are unlinked; every unlink is logged
 #
-if [ $# -ne 2 ]; then
-    echo "usage: $0 <map_key> <gff3_file>"
+if [ $# -lt 2 ] || [ $# -gt 3 ]; then
+    echo "usage: $0 <map_key> <gff3_file> [-unlink_stale_features]"
     exit 1
 fi
 MAP_KEY="$1"
 GFF3_FILE="$2"
+UNLINK_OPT=""
+if [ $# -eq 3 ]; then
+    if [ "$3" != "-unlink_stale_features" ]; then
+        echo "unknown option: $3 (only -unlink_stale_features is accepted)"
+        exit 1
+    fi
+    UNLINK_OPT="$3"
+fi
 
 if ! [[ "$MAP_KEY" =~ ^[0-9]+$ ]]; then
     echo "map_key must be a number: $MAP_KEY"
@@ -42,7 +52,7 @@ cd $HOMEDIR
 java -Dspring.config=../properties/default_db2.xml \
     -Dlog4j.configurationFile=file://$HOMEDIR/properties/log4j2.xml \
     -jar lib/EntrezGeneLoading.jar \
-    -transcripts_from_gff3 "$MAP_KEY" "$GFF3_FILE" \
+    -transcripts_from_gff3 "$MAP_KEY" "$GFF3_FILE" $UNLINK_OPT \
     -species rat > "$LOG" 2>&1
 
 # the log lists every gene processed; the final counters are at its end
