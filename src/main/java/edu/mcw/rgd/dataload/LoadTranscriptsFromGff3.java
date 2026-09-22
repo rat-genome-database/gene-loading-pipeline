@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class LoadTranscriptsFromGff3 {
 
     /**
-     * usage: LoadTranscriptsFromGff3 [mapKey gff3File [-unlink_stale_features]]
+     * usage: LoadTranscriptsFromGff3 [mapKey gff3File [-delete_stale_transcript_data]]
      * <p>
      * with arguments: loads, or restores, the transcripts of one assembly from an NCBI GFF3 file;
      * f.e. transcripts of mRatBN7.2 from the archived annotation release GCF_015227675.2-RS_2023_06:
@@ -25,11 +25,12 @@ public class LoadTranscriptsFromGff3 {
      * or transcripts of human GRCh37 from the release GCF_000001405.25-RS_2024_09:
      * <pre>LoadTranscriptsFromGff3 17 /data/GCF_000001405.25_GRCh37.p13_genomic.gff.gz</pre>
      * from the pipeline jar, as load_transcripts_from_gff3.sh does:
-     * <pre>-jar lib/EntrezGeneLoading.jar -transcripts_from_gff3 372 /data/GCF_...gff.gz [-unlink_stale_features]</pre>
+     * <pre>-jar lib/EntrezGeneLoading.jar -transcripts_from_gff3 372 /data/GCF_...gff.gz [-delete_stale_transcript_data]</pre>
      * the species is that of the assembly (MAPS); any species with NCBI RefSeq annotation can be loaded;
      * transcripts already in RGD are matched by accession; transcripts detached in the past are restored
      * under their old rgd id (per STABLE_TRANSCRIPTS); existing feature objects are bound, not duplicated;
-     * with -unlink_stale_features, features of a matched transcript that the gff model does not contain are unlinked
+     * with -delete_stale_transcript_data, the positions and feature links that a matched gene or transcript has
+     * on this assembly and that the gff does not contain are deleted (-unlink_stale_features: deprecated alias)
      * <p>
      * without arguments: loads the strain assemblies listed in run()
      */
@@ -38,7 +39,8 @@ public class LoadTranscriptsFromGff3 {
         try {
             LoadTranscriptsFromGff3 loader = new LoadTranscriptsFromGff3();
             if( args.length>=2 ) {
-                loader.setUnlinkStaleFeatures(Arrays.asList(args).contains("-unlink_stale_features"));
+                List<String> argList = Arrays.asList(args);
+                loader.setDeleteStaleTranscriptData(argList.contains("-delete_stale_transcript_data") || argList.contains("-unlink_stale_features"));
                 loader.run(Integer.parseInt(args[0]), args[1]);
             } else {
                 loader.run();
@@ -53,12 +55,13 @@ public class LoadTranscriptsFromGff3 {
     int speciesTypeKey; // species of the assembly: rgd ids of new transcripts and features are created for it
     CounterPool counters;
 
-    /// option -unlink_stale_features: for a transcript matched in the gff file, its features on the loaded assembly
-    /// that the gff model does not contain are unlinked (f.e. exons of a superseded annotation); off by default
-    boolean unlinkStaleFeatures = false;
+    /// option -delete_stale_transcript_data: for a gene or transcript matched in the gff file, its positions and
+    /// feature links on the loaded assembly that the gff does not contain are deleted (f.e. the locus or the exons
+    /// of a superseded annotation kept next to the current one); feature objects are kept; off by default
+    boolean deleteStaleTranscriptData = false;
 
-    public void setUnlinkStaleFeatures(boolean unlinkStaleFeatures) {
-        this.unlinkStaleFeatures = unlinkStaleFeatures;
+    public void setDeleteStaleTranscriptData(boolean deleteStaleTranscriptData) {
+        this.deleteStaleTranscriptData = deleteStaleTranscriptData;
     }
 
     EGDAO dao = EGDAO.getInstance();
@@ -108,6 +111,7 @@ public class LoadTranscriptsFromGff3 {
                 counters.increment("GENES: annotated at several loci (several gff records)");
             }
 
+            boolean geneFailed = false;
             for( GeneInfo geneInfo: geneRecords ) {
                 System.out.println(i+". "+geneInfo.geneSymbol+"   RGD:"+geneInfo.geneRgdId);
 
@@ -115,10 +119,25 @@ public class LoadTranscriptsFromGff3 {
                     processGene(geneInfo);
                 } catch( Exception e ) {
                     // one gene must not abort the whole run: the failure is reported and counted, the run continues
+                    geneFailed = true;
                     failures.incrementAndGet();
                     counters.increment("GENES: failed with exception");
                     log.error("mapKey="+mapKey+" gene "+geneInfo.geneSymbol+" GeneID:"+geneInfo.ncbiGeneId
                             +" RGD:"+geneInfo.geneRgdId+" failed", e);
+                    e.printStackTrace();
+                }
+            }
+
+            // stale positions are removed only once all records of the gene are in, so that a gene or transcript
+            // annotated at several loci keeps all of them; a gene with a failed record is left as it is
+            if( deleteStaleTranscriptData && !geneFailed ) {
+                try {
+                    deleteStalePositions(geneRecords);
+                } catch( Exception e ) {
+                    failures.incrementAndGet();
+                    counters.increment("GENES: stale position cleanup failed with exception");
+                    log.error("mapKey="+mapKey+" gene "+geneRecords.get(0).geneSymbol+" GeneID:"+geneRecords.get(0).ncbiGeneId
+                            +": stale position cleanup failed", e);
                     e.printStackTrace();
                 }
             }
@@ -375,6 +394,8 @@ public class LoadTranscriptsFromGff3 {
         Gene gene = updateGene(geneInfo);
 
         if( gene!=null ) {
+            geneInfo.matchedGeneRgdId = gene.getRgdId();
+
             updateGenePositions(geneInfo, gene);
 
             updateTranscripts(geneInfo, gene);
@@ -738,12 +759,12 @@ public class LoadTranscriptsFromGff3 {
             // optional cleanup: features linked to this transcript on this assembly that are not part of the
             // gff model (f.e. an exon of a superseded annotation kept next to the current one) are unlinked;
             // the feature objects themselves are kept, they may be shared with other transcripts
-            if( unlinkStaleFeatures ) {
+            if( deleteStaleTranscriptData ) {
                 for( TranscriptFeature r: ftsInRgd ) {
                     if( matchedFeatureIds.contains(r.getRgdId()) ) {
                         continue;
                     }
-                    if( dao.unlinkFeature(r.getRgdId(), trInfo.rgdId)!=0 ) {
+                    if( dao.deleteStaleFeatureLink(r.getRgdId(), trInfo.rgdId)!=0 ) {
                         log.info("mapKey="+mapKey+" "+trInfo.acc+" RGD:"+trInfo.rgdId+": unlinked stale "+r.getCanonicalName()
                                 +" "+r.getChromosome()+":"+r.getStartPos()+"-"+r.getStopPos()+" (feature RGD:"+r.getRgdId()+")");
                         counters.increment("TR "+r.getCanonicalName().toUpperCase()+": unlinked (not in gff)");
@@ -756,6 +777,64 @@ public class LoadTranscriptsFromGff3 {
 
     String featureKey( TranscriptFeature f ) {
         return f.getFeatureType()+"|"+f.getChromosome()+"|"+f.getStartPos()+"|"+f.getStopPos()+"|"+f.getStrand();
+    }
+
+    /**
+     * option -delete_stale_transcript_data: once all gff records of a gene are processed, the positions that the
+     * matched gene and its transcripts have on this assembly and that the gff does not contain are deleted
+     * (f.e. the locus of a superseded annotation kept next to the current one); exact duplicates of a kept position
+     * are deleted as well; a gene or transcript annotated at several loci (f.e. pseudoautosomal) keeps all of them
+     */
+    void deleteStalePositions( List<GeneInfo> geneRecords ) throws Exception {
+
+        // incoming loci by rgd id: the gene(s) matched by the records, and their transcripts
+        Map<Integer, Set<String>> incomingLoci = new LinkedHashMap<>();
+        Map<Integer, String> labels = new HashMap<>();
+        for( GeneInfo geneInfo: geneRecords ) {
+            if( geneInfo.matchedGeneRgdId!=0 ) {
+                incomingLoci.computeIfAbsent(geneInfo.matchedGeneRgdId, k -> new HashSet<>())
+                        .add(locusKey(geneInfo.chr, geneInfo.startPos, geneInfo.stopPos, geneInfo.strand));
+                labels.put(geneInfo.matchedGeneRgdId, "GENE POS");
+            }
+            for( TrInfo trInfo: geneInfo.trInfos ) {
+                if( trInfo.rgdId!=0 ) { // transcripts skipped by the load are not touched
+                    incomingLoci.computeIfAbsent(trInfo.rgdId, k -> new HashSet<>())
+                            .add(locusKey(trInfo.chr, trInfo.startPos, trInfo.stopPos, trInfo.strand));
+                    labels.put(trInfo.rgdId, "TR POS");
+                }
+            }
+        }
+
+        for( Map.Entry<Integer, Set<String>> entry: incomingLoci.entrySet() ) {
+            int rgdId = entry.getKey();
+            String counterPrefix = labels.get(rgdId);
+
+            List<MapData> forDelete = new ArrayList<>();
+            Set<String> kept = new HashSet<>();
+            for( MapData md: dao.getMapData(rgdId, mapKey) ) {
+                String key = locusKey(md.getChromosome(), md.getStartPos(), md.getStopPos(), md.getStrand());
+                String reason;
+                if( !entry.getValue().contains(key) ) {
+                    reason = "stale";
+                } else if( !kept.add(key) ) {
+                    reason = "duplicate";
+                } else {
+                    continue;
+                }
+                forDelete.add(md);
+                log.info("mapKey="+mapKey+" RGD:"+rgdId+" ("+geneRecords.get(0).geneSymbol+"): deleted "+reason+" position "
+                        +md.getChromosome()+":"+md.getStartPos()+"-"+md.getStopPos()+" "+md.getStrand()
+                        +(md.getNotes()==null ? "" : " ("+md.getNotes()+")"));
+                counters.increment(counterPrefix+": deleted ("+reason+")");
+            }
+            if( !forDelete.isEmpty() ) {
+                dao.deleteStalePositions(forDelete);
+            }
+        }
+    }
+
+    String locusKey( String chr, int startPos, int stopPos, String strand ) {
+        return chr+"|"+startPos+"|"+stopPos+"|"+strand;
     }
 
     void updateTranscriptVersion( GeneInfo geneInfo ) throws Exception {
@@ -819,7 +898,8 @@ public class LoadTranscriptsFromGff3 {
     static public class GeneInfo {
         String geneSymbol;
         String ncbiGeneId;
-        int geneRgdId;
+        int geneRgdId;        // rgd id given in the gff record (Dbxref RGD:...), 0 if none
+        int matchedGeneRgdId; // rgd id of the active gene the record was matched to, 0 if not matched
         String geneBioType;
         boolean pseudo;
 

@@ -233,7 +233,7 @@ public class DataLoadingManager {
                 manager.geneStatusIssueTracker.writeIssuesToFile();
             }
             // load, or restore, the transcripts of one assembly from an NCBI gff3 file
-            // f.e. -transcripts_from_gff3 372 /ref/gff3/GCF_015227675.2_mRatBN7.2_genomic.gff.gz [-unlink_stale_features]
+            // f.e. -transcripts_from_gff3 372 /ref/gff3/GCF_015227675.2_mRatBN7.2_genomic.gff.gz [-delete_stale_transcript_data]
             // the species is that of the assembly given by map key; '-species' is optional and must agree with it
             else if (args[0].contains("transcripts_from_gff3") && args.length>=3) {
                 List<String> argList = Arrays.asList(args);
@@ -249,7 +249,10 @@ public class DataLoadingManager {
                 manager.initDbLog(speciesTypeKey, "transcripts_from_gff3", args[1]+"-"+args[2]);
 
                 LoadTranscriptsFromGff3 loader = new LoadTranscriptsFromGff3();
-                loader.setUnlinkStaleFeatures(argList.contains("-unlink_stale_features"));
+                if( argList.contains("-unlink_stale_features") ) {
+                    System.out.println("WARNING: option -unlink_stale_features is deprecated, use -delete_stale_transcript_data");
+                }
+                loader.setDeleteStaleTranscriptData(argList.contains("-delete_stale_transcript_data") || argList.contains("-unlink_stale_features"));
                 loader.run(Integer.parseInt(args[1]), args[2]);
                 runSec = (System.currentTimeMillis()-startMilisec)/1000;
             }
@@ -611,9 +614,10 @@ public class DataLoadingManager {
             "      download and process all active genes found in RGD (biological regions are not included)\n" +
             "-all_biological_regions\n" +
             "      download and process all active biological regions found in RGD, and the genes still typed 'biological-region'\n" +
-            "-transcripts_from_gff3 mapKey gff3File [-unlink_stale_features]   (species: that of the assembly)\n" +
+            "-transcripts_from_gff3 mapKey gff3File [-delete_stale_transcript_data]   (species: that of the assembly)\n" +
             "      load, or restore, the transcripts of one assembly from an NCBI gff3 file (f.e. an archived annotation release);\n" +
-            "      with -unlink_stale_features, features of a matched transcript that the gff model does not contain are unlinked\n" +
+            "      with -delete_stale_transcript_data, positions and feature links that a matched gene or transcript has on this\n" +
+            "      assembly and that the gff does not contain are deleted (-unlink_stale_features is a deprecated alias)\n" +
             "\n"+
             "     'dateFrom' and 'dateTo' must be formatted as 'yyyy/mm/dd'\n" +
             "     if 'dateFrom' is 'auto', it is set to the 'dateTo' date of latest successful pipeline run\n" +
