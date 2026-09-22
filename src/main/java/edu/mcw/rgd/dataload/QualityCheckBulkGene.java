@@ -801,12 +801,20 @@ public class QualityCheckBulkGene  {
     public void setGenomicAssemblies(Map<String, String> genomicAssemblies) {
         this.genomicAssemblies = genomicAssemblies;
 
-        // after genomic assemblies has been set, the valid map keys must be calculated
+        // after genomic assemblies has been set, the valid map keys must be calculated:
+        // the assemblies of the species, plus the maps fed from 'Gene Location History' of the species;
+        // a history map missing here would have its RGD positions hidden from the position sync,
+        // and the incoming history position would be inserted again on every run
         validMapKeys = new HashSet<>();
         if( genomicAssemblies!=null ) {
             for (String val : genomicAssemblies.values()) {
                 validMapKeys.add(Integer.parseInt(val));
             }
+        }
+        try {
+            validMapKeys.addAll(DataLoadingManager.getInstance().getGeneLocationHistoryForCurrentSpecies().values());
+        } catch( Exception e ) {
+            throw new RuntimeException("cannot determine the location history maps of the current species", e);
         }
     }
 

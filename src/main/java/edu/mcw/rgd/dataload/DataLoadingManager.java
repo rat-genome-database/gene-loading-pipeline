@@ -866,7 +866,14 @@ public class DataLoadingManager {
         Map<String,Integer> historyLocMap = new HashMap<String, Integer>();
         for( Map.Entry<String,String> entry: geneLocationHistory.entrySet() ) {
             int mapKey = Integer.parseInt(entry.getValue());
-            if( MapManager.getInstance().getMap(mapKey).getSpeciesTypeKey()==this.speciesTypeKey ) {
+            if( mapKey<=0 ) {
+                continue; // an assembly mapped to 0 is deliberately ignored by the parser (no counter)
+            }
+            edu.mcw.rgd.datamodel.Map map = MapManager.getInstance().getMap(mapKey);
+            if( map==null ) {
+                throw new Exception("geneLocationHistory: map key "+mapKey+" ("+entry.getKey()+") is not a known map");
+            }
+            if( map.getSpeciesTypeKey()==this.speciesTypeKey ) {
                 historyLocMap.put(entry.getKey(), mapKey);
             }
         }
