@@ -1,3 +1,8 @@
+Sep 22, 2026
+  new mode -all_biological_regions (script run_all_biological_regions.sh): downloads and processes all biological
+    regions of a species found in RGD (objects of type 'biological region', plus genes still typed 'biological-region');
+    -all_genes covers genes only, so until now biological regions were refreshed only by the weekly modification-date loads
+
 Sep 21, 2026
   load_transcripts_from_gff3.sh runs the loader through the pipeline jar like the other scripts:
     -transcripts_from_gff3 <map_key> <gff3_file> (new option of DataLoadingManager);

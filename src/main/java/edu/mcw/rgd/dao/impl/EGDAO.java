@@ -595,6 +595,25 @@ public class EGDAO {
         return egIds;
     }
 
+    /**
+     * NCBI gene ids of all active biological regions of a species (object key 25), plus the ids of the active genes
+     * still typed 'biological-region' -- the load converts such genes into biological regions
+     * @param speciesTypeKey species type key
+     * @return NCBI gene ids
+     * @throws Exception
+     */
+    public Collection<Integer> getEgIdsForAllActiveBiologicalRegions(int speciesTypeKey) throws Exception {
+
+        String sql = """
+            SELECT DISTINCT x.acc_id
+            FROM rgd_acc_xdb x, rgd_ids r
+            WHERE x.xdb_key=3 AND x.rgd_id=r.rgd_id AND r.species_type_key=? AND r.object_status='ACTIVE'
+              AND ( r.object_key=25
+                 OR ( r.object_key=1 AND EXISTS (SELECT 1 FROM genes g WHERE g.rgd_id=r.rgd_id AND g.gene_type_lc='biological-region') ) )
+            """;
+        return IntListQuery.execute(geneDAO, sql, speciesTypeKey);
+    }
+
     public Collection<Integer> getEgIdsForActiveGenesFromFile(int speciesTypeKey, String fileName) throws Exception {
 
         EGDAO dao = EGDAO.getInstance();

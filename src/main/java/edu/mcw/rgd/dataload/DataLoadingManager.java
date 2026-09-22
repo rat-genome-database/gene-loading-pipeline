@@ -204,6 +204,21 @@ public class DataLoadingManager {
                 manager.logStatistics();
                 manager.geneStatusIssueTracker.writeIssuesToFile();
             }
+            // download and process all biological regions of given species: the active objects of type 'biological region'
+            // and the active genes still typed 'biological-region' (the load converts them into biological regions);
+            // -all_genes covers genes only, so this is the only way to refresh all biological regions at once
+            else if (args[0].contains("all_biological_regions") && args.length>=3) {
+                manager.initDbLog(manager.getSpecies(args, 1), "all_biological_regions", args[2]);
+
+                String fileName = manager.entrezGeneExtractor.downloadAndProcessGeneList("all_biological_regions",
+                        EGDAO.getInstance().getEgIdsForAllActiveBiologicalRegions(manager.speciesTypeKey));
+                manager.parseEntrezGeneFile(fileName, null);
+
+                runSec = (System.currentTimeMillis()-startMilisec)/1000;
+                manager.printStatistics();
+                manager.logStatistics();
+                manager.geneStatusIssueTracker.writeIssuesToFile();
+            }
             // download all genes for given species
             else if (args[0].contains("eg_ids_from_file") && args.length>=4) {
                 manager.initDbLog(manager.getSpecies(args, 2), "eg_ids_from_file", args[3]);
@@ -592,6 +607,10 @@ public class DataLoadingManager {
             "      download and process all mitochondrial genes from NCBI\n" +
             "-microRNA\n" +
             "      download and process all microRNA genes found in RGD\n" +
+            "-all_genes\n" +
+            "      download and process all active genes found in RGD (biological regions are not included)\n" +
+            "-all_biological_regions\n" +
+            "      download and process all active biological regions found in RGD, and the genes still typed 'biological-region'\n" +
             "-transcripts_from_gff3 mapKey gff3File [-unlink_stale_features]   (species: that of the assembly)\n" +
             "      load, or restore, the transcripts of one assembly from an NCBI gff3 file (f.e. an archived annotation release);\n" +
             "      with -unlink_stale_features, features of a matched transcript that the gff model does not contain are unlinked\n" +
