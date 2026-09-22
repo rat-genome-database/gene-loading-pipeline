@@ -1,7 +1,18 @@
+Sep 22, 2026
+  new mode -all_biological_regions (script run_all_biological_regions.sh): downloads and processes all biological
+    regions of a species found in RGD (objects of type 'biological region', plus genes still typed 'biological-region');
+    -all_genes covers genes only, so until now biological regions were refreshed only by the weekly modification-date loads
+
 Sep 21, 2026
   load_transcripts_from_gff3.sh runs the loader through the pipeline jar like the other scripts:
-    -transcripts_from_gff3 <map_key> <gff3_file> -species rat (new option of DataLoadingManager);
+    -transcripts_from_gff3 <map_key> <gff3_file> (new option of DataLoadingManager);
     with the previous "-cp lib/*" a stale commons-pool2 jar in the deployed lib/ broke the data source
+  human: only the current assemblies (GRCh38, T2T-CHM13v2.0, cytomap) are loaded from all_genes, the older human
+    assemblies are removed from AppConfigure.xml; updated dependencies
+  gff3 loader is species-aware: the species is that of the assembly (map key), so the transcripts of older human
+    assemblies (f.e. GRCh37 from GCF_000001405.25-RS_2024_09) can be restored like the rat ones; -species no longer
+    passed by the script; feature-level "region" records and the RefSeqFE functional elements of the human annotation
+    are ignored (they used to reset the current chromosome, resp. flood the log); RNase_P_RNA transcripts accepted
   gff3 loader: option -unlink_stale_features (script: optional 3rd argument) unlinks, for a transcript matched in the
     gff file, its features on the loaded assembly that the gff model does not contain (leftover exons and UTRs of a
     superseded annotation); feature objects are kept; every unlink is logged

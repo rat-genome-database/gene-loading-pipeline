@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="dataLoadingManager" class="edu.mcw.rgd.dataload.DataLoadingManager">
-        <property name="version" value="NCBI Gene Pipeline   -- build Sep 21, 2026" />
+        <property name="version" value="NCBI Gene Pipeline   -- build Sep 22, 2026" />
 		<property name="qualityCheck" ref="qualityCheck"/>
 	    <property name="decisionMaker" ref="decisionMaker"/>
 	    <property name="entrezGeneExtractor" ref="entrezGeneExtractor"/>
@@ -38,25 +38,6 @@
         <!--gene location history: gene location info provided by RefSeq for non-current (previous) assemblies -->
         <property name="geneLocationHistory">
             <map>
-                <entry key="Hs_Celera" value="16"/>
-                <entry key="CHM1_1.0" value="36"/>
-                <entry key="CHM1_1.1" value="36"/>
-                <entry key="HuRef" value="19"/>
-                <entry key="NCBI36" value="13"/>
-                <entry key="GRCh37" value="17"/>
-                <entry key="GRCh37.p2" value="17"/>
-                <entry key="GRCh37.p5" value="17"/>
-                <entry key="GRCh37.p9" value="17"/>
-                <entry key="GRCh37.p10" value="17"/>
-                <entry key="GRCh37.p13" value="17"/>
-                <entry key="GRCh38" value="38"/>
-                <entry key="GRCh38.p2" value="38"/>
-                <entry key="GRCh38.p7" value="38"/>
-                <entry key="GRCh38.p12" value="38"/>
-                <entry key="GRCh38.p13" value="38"/>
-                <entry key="GRCh38.p14" value="38"/>
-                <entry key="T2T-CHM13v2.0" value="37"/>
-
                 <entry key="Mm_Celera" value="20"/>
                 <entry key="MGSCv36" value="14"/>
                 <entry key="MGSCv37" value="18"/>
@@ -101,34 +82,9 @@
     <bean id="humanGenomicAssemblies" class="java.util.HashMap">
         <constructor-arg>
             <map>
-                <entry key="NCBI36" value="13"/>
-                <entry key="Reference assembly" value="17"/>
-                <entry key="Alternate assembly (based on CRA_TCAGchr7v2)" value="21"/>
-                <entry key="Alternate CRA_TCAGchr7v2" value="21"/>
-                <entry key="Alternate assembly CRA_TCAGchr7v2" value="21"/>
-                <entry key="Alternate assembly (CRA_TCAGchr7v2)" value="21"/>
-                <entry key="Alternate HuRef" value="19"/>
-                <entry key="Alternate assembly (HuRef)" value="19"/>
-                <entry key="Alternate assembly HuRef" value="19"/>
-                <entry key="Alternate assembly (based on HuRef)" value="19"/>
-                <entry key="Reference GRCh37.p9 Primary Assembly" value="17"/>
-                <entry key="Reference GRCh37.p5 Primary Assembly" value="17"/>
-                <entry key="GRCh37.p2 Reference primary assembly" value="17"/>
-                <entry key="Genome Reference Consortium Human Build 37 (GRCh37), Primary_Assembly" value="17"/>
-                <entry key="Reference GRCh37.p10 Primary Assembly" value="17"/>
-                <entry key="Reference GRCh37.p13 Primary Assembly" value="17"/>
-                <entry key="Reference GRCh38 Primary Assembly" value="38"/>
-                <entry key="Reference GRCh38.p2 Primary Assembly" value="38"/>
-                <entry key="Reference GRCh38.p7 Primary Assembly" value="38"/>
-                <entry key="Reference GRCh38.p12 Primary Assembly" value="38"/>
-                <entry key="Reference GRCh38.p13 Primary Assembly" value="38"/>
                 <entry key="Reference GRCh38.p14 Primary Assembly" value="38"/>
-
-                <entry key="Alternate CHM1_1.1" value="36"/>
                 <entry key="Alternate T2T-CHM13v2.0" value="37"/>
-
                 <entry key="Cytomap" value="11"/>
-                <entry key="Celera" value="16"/>
             </map>
         </constructor-arg>
     </bean>
