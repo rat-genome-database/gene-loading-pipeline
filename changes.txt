@@ -1,4 +1,12 @@
 Sep 22, 2026
+  human location history restored in AppConfigure.xml (GRCh37, GRCh38 patches, T2T, HuRef, CHM1, Celera, NCBI36);
+    the map keys fed from 'Gene Location History' are now always part of the valid map keys of the QC: a history map
+    missing from the species assemblies had its RGD positions hidden from the sync, so the incoming history position
+    was inserted again on every run; a history entry mapped to 0 is ignored, an unknown map key aborts the run
+  gff3 loader: option -unlink_stale_features renamed to -delete_stale_transcript_data (old name accepted, deprecated);
+    it now also deletes the positions that a matched gene or transcript has on the loaded assembly and that the gff
+    does not contain (superseded loci kept next to the current one, f.e. 33k transcripts on GRCh37) and exact duplicate
+    position rows; every deletion is logged
   new mode -all_biological_regions (script run_all_biological_regions.sh): downloads and processes all biological
     regions of a species found in RGD (objects of type 'biological region', plus genes still typed 'biological-region');
     -all_genes covers genes only, so until now biological regions were refreshed only by the weekly modification-date loads

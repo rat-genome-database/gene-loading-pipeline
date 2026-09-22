@@ -38,6 +38,25 @@
         <!--gene location history: gene location info provided by RefSeq for non-current (previous) assemblies -->
         <property name="geneLocationHistory">
             <map>
+                <entry key="Hs_Celera" value="16"/>
+                <entry key="CHM1_1.0" value="36"/>
+                <entry key="CHM1_1.1" value="36"/>
+                <entry key="HuRef" value="19"/>
+                <entry key="NCBI36" value="13"/>
+                <entry key="GRCh37" value="17"/>
+                <entry key="GRCh37.p2" value="17"/>
+                <entry key="GRCh37.p5" value="17"/>
+                <entry key="GRCh37.p9" value="17"/>
+                <entry key="GRCh37.p10" value="17"/>
+                <entry key="GRCh37.p13" value="17"/>
+                <entry key="GRCh38" value="38"/>
+                <entry key="GRCh38.p2" value="38"/>
+                <entry key="GRCh38.p7" value="38"/>
+                <entry key="GRCh38.p12" value="38"/>
+                <entry key="GRCh38.p13" value="38"/>
+                <entry key="GRCh38.p14" value="38"/>
+                <entry key="T2T-CHM13v2.0" value="37"/>
+
                 <entry key="Mm_Celera" value="20"/>
                 <entry key="MGSCv36" value="14"/>
                 <entry key="MGSCv37" value="18"/>

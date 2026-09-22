@@ -233,10 +233,33 @@ public class EGDAO {
         if( !deleteStaleTranscriptData ) {
             return 0;
         }
+        return deleteStaleFeatureLink(featureRgdId, transcriptRgdId);
+    }
+
+    /**
+     * unlink a feature from a transcript, regardless of the deleteStaleTranscriptData switch of the gene sync;
+     * used by the gff3 loader option -delete_stale_transcript_data
+     * @param featureRgdId feature rgd id
+     * @param transcriptRgdId transcript rgd id
+     * @return number of rows affected
+     * @throws Exception on error in framework
+     */
+    public int deleteStaleFeatureLink(int featureRgdId, int transcriptRgdId) throws Exception {
 
         // delete the transcript feature itself
         String query = "DELETE FROM transcript_features WHERE feature_rgd_id=? AND transcript_rgd_id=?";
         return transcriptDAO.update(query, featureRgdId, transcriptRgdId);
+    }
+
+    /**
+     * delete positions of a gene or transcript, regardless of the deleteStaleTranscriptData switch of the gene sync;
+     * used by the gff3 loader option -delete_stale_transcript_data
+     * @param mapDataList positions to be deleted
+     * @return number of rows deleted
+     * @throws Exception if something wrong happens in spring framework
+     */
+    public int deleteStalePositions(List<MapData> mapDataList) throws Exception {
+        return mapDAO.deleteMapData(mapDataList);
     }
 
     private List<Integer> getRgdIdListByEGID(int egId) throws Exception {
