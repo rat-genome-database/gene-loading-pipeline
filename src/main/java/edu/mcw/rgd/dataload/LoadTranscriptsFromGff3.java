@@ -265,7 +265,14 @@ public class LoadTranscriptsFromGff3 {
                     // the transcript belongs to the gene record named by Parent (the right locus of a gene annotated twice)
                     GeneInfo geneInfo = parent==null ? null : geneMap.get(parent);
                     if (geneInfo == null) {
-                        if( parent!=null && (skippedGenes.contains(parent) || parent.startsWith("rna-")) ) {
+                        if( parent==null ) {
+                            // standalone RNA feature without a gene record (f.e. mitochondrial tRNAs and rRNAs in older
+                            // annotations such as dog CanFam3.1 AR105); never has a RefSeq accession, so skip it with its exons
+                            ignoredFeatures.add(trId);
+                            counters.increment("TRANSCRIPTS: skipped (no parent gene): "+obj);
+                            break;
+                        }
+                        if( skippedGenes.contains(parent) || parent.startsWith("rna-") ) {
                             // transcript of a skipped gene, or a product nested in another transcript (f.e. a mature miRNA)
                             ignoredFeatures.add(trId);
                             break;

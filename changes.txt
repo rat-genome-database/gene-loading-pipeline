@@ -1,3 +1,6 @@
+Oct 5, 2026
+  gff3 loader: RNA features without a parent gene record (mitochondrial tRNAs/rRNAs in older annotations, f.e. dog CanFam3.1 AR105) are skipped instead of aborting the run
+
 Sep 22, 2026
   human location history restored in AppConfigure.xml (GRCh37, GRCh38 patches, T2T, HuRef, CHM1, Celera, NCBI36);
     the map keys fed from 'Gene Location History' are now always part of the valid map keys of the QC: a history map
