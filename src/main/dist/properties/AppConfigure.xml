@@ -85,6 +85,7 @@
                 -->
 
                 <entry key="Sscrofa10.2" value="910"/>
+                <entry key="Sscrofa11.1" value="911"/>
 
                 <!--
                 <entry key="Chlorocebus_sabeus 1.1" value="1311"/>
@@ -196,6 +197,7 @@
     <bean id="pigGenomicAssemblies" class="java.util.HashMap">
         <constructor-arg>
             <map>
+                <entry key="Reference Sscrofa_HxYL_maternal_Yorkshire_Landrace_v2.0" value="913" /><!-- NCBI reference since 2026 (RS_2026_06) -->
                 <entry key="Reference Sscrofa11.1 Primary Assembly" value="911" />
                 <entry key="Reference Sscrofa10.2 Primary Assembly" value="910" />
                 <entry key="Cytomap" value="900"/>

@@ -1,5 +1,8 @@
 Oct 5, 2026
+  pig: new NCBI reference assembly Sscrofa_HxYL_maternal_Yorkshire_Landrace_v2.0 (map key 913, RS_2026_06) added to the
+    genomic assemblies; Sscrofa11.1 (911) is now also synced from the gene location history, as NCBI no longer annotates it
   gff3 loader: RNA features without a parent gene record (mitochondrial tRNAs/rRNAs in older annotations, f.e. dog CanFam3.1 AR105) are skipped instead of aborting the run
+  updated dependencies
 
 Sep 22, 2026
   human location history restored in AppConfigure.xml (GRCh37, GRCh38 patches, T2T, HuRef, CHM1, Celera, NCBI36);
