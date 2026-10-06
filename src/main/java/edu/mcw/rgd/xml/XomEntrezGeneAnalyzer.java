@@ -616,17 +616,32 @@ public class XomEntrezGeneAnalyzer extends XomAnalyzer {
             // try cM map
             raw = xpcM.stringValueOf(element);
             if( raw.length()>0 ) {
-                // we should get something like: "4 37.8 cM"
+                // we should get something like: "4 37.8 cM"; some records give only the chromosome: "5";
+                // pig linkage maps give a range: "6 62.2-79.3 cM" -- not a single position, so no cM value is set
                 int at1 = raw.indexOf(' ');
                 int at2 = raw.lastIndexOf(' ');
                 if( at1>0 && at2>0 && at2>at1 ) {
                     bulkGene.setChromosome(raw.substring(0, at1));
-                    bulkGene.setcM(Double.parseDouble(raw.substring(at1+1, at2)));
+                    Double cM = parseCM(raw.substring(at1+1, at2));
+                    if( cM!=null ) {
+                        bulkGene.setcM(cM);
+                    } else {
+                        counters.increment("SKIPPED_CM_POSITIONS_NOT_A_SINGLE_VALUE");
+                    }
                 }
             }
         }
         catch(Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /// '37.8' -> 37.8; null for anything that is not a single number, f.e. a range '62.2-79.3'
+    static Double parseCM(String s) {
+        try {
+            return Double.parseDouble(s);
+        } catch( NumberFormatException e ) {
+            return null;
         }
     }
 

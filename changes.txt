@@ -1,6 +1,8 @@
 Oct 6, 2026
   gff3 loader: the assembly named in the gff3 header (#!genome-build, #!genome-build-accession) is verified against the map key
     from the command line before anything is loaded; a mismatch or a header without these lines aborts the run
+  bug fix: a cM map position given as a range (f.e. pig linkage maps: '62.2-79.3 cM') no longer throws NumberFormatException
+    for every record; such positions are skipped and counted
 
 Oct 5, 2026
   pig: new NCBI reference assembly Sscrofa_HxYL_maternal_Yorkshire_Landrace_v2.0 (map key 913, RS_2026_06) added to the
