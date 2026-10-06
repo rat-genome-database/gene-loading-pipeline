@@ -7,6 +7,7 @@
 #   load_transcripts_from_gff3.sh 17 /data/GCF_000001405.25_GRCh37.p13_genomic.gff.gz        (human GRCh37)
 #
 # the species is that of the assembly (map_key); any species with NCBI RefSeq annotation can be loaded
+# the gff3 header (#!genome-build, #!genome-build-accession) must name the assembly of map_key; otherwise the run aborts
 #
 # transcripts already in RGD are matched by accession; transcripts detached in the past are restored
 # under their old rgd id (per STABLE_TRANSCRIPTS); existing feature objects are bound, not duplicated;

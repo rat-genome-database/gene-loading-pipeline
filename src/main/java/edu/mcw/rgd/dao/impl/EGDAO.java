@@ -429,6 +429,17 @@ public class EGDAO {
     }
 
     /**
+     * get an assembly (MAPS row) with its name and RefSeq / GenBank assembly accessions
+     * @param mapKey map key
+     * @return Map object, or null if the map key is not known
+     * @throws Exception
+     */
+    public Map getMap(int mapKey) throws Exception {
+
+        return mapDAO.getMap(mapKey);
+    }
+
+    /**
      * Returns a Gene based on an rgd id
      * @param rgdId rgd id
      * @return Gene object for given rgd id

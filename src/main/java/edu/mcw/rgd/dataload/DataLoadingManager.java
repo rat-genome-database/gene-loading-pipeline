@@ -617,7 +617,8 @@ public class DataLoadingManager {
             "-transcripts_from_gff3 mapKey gff3File [-delete_stale_transcript_data]   (species: that of the assembly)\n" +
             "      load, or restore, the transcripts of one assembly from an NCBI gff3 file (f.e. an archived annotation release);\n" +
             "      with -delete_stale_transcript_data, positions and feature links that a matched gene or transcript has on this\n" +
-            "      assembly and that the gff does not contain are deleted (-unlink_stale_features is a deprecated alias)\n" +
+            "      assembly and that the gff does not contain are deleted (-unlink_stale_features is a deprecated alias);\n" +
+            "      the gff3 header (#!genome-build, #!genome-build-accession) must name the assembly of mapKey, or the run aborts\n" +
             "\n"+
             "     'dateFrom' and 'dateTo' must be formatted as 'yyyy/mm/dd'\n" +
             "     if 'dateFrom' is 'auto', it is set to the 'dateTo' date of latest successful pipeline run\n" +

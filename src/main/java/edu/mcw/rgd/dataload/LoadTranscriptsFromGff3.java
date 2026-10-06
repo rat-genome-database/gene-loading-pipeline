@@ -32,6 +32,9 @@ public class LoadTranscriptsFromGff3 {
      * with -delete_stale_transcript_data, the positions and feature links that a matched gene or transcript has
      * on this assembly and that the gff does not contain are deleted (-unlink_stale_features: deprecated alias)
      * <p>
+     * before anything is loaded, the gff3 header ('#!genome-build', '#!genome-build-accession') must name
+     * the assembly of the map key; a mismatch, or a header naming no assembly, aborts the run
+     * <p>
      * without arguments: loads the strain assemblies listed in run()
      */
     public static void main(String[] args) throws IOException {
@@ -90,6 +93,9 @@ public class LoadTranscriptsFromGff3 {
         counters = new CounterPool();
 
         System.out.println("=== processing mapKey=" + mapKey + " (" + SpeciesType.getCommonName(speciesTypeKey) + "), file " + fname);
+
+        // the gff3 header names the assembly the file was annotated on; it must be the assembly of the map key
+        verifyAssembly(fname, dao.getMap(mapKey));
 
         // gene map: gff gene record id -> GeneInfo; a gene annotated at two loci has two records with the same NCBI gene id
         Map<String, GeneInfo> geneMap = loadGeneMap(fname);
@@ -152,6 +158,95 @@ public class LoadTranscriptsFromGff3 {
         if( failures.get()>0 ) {
             System.out.println("WARNING: "+failures.get()+" genes failed with an exception -- see the transcripts log");
         }
+    }
+
+    /// the assembly named in the comment lines at the top of a gff3 file
+    static class Gff3Header {
+        String genomeBuild;          // '#!genome-build', f.e. 'Sscrofa11.1' or 'GRCh37.p13'
+        String genomeBuildAccession; // '#!genome-build-accession' without the 'NCBI_Assembly:' prefix, f.e. 'GCF_000003025.6' or 'GCA_000003025.6'
+
+        public String toString() {
+            return "genome-build="+genomeBuild+", genome-build-accession="+genomeBuildAccession;
+        }
+    }
+
+    /// reads the comment lines at the top of the file, up to the first feature line;
+    /// NCBI annotwriter files have the two '#!genome-build' lines right after '##gff-version',
+    /// Ensembl files have them after the '##sequence-region' lines
+    static Gff3Header parseGff3Header(String fname) throws Exception {
+
+        Gff3Header header = new Gff3Header();
+        try( BufferedReader in = Utils.openReader(fname) ) {
+            String line;
+            while( (line=in.readLine())!=null ) {
+                if( line.isEmpty() ) {
+                    continue;
+                }
+                if( !line.startsWith("#") ) {
+                    break; // first feature line: end of the header
+                }
+                if( line.startsWith("#!genome-build-accession") ) {
+                    String acc = line.substring("#!genome-build-accession".length()).trim();
+                    int colonPos = acc.lastIndexOf(':');
+                    if( colonPos>=0 ) {
+                        acc = acc.substring(colonPos+1).trim();
+                    }
+                    header.genomeBuildAccession = acc;
+                }
+                else if( line.startsWith("#!genome-build") ) {
+                    header.genomeBuild = line.substring("#!genome-build".length()).trim();
+                }
+            }
+        }
+        return header;
+    }
+
+    /// aborts the run when the assembly named in the gff3 header is not the assembly of the map key given
+    /// on the command line, so that a file cannot be loaded (or, with -delete_stale_transcript_data, cleaned up)
+    /// against the wrong assembly; the accession is decisive; the build name alone is accepted when the file
+    /// has no accession line; a header with neither line cannot be verified and aborts the run as well
+    static void verifyAssembly(String fname, edu.mcw.rgd.datamodel.Map map) throws Exception {
+
+        Gff3Header header = parseGff3Header(fname);
+        String mapInfo = "map key "+map.getKey()+" ("+map.getName()+", "+map.getRefSeqAssemblyAcc()+" / "+map.getGenBankAssemblyAcc()+")";
+        System.out.println("=== gff3 header: "+header+";  command line: "+mapInfo);
+
+        if( header.genomeBuildAccession!=null ) {
+            if( !accessionMatches(header.genomeBuildAccession, map) ) {
+                throw new Exception("ASSEMBLY MISMATCH: the gff3 file is annotated on "+header+", but the command line says "+mapInfo);
+            }
+            if( header.genomeBuild!=null && !buildNameMatches(header.genomeBuild, map) ) {
+                // the accession is decisive; a differing name (f.e. renamed in RGD) is only reported
+                System.out.println("WARNING: genome-build '"+header.genomeBuild+"' is not the name of "+mapInfo+"; the accession matches, proceeding");
+            }
+        }
+        else if( header.genomeBuild!=null ) {
+            if( !buildNameMatches(header.genomeBuild, map) ) {
+                throw new Exception("ASSEMBLY MISMATCH: the gff3 file is annotated on "+header+", but the command line says "+mapInfo);
+            }
+            System.out.println("WARNING: the gff3 header has no '#!genome-build-accession' line; the assembly was verified by name only");
+        }
+        else {
+            throw new Exception("CANNOT VERIFY THE ASSEMBLY: the gff3 header has neither a '#!genome-build' nor a '#!genome-build-accession' line; "
+                    +"the command line says "+mapInfo);
+        }
+    }
+
+    static boolean accessionMatches(String acc, edu.mcw.rgd.datamodel.Map map) {
+        return acc.equalsIgnoreCase(map.getRefSeqAssemblyAcc()) || acc.equalsIgnoreCase(map.getGenBankAssemblyAcc());
+    }
+
+    /// 'GRCh37.p13' in the header vs 'GRCh37' in RGD: a patch suffix is not part of the RGD map name
+    static boolean buildNameMatches(String build, edu.mcw.rgd.datamodel.Map map) {
+        for( String name: new String[]{map.getName(), map.getRefSeqAssemblyName()} ) {
+            if( Utils.isStringEmpty(name) ) {
+                continue;
+            }
+            if( build.equalsIgnoreCase(name) || build.toLowerCase().startsWith(name.toLowerCase()+".p") ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     Map<String, GeneInfo> loadGeneMap(String fname) throws Exception {
