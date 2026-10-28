@@ -1,3 +1,6 @@
+Oct 28, 2026
+  migrated to postgres; updated dependencies
+
 Oct 13, 2026
   bug fix: bonobo genomic assembly 515 (NHGRI_mPanPan1) was not loading positions for any gene since ~mid-2025;
     NCBI renamed it from 'NHGRI_mPanPan1-v2.0_pri' to 'NHGRI_mPanPan1-v2.1_pri' while keeping accession GCF_029289425.2

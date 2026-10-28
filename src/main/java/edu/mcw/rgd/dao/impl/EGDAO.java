@@ -65,7 +65,7 @@ public class EGDAO {
 
     public List<Integer> getEgIdsForGenesWithoutStrand(int speciesTypeKey, int mapKey) throws Exception {
         String sql = """
-            SELECT DISTINCT TO_NUMBER(acc_id)
+            SELECT DISTINCT CAST(acc_id AS INTEGER)
             FROM rgd_acc_xdb x,rgd_ids r,maps_data md
             WHERE x.xdb_key=3 AND x.rgd_id=r.rgd_id AND r.object_key=1 AND r.species_type_key=? AND r.object_status='ACTIVE'
               AND md.rgd_id=r.rgd_id AND md.map_key=? AND md.strand IS NULL
@@ -688,7 +688,7 @@ public class EGDAO {
 
     public Collection<Integer> getEdIdsForMicroRnaGenes(int speciesTypeKey) throws Exception {
 
-        String sql = "SELECT DISTINCT TO_NUMBER(acc_id) "+
+        String sql = "SELECT DISTINCT CAST(acc_id AS INTEGER) "+
             "FROM rgd_acc_xdb x,rgd_ids r,genes g "+
             "WHERE x.xdb_key=3 AND x.rgd_id=r.rgd_id AND r.object_key=1 AND r.species_type_key=? AND r.object_status='ACTIVE' "+
             "AND g.rgd_id=r.rgd_id AND g.gene_symbol_lc LIKE 'mir%'";
@@ -697,7 +697,7 @@ public class EGDAO {
 
     public Collection<Integer> getEdIdsForTRnaGenes(int speciesTypeKey) throws Exception {
 
-        String sql = "SELECT DISTINCT TO_NUMBER(acc_id) "+
+        String sql = "SELECT DISTINCT CAST(acc_id AS INTEGER) "+
             "FROM rgd_acc_xdb x,rgd_ids r,genes g "+
             "WHERE x.xdb_key=3 AND x.rgd_id=r.rgd_id AND r.object_key=1 AND r.species_type_key=? AND r.object_status='ACTIVE' "+
             "AND g.rgd_id=r.rgd_id AND g.gene_type_lc='trna'";
